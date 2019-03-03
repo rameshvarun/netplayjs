@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "chai": "^4.2.0",
+    "peerjs": "^0.3.18"
+  },
+  "scripts": {
+    "start": "webpack-dev-server --open",
+    "build": "webpack",
+    "format": "prettier --write src/**/*.ts src/**/*.tsx",
+    "typecheck": "tsc --noEmit",
+    "check-format": "prettier-check src/**/*.ts src/**/*.tsx",
+    "test": "npm run typecheck && npm run check-format && npm run build"
+  },
+  "devDependencies": {
+    "file-loader": "^2.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "prettier": "^1.14.3",
+    "prettier-check": "^2.0.0",
+    "ts-loader": "^5.3.0",
+    "typescript": "^3.1.5",
+    "webpack": "^4.23.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  }
+}
