@@ -1,4 +1,4 @@
-export function get<K,V>(map: Map<K,V>, key: K): V {
+export function get<K, V>(map: Map<K, V>, key: K): V {
   let result = map.get(key);
   if (result !== undefined) {
     return result;

@@ -1,4 +1,4 @@
-import {NetplayState, NetplayInput} from './netplay';
+import { NetplayState, NetplayInput } from "./netplay";
 
 // class PongState implements NetplayState {
 //   leftPaddle: number;

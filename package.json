@@ -19,7 +19,7 @@
     "prettier": "^1.14.3",
     "prettier-check": "^2.0.0",
     "ts-loader": "^5.3.0",
-    "typescript": "^3.1.5",
+    "typescript": "^3.3.3333",
     "webpack": "^4.23.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"
