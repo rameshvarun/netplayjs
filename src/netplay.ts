@@ -43,6 +43,17 @@ class NetplayHistory<
     return get(this.inputs, player).isPrediction;
   }
 
+  anyInputPredicted(): boolean {
+    for (const [player, { isPrediction }] of this.inputs.entries()) {
+      if (isPrediction) return true;
+    }
+    return false;
+  }
+
+  allInputsSynced(): boolean {
+    return !this.anyInputPredicted();
+  }
+
   tick(
     newInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>
   ): NetplayHistory<TState, TInput> {
@@ -70,25 +81,58 @@ export class NetplayManager<
   // applied due to our simulation being behind.
   future: Map<NetplayPlayer, Array<{ frame: number; input: TInput }>>;
 
-  onRemoteInput(
-    frame: number,
-    player: NetplayPlayer,
-    input: NetplayInput<TInput>
-  ) {
-    // assert.isTrue(player.isRemotePlayer(), `'player' must be a remote player.`);
-    // assert.isNotEmpty(history, `'history' cannot be empty.`);
-    //
-    // // TODO Handle future inputs
-    //
-    // for (let i = 0; i < history.length; ++i) {
-    //   if (history[i].isPlayerInputPredicted(player)) {
-    //     // Assuming that input messages from a given client are ordered, the
-    //     // first history with a predicted input for this player is also the
-    //     // frame for which we just recieved a message.
-    //     assert.isEqual(history[i].frame, frame);
-    //     break;
-    //   }
-    // }
+  onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
+    assert.isTrue(player.isRemotePlayer(), `'player' must be a remote player.`);
+    assert.isNotEmpty(this.history, `'history' cannot be empty.`);
+
+    // TODO Handle future inputs
+
+    // Find the first index where the input for this player is a prediction.
+    let firstPrediction = 0;
+    for (let i = 0; i < this.history.length; ++i) {
+      if (this.history[i].isPlayerInputPredicted(player)) {
+        // Assuming that input messages from a given client are ordered, the
+        // first history with a predicted input for this player is also the
+        // frame for which we just recieved a message.
+        assert.equal(this.history[i].frame, frame);
+        firstPrediction = i;
+        break;
+      }
+    }
+
+    // Rollback and resimulate state.
+    for (let i = firstPrediction; i < this.history.length; ++i) {
+      let currentState = this.history[i];
+      let previousState = this.history[i - 1];
+
+      let currentPlayerInput = get(currentState.inputs, player);
+      let previousPlayerInput = get(previousState.inputs, player);
+
+      assert.isTrue(currentPlayerInput.isPrediction);
+
+      if (i === firstPrediction) {
+        currentPlayerInput.isPrediction = false;
+        currentPlayerInput.input = input;
+      } else {
+        currentPlayerInput.input = previousPlayerInput.input.predictNext();
+      }
+
+      let stateInputs = new Map<NetplayPlayer, TInput>();
+      for (const [player, { input }] of currentState.inputs.entries()) {
+        stateInputs.set(player, input);
+      }
+      currentState.state = previousState.state.tick(stateInputs);
+    }
+
+    // Cleanup states that are no longer needed.
+    while (this.history.length >= 2) {
+      let firstState = this.history[0];
+      let nextState = this.history[1];
+
+      assert.isTrue(firstState.allInputsSynced());
+      if (nextState.allInputsSynced()) shift(this.history);
+      else break;
+    }
   }
 
   constructor(
@@ -98,10 +142,20 @@ export class NetplayManager<
   ) {
     this.history = [new NetplayHistory(0, initialState, initialInputs)];
     this.maxHistorySize = maxHistorySize;
+
+    this.future = new Map();
+    for (let player of initialInputs.keys()) {
+      this.future.set(player, []);
+    }
   }
 
   getState() {
     return this.history[this.history.length - 1].state;
+  }
+
+  currentFrame(): number {
+    assert.isNotEmpty(this.history, `'history' cannot be empty.`);
+    return this.history[this.history.length - 1].frame;
   }
 
   tick(localInput: TInput) {
