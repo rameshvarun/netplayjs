@@ -81,10 +81,42 @@ export class NetplayManager<
   // applied due to our simulation being behind.
   future: Map<NetplayPlayer, Array<{ frame: number; input: TInput }>>;
 
+  isServer: boolean;
+
+  onStateSync(frame: number, state: TState) {
+    assert.isFalse(this.isServer, 'Only clients recieve state syncs.')
+
+    // Cleanup states that we don't need anymore because we have the definitive
+    // server state.
+    while (this.history.length > 0) {
+      assert.isTrue(this.history[0].allInputsSynced());
+      if (this.history[0].frame < frame) shift(this.history);
+      else break;
+    }
+
+    // Update the first state with the definitive server state.
+    assert.equal(this.history[0].frame, frame);
+    this.history[0].state = state;
+
+    // Resimulate up to the current point.
+    for (let i = 1; i < this.history.length; ++i) {
+      let currentState = this.history[i];
+      let previousState = this.history[i - 1];
+
+      let stateInputs = new Map<NetplayPlayer, TInput>();
+      for (const [player, { input }] of currentState.inputs.entries()) {
+        stateInputs.set(player, input);
+      }
+      currentState.state = previousState.state.tick(stateInputs);
+    }
+  }
+
   onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
     assert.isTrue(player.isRemotePlayer(), `'player' must be a remote player.`);
     assert.isNotEmpty(this.history, `'history' cannot be empty.`);
 
+    // If this input is for a frame that we haven't even simulated, we need to
+    // store it in a queue to pull during our next tick.
     // TODO Handle future inputs
 
     // Find the first index where the input for this player is a prediction.
@@ -124,28 +156,43 @@ export class NetplayManager<
       currentState.state = previousState.state.tick(stateInputs);
     }
 
-    // Cleanup states that are no longer needed.
-    while (this.history.length >= 2) {
-      let firstState = this.history[0];
-      let nextState = this.history[1];
+    // If this is the server, we can cleanup states for which input has been synced.
+    if (this.isServer) {
+      while (this.history.length >= 2) {
+        let firstState = this.history[0];
+        let nextState = this.history[1];
 
-      assert.isTrue(firstState.allInputsSynced());
-      if (nextState.allInputsSynced()) shift(this.history);
-      else break;
+        assert.isTrue(firstState.allInputsSynced());
+        if (nextState.allInputsSynced()) {
+          let syncedState = shift(this.history);
+          this.broadcastState!(syncedState.frame, syncedState.state);
+        }
+        else break;
+      }
     }
   }
 
+  broadcastState?: (frame, TState) => void;
+
   constructor(
+    isServer: boolean,
     initialState: TState,
     initialInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>,
-    maxHistorySize: number
+    maxHistorySize: number,
+    broadcastState?: (frame, TState) => void
   ) {
+    this.isServer = isServer;
     this.history = [new NetplayHistory(0, initialState, initialInputs)];
     this.maxHistorySize = maxHistorySize;
 
     this.future = new Map();
     for (let player of initialInputs.keys()) {
       this.future.set(player, []);
+    }
+
+    if (isServer) {
+      assert.exists(broadcastState);
+      this.broadcastState = broadcastState;
     }
   }
 
