@@ -247,7 +247,7 @@ function gameLoop(timestamp) {
   <div>Frame Number: ${netplayManager!.currentFrame()}</div>
   <div>Largest Future Size: ${netplayManager!.largestFutureSize()}</div>
   <div>Predicted Frames: ${netplayManager!.predictedFrames()}</div>
-  <div>Stalling: ${netplayManager!.shouldStall()}</div>
+  <div title="If true, then the other player is running slow, so we wait for them.">Stalling: ${netplayManager!.shouldStall()}</div>
   `;
 
   requestAnimationFrame(gameLoop);

@@ -96,8 +96,7 @@ export class NetplayManager<
       if (this.history[0].frame < frame) {
         shift(this.history);
         cleanedUpStates++;
-      }
-      else break;
+      } else break;
     }
     log.trace(`Cleaned up ${cleanedUpStates} states.`);
 
@@ -116,7 +115,9 @@ export class NetplayManager<
       }
       currentState.state = previousState.state.tick(stateInputs);
     }
-    log.trace(`Resimulated ${this.history.length - 1} states after state sync.`);
+    log.trace(
+      `Resimulated ${this.history.length - 1} states after state sync.`
+    );
   }
 
   onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
@@ -125,8 +126,8 @@ export class NetplayManager<
 
     // If this input is for a frame that we haven't even simulated, we need to
     // store it in a queue to pull during our next tick.
-    if(frame > this.history[this.history.length - 1].frame) {
-      get(this.future, player).push({frame: frame, input: input});
+    if (frame > this.history[this.history.length - 1].frame) {
+      get(this.future, player).push({ frame: frame, input: input });
       return; // Skip rest of logic in this function.
     }
 
@@ -168,7 +169,10 @@ export class NetplayManager<
       currentState.state = previousState.state.tick(stateInputs);
     }
 
-    log.trace(`Resimulated ${this.history.length - firstPrediction!} states after rollback.`);
+    log.trace(
+      `Resimulated ${this.history.length -
+        firstPrediction!} states after rollback.`
+    );
 
     // If this is the server, we can cleanup states for which input has been synced.
     if (this.isServer) {
