@@ -1,4 +1,5 @@
 import { NetplayState, NetplayInput, NetplayPlayer } from "./netplay";
+import { assert } from "chai";
 
 export const PONG_WIDTH = 600;
 export const PONG_HEIGHT = 300;
@@ -13,7 +14,6 @@ export const PADDLE_MOVE_SPEED = 5;
 
 export const BALL_WIDTH = 10;
 export const BALL_HEIGHT = 10;
-
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -170,6 +170,28 @@ export class PongState implements NetplayState<PongState, PongInput> {
     this.rightScore = rightScore;
   }
 
+  toJSON(): any {
+    return {
+      leftPaddle: this.leftPaddle,
+      rightPaddle: this.rightPaddle,
+      ballPosition: this.ballPosition,
+      ballVelocity: this.ballVelocity,
+      leftScore: this.leftScore,
+      rightScore: this.rightScore
+    };
+  }
+
+  static fromJSON(value: any): PongState {
+    return new PongState(
+      value.leftPaddle,
+      value.rightPaddle,
+      value.ballPosition,
+      value.ballVelocity,
+      value.leftScore,
+      value.rightScore
+    );
+  }
+
   draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -233,5 +255,14 @@ export class PongInput implements NetplayInput<PongInput> {
     if (this.direction == "up") return -1;
     else if (this.direction == "down") return 1;
     else return 0;
+  }
+
+  toJSON(): any {
+    return this.direction;
+  }
+
+  static fromJSON(val: any): PongInput {
+    assert.isString(val);
+    return new PongInput(val);
   }
 }

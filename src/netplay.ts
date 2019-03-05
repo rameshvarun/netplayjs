@@ -84,7 +84,7 @@ export class NetplayManager<
   isServer: boolean;
 
   onStateSync(frame: number, state: TState) {
-    assert.isFalse(this.isServer, 'Only clients recieve state syncs.')
+    assert.isFalse(this.isServer, "Only clients recieve state syncs.");
 
     // Cleanup states that we don't need anymore because we have the definitive
     // server state.
@@ -117,7 +117,9 @@ export class NetplayManager<
 
     // If this input is for a frame that we haven't even simulated, we need to
     // store it in a queue to pull during our next tick.
-    // TODO Handle future inputs
+    if(frame > this.history[this.history.length - 1]. frame) {
+      get(this.future, player).push({frame: frame, input: input});
+    }
 
     // Find the first index where the input for this player is a prediction.
     let firstPrediction = 0;
@@ -166,24 +168,26 @@ export class NetplayManager<
         if (nextState.allInputsSynced()) {
           let syncedState = shift(this.history);
           this.broadcastState!(syncedState.frame, syncedState.state);
-        }
-        else break;
+        } else break;
       }
     }
   }
 
-  broadcastState?: (frame, TState) => void;
+  broadcastInput: (frame: number, TInput) => void;
+  broadcastState?: (frame: number, TState) => void;
 
   constructor(
     isServer: boolean,
     initialState: TState,
     initialInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>,
     maxHistorySize: number,
+    broadcastInput: (frame: number, TInput) => void,
     broadcastState?: (frame, TState) => void
   ) {
     this.isServer = isServer;
     this.history = [new NetplayHistory(0, initialState, initialInputs)];
     this.maxHistorySize = maxHistorySize;
+    this.broadcastInput = broadcastInput;
 
     this.future = new Map();
     for (let player of initialInputs.keys()) {
@@ -205,6 +209,10 @@ export class NetplayManager<
     return this.history[this.history.length - 1].frame;
   }
 
+  largestFutureSize(): number {
+    return Math.max(...Array.from(this.future.values()).map(a => a.length));
+  }
+
   tick(localInput: TInput) {
     assert.isNotEmpty(this.history, `'history' cannot be empty.`);
 
@@ -217,6 +225,7 @@ export class NetplayManager<
       if (player.isLocalPlayer()) {
         // Local player gets the local input.
         newInputs.set(player, { input: localInput, isPrediction: false });
+        this.broadcastInput(lastState.frame + 1, localInput);
       } else {
         if (get(this.future, player).length > 0) {
           // If we have already recieved the player's input (due to our)

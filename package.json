@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "dependencies": {
     "chai": "^4.2.0",
-    "peerjs": "^0.3.18"
+    "peerjs": "^0.3.24",
+    "query-string": "^6.3.0"
   },
   "scripts": {
     "start": "webpack-dev-server --open",
