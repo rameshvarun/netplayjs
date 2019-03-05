@@ -246,6 +246,8 @@ function gameLoop(timestamp) {
   <div>History Size: ${netplayManager!.history.length}</div>
   <div>Frame Number: ${netplayManager!.currentFrame()}</div>
   <div>Largest Future Size: ${netplayManager!.largestFutureSize()}</div>
+  <div>Predicted Frames: ${netplayManager!.predictedFrames()}</div>
+  <div>Stalling: ${netplayManager!.shouldStall()}</div>
   `;
 
   requestAnimationFrame(gameLoop);

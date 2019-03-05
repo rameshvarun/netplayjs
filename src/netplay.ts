@@ -76,7 +76,7 @@ export class NetplayManager<
   TInput extends NetplayInput<TInput>
 > {
   history: Array<NetplayHistory<TState, TInput>>;
-  maxHistorySize: number;
+  maxPredictedFrames: number;
 
   // Inputs from other players that have already arrived, but have not been
   // applied due to our simulation being behind.
@@ -195,13 +195,13 @@ export class NetplayManager<
     isServer: boolean,
     initialState: TState,
     initialInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>,
-    maxHistorySize: number,
+    maxPredictedFrames: number,
     broadcastInput: (frame: number, TInput) => void,
     broadcastState?: (frame, TState) => void
   ) {
     this.isServer = isServer;
     this.history = [new NetplayHistory(0, initialState, initialInputs)];
-    this.maxHistorySize = maxHistorySize;
+    this.maxPredictedFrames = maxPredictedFrames;
     this.broadcastInput = broadcastInput;
 
     this.future = new Map();
@@ -228,8 +228,25 @@ export class NetplayManager<
     return Math.max(...Array.from(this.future.values()).map(a => a.length));
   }
 
+  // Returns the number of frames for which at least one player's input is predicted.
+  predictedFrames(): number {
+    for (let i = 0; i < this.history.length; ++i) {
+      if (!this.history[i].allInputsSynced()) {
+        return this.history.length - i;
+      }
+    }
+    return 0;
+  }
+
+  shouldStall(): boolean {
+    return this.predictedFrames() > this.maxPredictedFrames;
+  }
+
   tick(localInput: TInput) {
     assert.isNotEmpty(this.history, `'history' cannot be empty.`);
+
+    // If we should stall, then don't peform a tick at all.
+    if (this.shouldStall()) return;
 
     // Get the most recent state and the current local input.
     const lastState = this.history[this.history.length - 1];
