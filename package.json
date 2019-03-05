@@ -7,8 +7,8 @@
     "query-string": "^6.3.0"
   },
   "scripts": {
-    "start": "webpack-dev-server --open",
-    "build": "webpack",
+    "start": "webpack-dev-server --open --env dev",
+    "build": "webpack --env prod",
     "format": "prettier --write src/**/*.ts src/**/*.tsx",
     "typecheck": "tsc --noEmit",
     "check-format": "prettier-check src/**/*.ts src/**/*.tsx",
@@ -23,6 +23,7 @@
     "typescript": "^3.3.3333",
     "webpack": "^4.23.1",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10"
+    "webpack-dev-server": "^3.1.10",
+    "webpack-merge": "^4.2.1"
   }
 }

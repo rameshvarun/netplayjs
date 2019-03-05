@@ -1,13 +1,9 @@
 const path = require("path");
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const merge = require('webpack-merge');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-module.exports = {
-  mode: 'development',
+const common = {
   entry: "./src/index.ts",
-  devtool: "inline-source-map",
-  devServer: {
-    contentBase: "./dist"
-  },
   module: {
     rules: [
       {
@@ -32,3 +28,23 @@ module.exports = {
     new HtmlWebpackPlugin(),
   ]
 };
+
+const dev = {
+  mode: 'development',
+  devtool: "inline-source-map",
+  devServer: {
+    contentBase: "./dist"
+  },
+}
+
+const prod = {
+  mode: 'production',
+}
+
+module.exports = (env) => {
+  if (env === 'dev') return merge(common, dev);
+  else if (env === 'prod') return merge(common, prod);
+  else {
+    throw new Error(`Unknown environment ${env}.`);
+  }
+}
