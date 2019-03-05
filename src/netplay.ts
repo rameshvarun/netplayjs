@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import { get, shift } from "./utils";
+import * as log from "loglevel";
 
 export interface NetplayState<
   TState extends NetplayState<TState, TInput>,
@@ -87,12 +88,18 @@ export class NetplayManager<
     assert.isFalse(this.isServer, "Only clients recieve state syncs.");
 
     // Cleanup states that we don't need anymore because we have the definitive
-    // server state.
-    while (this.history.length > 0) {
+    // server state. We have to leave at least one state in order to simulate
+    // on the next local tick.
+    let cleanedUpStates = 0;
+    while (this.history.length > 1) {
       assert.isTrue(this.history[0].allInputsSynced());
-      if (this.history[0].frame < frame) shift(this.history);
+      if (this.history[0].frame < frame) {
+        shift(this.history);
+        cleanedUpStates++;
+      }
       else break;
     }
+    log.trace(`Cleaned up ${cleanedUpStates} states.`);
 
     // Update the first state with the definitive server state.
     assert.equal(this.history[0].frame, frame);
@@ -109,6 +116,7 @@ export class NetplayManager<
       }
       currentState.state = previousState.state.tick(stateInputs);
     }
+    log.trace(`Resimulated ${this.history.length - 1} states after state sync.`);
   }
 
   onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
@@ -117,12 +125,13 @@ export class NetplayManager<
 
     // If this input is for a frame that we haven't even simulated, we need to
     // store it in a queue to pull during our next tick.
-    if(frame > this.history[this.history.length - 1]. frame) {
+    if(frame > this.history[this.history.length - 1].frame) {
       get(this.future, player).push({frame: frame, input: input});
+      return; // Skip rest of logic in this function.
     }
 
     // Find the first index where the input for this player is a prediction.
-    let firstPrediction = 0;
+    let firstPrediction: number | null = null;
     for (let i = 0; i < this.history.length; ++i) {
       if (this.history[i].isPlayerInputPredicted(player)) {
         // Assuming that input messages from a given client are ordered, the
@@ -133,9 +142,10 @@ export class NetplayManager<
         break;
       }
     }
+    assert.exists(firstPrediction);
 
     // Rollback and resimulate state.
-    for (let i = firstPrediction; i < this.history.length; ++i) {
+    for (let i = firstPrediction!; i < this.history.length; ++i) {
       let currentState = this.history[i];
       let previousState = this.history[i - 1];
 
@@ -158,8 +168,11 @@ export class NetplayManager<
       currentState.state = previousState.state.tick(stateInputs);
     }
 
+    log.trace(`Resimulated ${this.history.length - firstPrediction!} states after rollback.`);
+
     // If this is the server, we can cleanup states for which input has been synced.
     if (this.isServer) {
+      let cleanedUpStates = 0;
       while (this.history.length >= 2) {
         let firstState = this.history[0];
         let nextState = this.history[1];
@@ -167,9 +180,11 @@ export class NetplayManager<
         assert.isTrue(firstState.allInputsSynced());
         if (nextState.allInputsSynced()) {
           let syncedState = shift(this.history);
+          cleanedUpStates++;
           this.broadcastState!(syncedState.frame, syncedState.state);
         } else break;
       }
+      log.trace(`Cleaned up ${cleanedUpStates} states.`);
     }
   }
 

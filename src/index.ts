@@ -38,7 +38,8 @@ let players: Array<NetplayPlayer> | null = null;
 if (!isClient) {
   console.log("This is a server.");
   peer.on("open", id => {
-    stats.innerHTML = `<div>Join URL: ${window.location.href}#room=${id}<div>`;
+    let joinURL = `${window.location.href}#room=${id}`;
+    stats.innerHTML = `<div>Join URL: <a href="${joinURL}">${joinURL}<div>`;
   });
 
   peer.on("connection", conn => {
