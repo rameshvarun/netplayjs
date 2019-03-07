@@ -39,7 +39,7 @@ if (!isClient) {
   console.log("This is a server.");
   peer.on("open", id => {
     let joinURL = `${window.location.href}#room=${id}`;
-    stats.innerHTML = `<div>Join URL: <a href="${joinURL}">${joinURL}<div>`;
+    stats.innerHTML = `<div>Join URL (Open in a new window or send to a friend): <a href="${joinURL}">${joinURL}<div>`;
   });
 
   peer.on("connection", conn => {
