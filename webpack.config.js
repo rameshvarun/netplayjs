@@ -25,7 +25,10 @@ const common = {
     path: path.resolve(__dirname, "dist"),
   },
   plugins: [
-    new HtmlWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: 'src/index.html',
+      title: 'NetplayJS Demo'
+    }),
   ]
 };
 
