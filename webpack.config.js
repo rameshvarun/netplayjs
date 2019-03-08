@@ -32,7 +32,7 @@ const common = {
   ]
 };
 
-const dev = {
+const development = {
   mode: 'development',
   devtool: "inline-source-map",
   devServer: {
@@ -40,13 +40,13 @@ const dev = {
   },
 }
 
-const prod = {
+const production = {
   mode: 'production',
 }
 
 module.exports = (env) => {
-  if (env === 'dev') return merge(common, dev);
-  else if (env === 'prod') return merge(common, prod);
+  if (env === 'development') return merge(common, development);
+  else if (env === 'production') return merge(common, production);
   else {
     throw new Error(`Unknown environment ${env}.`);
   }

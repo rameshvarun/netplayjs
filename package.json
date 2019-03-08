@@ -8,8 +8,8 @@
     "query-string": "^6.3.0"
   },
   "scripts": {
-    "start": "webpack-dev-server --open --env dev",
-    "build": "webpack --env prod",
+    "start": "webpack-dev-server --open --env development",
+    "build": "webpack --env production",
     "format": "prettier --write src/**/*.ts src/**/*.tsx",
     "typecheck": "tsc --noEmit",
     "check-format": "prettier-check src/**/*.ts src/**/*.tsx",

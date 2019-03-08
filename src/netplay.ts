@@ -1,6 +1,8 @@
-import { assert } from "chai";
 import { get, shift } from "./utils";
-import * as log from "loglevel";
+
+const dev = process.env.NODE_ENV === "development";
+const log = dev && require("loglevel");
+const assert = dev && require("chai").assert;
 
 export interface NetplayState<
   TState extends NetplayState<TState, TInput>,
@@ -85,23 +87,23 @@ export class NetplayManager<
   isServer: boolean;
 
   onStateSync(frame: number, state: TState) {
-    assert.isFalse(this.isServer, "Only clients recieve state syncs.");
+    dev && assert.isFalse(this.isServer, "Only clients recieve state syncs.");
 
     // Cleanup states that we don't need anymore because we have the definitive
     // server state. We have to leave at least one state in order to simulate
     // on the next local tick.
     let cleanedUpStates = 0;
     while (this.history.length > 1) {
-      assert.isTrue(this.history[0].allInputsSynced());
+      dev && assert.isTrue(this.history[0].allInputsSynced());
       if (this.history[0].frame < frame) {
         shift(this.history);
         cleanedUpStates++;
       } else break;
     }
-    log.trace(`Cleaned up ${cleanedUpStates} states.`);
+    dev && log.trace(`Cleaned up ${cleanedUpStates} states.`);
 
     // Update the first state with the definitive server state.
-    assert.equal(this.history[0].frame, frame);
+    dev && assert.equal(this.history[0].frame, frame);
     this.history[0].state = state;
 
     // Resimulate up to the current point.
@@ -115,14 +117,14 @@ export class NetplayManager<
       }
       currentState.state = previousState.state.tick(stateInputs);
     }
-    log.trace(
+    dev && log.trace(
       `Resimulated ${this.history.length - 1} states after state sync.`
     );
   }
 
   onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
-    assert.isTrue(player.isRemotePlayer(), `'player' must be a remote player.`);
-    assert.isNotEmpty(this.history, `'history' cannot be empty.`);
+    dev && assert.isTrue(player.isRemotePlayer(), `'player' must be a remote player.`);
+    dev && assert.isNotEmpty(this.history, `'history' cannot be empty.`);
 
     // If this input is for a frame that we haven't even simulated, we need to
     // store it in a queue to pull during our next tick.
@@ -138,12 +140,12 @@ export class NetplayManager<
         // Assuming that input messages from a given client are ordered, the
         // first history with a predicted input for this player is also the
         // frame for which we just recieved a message.
-        assert.equal(this.history[i].frame, frame);
+        dev && assert.equal(this.history[i].frame, frame);
         firstPrediction = i;
         break;
       }
     }
-    assert.exists(firstPrediction);
+    dev && assert.exists(firstPrediction);
 
     // Rollback and resimulate state.
     for (let i = firstPrediction!; i < this.history.length; ++i) {
@@ -153,7 +155,7 @@ export class NetplayManager<
       let currentPlayerInput = get(currentState.inputs, player);
       let previousPlayerInput = get(previousState.inputs, player);
 
-      assert.isTrue(currentPlayerInput.isPrediction);
+      dev && assert.isTrue(currentPlayerInput.isPrediction);
 
       if (i === firstPrediction) {
         currentPlayerInput.isPrediction = false;
@@ -169,7 +171,7 @@ export class NetplayManager<
       currentState.state = previousState.state.tick(stateInputs);
     }
 
-    log.trace(
+    dev && log.trace(
       `Resimulated ${this.history.length -
         firstPrediction!} states after rollback.`
     );
@@ -181,14 +183,14 @@ export class NetplayManager<
         let firstState = this.history[0];
         let nextState = this.history[1];
 
-        assert.isTrue(firstState.allInputsSynced());
+        dev && assert.isTrue(firstState.allInputsSynced());
         if (nextState.allInputsSynced()) {
           let syncedState = shift(this.history);
           cleanedUpStates++;
           this.broadcastState!(syncedState.frame, syncedState.state);
         } else break;
       }
-      log.trace(`Cleaned up ${cleanedUpStates} states.`);
+      dev && log.trace(`Cleaned up ${cleanedUpStates} states.`);
     }
   }
 
@@ -214,7 +216,7 @@ export class NetplayManager<
     }
 
     if (isServer) {
-      assert.exists(broadcastState);
+      dev && assert.exists(broadcastState);
       this.broadcastState = broadcastState;
     }
   }
@@ -224,7 +226,7 @@ export class NetplayManager<
   }
 
   currentFrame(): number {
-    assert.isNotEmpty(this.history, `'history' cannot be empty.`);
+    dev && assert.isNotEmpty(this.history, `'history' cannot be empty.`);
     return this.history[this.history.length - 1].frame;
   }
 
@@ -247,7 +249,7 @@ export class NetplayManager<
   }
 
   tick(localInput: TInput) {
-    assert.isNotEmpty(this.history, `'history' cannot be empty.`);
+    dev && assert.isNotEmpty(this.history, `'history' cannot be empty.`);
 
     // If we should stall, then don't peform a tick at all.
     if (this.shouldStall()) return;
@@ -267,7 +269,7 @@ export class NetplayManager<
           // If we have already recieved the player's input (due to our)
           // simulation being behind, then use that input.
           let future = shift(get(this.future, player));
-          assert.equal(lastState.frame + 1, future.frame);
+          dev && assert.equal(lastState.frame + 1, future.frame);
           newInputs.set(player, {
             input: future.input,
             isPrediction: false
