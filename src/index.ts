@@ -39,7 +39,7 @@ let initialState = PongState.getInitialState();
 let netplayManager: NetplayManager<PongState, PongInput> | null = null;
 let players: Array<NetplayPlayer> | null = null;
 
-const PING_INTERVAL = 500;
+const PING_INTERVAL = 100;
 
 if (!isClient) {
   console.log("This is a server.");
@@ -107,6 +107,7 @@ if (!isClient) {
         initialState,
         initialInputs,
         10,
+        pingMeasure,
         (frame, input) => {
           conn.send({ type: "input", frame: frame, input: input.toJSON() });
         },
@@ -197,6 +198,7 @@ if (!isClient) {
       initialState,
       initialInputs,
       10,
+      pingMeasure,
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.toJSON() });
       }

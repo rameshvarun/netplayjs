@@ -202,12 +202,14 @@ export class NetplayManager<
 
   broadcastInput: (frame: number, TInput) => void;
   broadcastState?: (frame: number, TState) => void;
+  pingMeasure: any;
 
   constructor(
     isServer: boolean,
     initialState: TState,
     initialInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>,
     maxPredictedFrames: number,
+    pingMeasure: any,
     broadcastInput: (frame: number, TInput) => void,
     broadcastState?: (frame, TState) => void
   ) {
@@ -215,6 +217,7 @@ export class NetplayManager<
     this.history = [new NetplayHistory(0, initialState, initialInputs)];
     this.maxPredictedFrames = maxPredictedFrames;
     this.broadcastInput = broadcastInput;
+    this.pingMeasure = pingMeasure;
 
     this.future = new Map();
     for (let player of initialInputs.keys()) {
@@ -250,8 +253,25 @@ export class NetplayManager<
     return 0;
   }
 
+  // Whether or not we should stall. The general goal of stalling is (1) slow
+  // down when our peer's game loop is slowing down. This occurs when the peer
+  // is simply a slow CPU, or when the browser throttles the tab. (2) slow
+  // down the game when latency is too high to make the game playable.
   shouldStall(): boolean {
-    return this.predictedFrames() > this.maxPredictedFrames;
+    // If we are predicting too many frames, then we have to stall - this
+    // condition should only be reached if latency is really bad - consider
+    // 3G or other mobile connections.
+    if (this.predictedFrames() > this.maxPredictedFrames) return true;
+
+    // Now, let's say we are predicting frames, however the number of frames
+    // predicted is greater than what we would expect just from the latency.
+    // This means that the other player is running slow, which is very common
+    // due to browser throttling of requestAnimationFrame. We should stall in
+    // this case.
+    return (
+      this.predictedFrames() * (1000.0 / 60.0) >
+      (this.pingMeasure.average() + this.pingMeasure.stddev()) / 2
+    );
   }
 
   tick(localInput: TInput) {
