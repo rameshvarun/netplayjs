@@ -117,13 +117,18 @@ export class NetplayManager<
       }
       currentState.state = previousState.state.tick(stateInputs);
     }
-    dev && log.trace(
-      `Resimulated ${this.history.length - 1} states after state sync.`
-    );
+    dev &&
+      log.trace(
+        `Resimulated ${this.history.length - 1} states after state sync.`
+      );
   }
 
   onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
-    dev && assert.isTrue(player.isRemotePlayer(), `'player' must be a remote player.`);
+    dev &&
+      assert.isTrue(
+        player.isRemotePlayer(),
+        `'player' must be a remote player.`
+      );
     dev && assert.isNotEmpty(this.history, `'history' cannot be empty.`);
 
     // If this input is for a frame that we haven't even simulated, we need to
@@ -171,10 +176,11 @@ export class NetplayManager<
       currentState.state = previousState.state.tick(stateInputs);
     }
 
-    dev && log.trace(
-      `Resimulated ${this.history.length -
-        firstPrediction!} states after rollback.`
-    );
+    dev &&
+      log.trace(
+        `Resimulated ${this.history.length -
+          firstPrediction!} states after rollback.`
+      );
 
     // If this is the server, we can cleanup states for which input has been synced.
     if (this.isServer) {

@@ -21,12 +21,21 @@ export default class EWMASD {
       this.initialized = true;
     } else {
       let delta = measurement - this.est_average;
-      this.est_variance = (1 - this.discount) * (this.est_variance + this.discount * delta * delta);
-      this.est_average = this.discount * measurement + (1 - this.discount) * this.est_average;
+      this.est_variance =
+        (1 - this.discount) *
+        (this.est_variance + this.discount * delta * delta);
+      this.est_average =
+        this.discount * measurement + (1 - this.discount) * this.est_average;
     }
   }
 
-  average() { return this.est_average; }
-  variance() { return this.est_variance; }
-  stddev() { return Math.sqrt(this.est_variance); }
+  average() {
+    return this.est_average;
+  }
+  variance() {
+    return this.est_variance;
+  }
+  stddev() {
+    return Math.sqrt(this.est_variance);
+  }
 }
