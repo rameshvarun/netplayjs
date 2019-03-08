@@ -7,6 +7,10 @@ import {
 
 import { PongState, PongInput, PONG_WIDTH, PONG_HEIGHT } from "./pong";
 
+import EWMASD from "./ewmasd";
+
+const pingMeasure = new EWMASD(0.2);
+
 import { assert } from "chai";
 
 import * as query from "query-string";
@@ -34,6 +38,8 @@ document.body.appendChild(stats);
 let initialState = PongState.getInitialState();
 let netplayManager: NetplayManager<PongState, PongInput> | null = null;
 let players: Array<NetplayPlayer> | null = null;
+
+const PING_INTERVAL = 500;
 
 if (!isClient) {
   console.log("This is a server.");
@@ -109,6 +115,10 @@ if (!isClient) {
         }
       );
 
+      setInterval(() => {
+        conn.send({ type: "ping-req", sent_time: Date.now() });
+      }, PING_INTERVAL);
+
       conn.on("data", data => {
         if (data.type === "input") {
           netplayManager!.onRemoteInput(
@@ -116,6 +126,10 @@ if (!isClient) {
             players![1],
             PongInput.fromJSON(data.input)
           );
+        } else if (data.type == "ping-req") {
+          conn.send({ type: "ping-resp", sent_time: data.sent_time });
+        }  else if (data.type == "ping-resp") {
+          pingMeasure.update(Date.now() - data.sent_time);
         }
       });
 
@@ -188,6 +202,10 @@ if (!isClient) {
       }
     );
 
+    setInterval(() => {
+      conn.send({ type: "ping-req", sent_time: Date.now() });
+    }, PING_INTERVAL);
+
     conn.on("data", data => {
       if (data.type === "input") {
         netplayManager!.onRemoteInput(
@@ -196,8 +214,12 @@ if (!isClient) {
           PongInput.fromJSON(data.input)
         );
       }
-      if (data.type === "state") {
+      else if (data.type === "state") {
         netplayManager!.onStateSync(data.frame, PongState.fromJSON(data.state));
+      } else if (data.type == "ping-req") {
+        conn.send({ type: "ping-resp", sent_time: data.sent_time });
+      } else if (data.type == "ping-resp") {
+        pingMeasure.update(Date.now() - data.sent_time);
       }
     });
 
@@ -243,6 +265,7 @@ function gameLoop(timestamp) {
   // Update stats
   stats.innerHTML = `
   <div>Timestep: ${TIMESTEP}</div>
+  <div>Ping: ${pingMeasure.average().toFixed(2)} ms +/- ${pingMeasure.stddev().toFixed(2)} ms</div>
   <div>History Size: ${netplayManager!.history.length}</div>
   <div>Frame Number: ${netplayManager!.currentFrame()}</div>
   <div>Largest Future Size: ${netplayManager!.largestFutureSize()}</div>
