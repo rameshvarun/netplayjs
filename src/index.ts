@@ -246,6 +246,35 @@ document.addEventListener(
   false
 );
 
+const TOUCH = { x: 0, y: 0, down: false };
+
+canvas.addEventListener(
+  "touchstart",
+  function(e) {
+    const rect = canvas.getBoundingClientRect();
+    TOUCH.x = e.touches[0].clientX - rect.left;
+    TOUCH.y = e.touches[0].clientY - rect.top;
+    TOUCH.down = true;
+  },
+  false
+);
+canvas.addEventListener(
+  "touchend",
+  function(e) {
+    TOUCH.down = false;
+  },
+  false
+);
+canvas.addEventListener(
+  "touchmove",
+  function(e) {
+    const rect = canvas.getBoundingClientRect();
+    TOUCH.x = e.touches[0].clientX - rect.left;
+    TOUCH.y = e.touches[0].clientY - rect.top;
+  },
+  false
+);
+
 let lastFrameTime = 0;
 function gameLoop(timestamp) {
   if (timestamp > lastFrameTime + TIMESTEP) {
@@ -254,8 +283,10 @@ function gameLoop(timestamp) {
 
   // Get local input.
   let input = new PongInput("none");
-  if (PRESSED_KEYS[38]) input = new PongInput("up");
-  if (PRESSED_KEYS[40]) input = new PongInput("down");
+  if (PRESSED_KEYS[38] || (TOUCH.down && TOUCH.y < PONG_HEIGHT / 2))
+    input = new PongInput("up");
+  if (PRESSED_KEYS[40] || (TOUCH.down && TOUCH.y > PONG_HEIGHT / 2))
+    input = new PongInput("down");
 
   // Tick state forward.
   netplayManager!.tick(input);
