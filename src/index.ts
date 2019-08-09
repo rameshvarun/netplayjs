@@ -19,7 +19,14 @@ import * as query from "query-string";
 import Peer from "peerjs";
 const peer = new Peer({
   config: {
-    iceServers: [{ url: "stun:stun.l.google.com:19302" }]
+    iceServers: [
+      { url: "stun:stun.l.google.com:19302" },
+      {
+        url: "turn:numb.viagenie.ca",
+        credential: "muazkh",
+        username: "webrtc@live.com"
+      }
+    ]
   }
 });
 

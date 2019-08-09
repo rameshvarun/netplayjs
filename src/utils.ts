@@ -3,7 +3,7 @@ export function get<K, V>(map: Map<K, V>, key: K): V {
   if (result !== undefined) {
     return result;
   }
-  throw new Error(`Key ${key.toString()} not in Map ${map.toString()}`);
+  throw new Error(`Key ${String(key)} not in Map ${map.toString()}`);
 }
 
 export function shift<V>(array: Array<V>): V {
