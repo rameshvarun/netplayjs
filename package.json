@@ -4,7 +4,8 @@
   "dependencies": {
     "chai": "^4.2.0",
     "loglevel": "^1.6.1",
-    "peerjs": "^1.0.2",
+    "peerjs": "^1.2.0",
+    "qrcode": "^1.4.4",
     "query-string": "^6.3.0"
   },
   "scripts": {

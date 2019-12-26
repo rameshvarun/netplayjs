@@ -84,6 +84,8 @@ export class NetplayManager<
   // applied due to our simulation being behind.
   future: Map<NetplayPlayer, Array<{ frame: number; input: TInput }>>;
 
+  highestFrameReceived: Map<NetplayPlayer, number>;
+
   isServer: boolean;
 
   onStateSync(frame: number, state: TState) {
@@ -130,6 +132,10 @@ export class NetplayManager<
         `'player' must be a remote player.`
       );
     dev && assert.isNotEmpty(this.history, `'history' cannot be empty.`);
+
+    let expectedFrame = get(this.highestFrameReceived, player) + 1;
+    dev && assert.equal(expectedFrame, frame);
+    this.highestFrameReceived.set(player, expectedFrame);
 
     // If this input is for a frame that we haven't even simulated, we need to
     // store it in a queue to pull during our next tick.
@@ -220,8 +226,10 @@ export class NetplayManager<
     this.pingMeasure = pingMeasure;
 
     this.future = new Map();
+    this.highestFrameReceived = new Map();
     for (let player of initialInputs.keys()) {
       this.future.set(player, []);
+      this.highestFrameReceived.set(player, 0);
     }
 
     if (isServer) {
