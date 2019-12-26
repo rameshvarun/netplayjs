@@ -13,8 +13,8 @@ export const RIGHT_PADDLE_X = PONG_WIDTH - 100 - PADDLE_WIDTH;
 export const BALL_WIDTH = 10;
 export const BALL_HEIGHT = 10;
 
-export const PADDLE_MOVE_SPEED = 10;
-export const BALL_MOVE_SPEED = 10;
+export const PADDLE_MOVE_SPEED = 5;
+export const BALL_MOVE_SPEED = 5;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -237,7 +237,7 @@ export class PongState implements NetplayState<PongState, PongInput> {
   }
 
   static getTimestep() {
-    return 1000 / 30;
+    return 1000 / 60;
   }
 }
 
