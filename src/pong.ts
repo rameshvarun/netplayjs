@@ -10,10 +10,11 @@ export const PADDLE_HEIGHT = 100;
 export const LEFT_PADDLE_X = 0 + 100;
 export const RIGHT_PADDLE_X = PONG_WIDTH - 100 - PADDLE_WIDTH;
 
-export const PADDLE_MOVE_SPEED = 5;
-
 export const BALL_WIDTH = 10;
 export const BALL_HEIGHT = 10;
+
+export const PADDLE_MOVE_SPEED = 10;
+export const BALL_MOVE_SPEED = 10;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -96,7 +97,7 @@ export class PongState implements NetplayState<PongState, PongInput> {
         PADDLE_HEIGHT;
 
       newBallVelocity[0] = -newBallVelocity[0];
-      newBallVelocity[1] = 5 * Math.sin(2 * offset);
+      newBallVelocity[1] = BALL_MOVE_SPEED * Math.sin(2 * offset);
       newBallPosition[0] = LEFT_PADDLE_X + PADDLE_WIDTH;
     }
 
@@ -119,7 +120,7 @@ export class PongState implements NetplayState<PongState, PongInput> {
         PADDLE_HEIGHT;
 
       newBallVelocity[0] = -newBallVelocity[0];
-      newBallVelocity[1] = 5 * Math.sin(2 * offset);
+      newBallVelocity[1] = BALL_MOVE_SPEED * Math.sin(2 * offset);
       newBallPosition[0] = RIGHT_PADDLE_X - BALL_WIDTH;
     }
 
@@ -131,7 +132,7 @@ export class PongState implements NetplayState<PongState, PongInput> {
         PONG_WIDTH / 2 - BALL_WIDTH / 2,
         PONG_HEIGHT / 2 - BALL_HEIGHT / 2
       ];
-      newBallVelocity = [-5, 0];
+      newBallVelocity = [-BALL_MOVE_SPEED, 0];
     }
     if (newBallPosition[0] < -BALL_HEIGHT) {
       newRightScore += 1;
@@ -139,7 +140,7 @@ export class PongState implements NetplayState<PongState, PongInput> {
         PONG_WIDTH / 2 - BALL_WIDTH / 2,
         PONG_HEIGHT / 2 - BALL_HEIGHT / 2
       ];
-      newBallVelocity = [5, 0];
+      newBallVelocity = [BALL_MOVE_SPEED, 0];
     }
 
     return new PongState(
@@ -229,10 +230,14 @@ export class PongState implements NetplayState<PongState, PongInput> {
       PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       [PONG_WIDTH / 2 - BALL_WIDTH / 2, PONG_HEIGHT / 2 - BALL_HEIGHT / 2],
-      [5, 0],
+      [BALL_MOVE_SPEED, 0],
       0,
       0
     );
+  }
+
+  static getTimestep() {
+    return 1000 / 30;
   }
 }
 

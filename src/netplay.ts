@@ -209,6 +209,7 @@ export class NetplayManager<
   broadcastInput: (frame: number, TInput) => void;
   broadcastState?: (frame: number, TState) => void;
   pingMeasure: any;
+  timestep: number;
 
   constructor(
     isServer: boolean,
@@ -216,6 +217,7 @@ export class NetplayManager<
     initialInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>,
     maxPredictedFrames: number,
     pingMeasure: any,
+    timestep: number,
     broadcastInput: (frame: number, TInput) => void,
     broadcastState?: (frame, TState) => void
   ) {
@@ -224,6 +226,7 @@ export class NetplayManager<
     this.maxPredictedFrames = maxPredictedFrames;
     this.broadcastInput = broadcastInput;
     this.pingMeasure = pingMeasure;
+    this.timestep = timestep;
 
     this.future = new Map();
     this.highestFrameReceived = new Map();
@@ -277,8 +280,8 @@ export class NetplayManager<
     // due to browser throttling of requestAnimationFrame. We should stall in
     // this case.
     return (
-      this.predictedFrames() * (1000.0 / 60.0) >
-      (this.pingMeasure.average() + this.pingMeasure.stddev()) / 2
+      this.predictedFrames() * this.timestep >
+      (this.pingMeasure.average() + this.pingMeasure.stddev() * 2) / 2
     );
   }
 

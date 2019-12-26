@@ -106,6 +106,7 @@ if (!isClient) {
       initialInputs,
       10,
       pingMeasure,
+      PongState.getTimestep(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.toJSON() });
       },
@@ -202,6 +203,7 @@ if (!isClient) {
       initialInputs,
       10,
       pingMeasure,
+      PongState.getTimestep(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.toJSON() });
       }
@@ -237,7 +239,7 @@ if (!isClient) {
   });
 }
 
-const TIMESTEP = 1000 / 60;
+const TIMESTEP = PongState.getTimestep();
 
 const PRESSED_KEYS = {};
 document.addEventListener(
