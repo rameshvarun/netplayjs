@@ -50,91 +50,90 @@ if (!isClient) {
   });
 
   peer.on("connection", conn => {
+    players = [
+      {
+        getID() {
+          return 0;
+        },
+        isLocalPlayer() {
+          return true;
+        },
+        isRemotePlayer() {
+          return false;
+        },
+        isServer() {
+          return true;
+        },
+        isClient() {
+          return false;
+        }
+      },
+      {
+        getID() {
+          return 1;
+        },
+        isLocalPlayer() {
+          return false;
+        },
+        isRemotePlayer() {
+          return true;
+        },
+        isServer() {
+          return false;
+        },
+        isClient() {
+          return true;
+        }
+      }
+    ];
+
+    let initialInputs = new Map<
+      NetplayPlayer,
+      { input: PongInput; isPrediction: boolean }
+    >();
+    initialInputs.set(players[0], {
+      input: new PongInput("none"),
+      isPrediction: false
+    });
+    initialInputs.set(players[1], {
+      input: new PongInput("none"),
+      isPrediction: false
+    });
+
+    netplayManager = new NetplayManager(
+      true,
+      initialState,
+      initialInputs,
+      10,
+      pingMeasure,
+      (frame, input) => {
+        conn.send({ type: "input", frame: frame, input: input.toJSON() });
+      },
+      (frame, state) => {
+        conn.send({ type: "state", frame: frame, state: state.toJSON() });
+      }
+    );
+
     conn.on("error", err => console.error(err));
+    conn.on("data", data => {
+      if (data.type === "input") {
+        netplayManager!.onRemoteInput(
+          data.frame,
+          players![1],
+          PongInput.fromJSON(data.input)
+        );
+      } else if (data.type == "ping-req") {
+        conn.send({ type: "ping-resp", sent_time: data.sent_time });
+      } else if (data.type == "ping-resp") {
+        pingMeasure.update(Date.now() - data.sent_time);
+      }
+    });
     conn.on("open", () => {
-      console.log("Client has connected.");
-
-      players = [
-        {
-          getID() {
-            return 0;
-          },
-          isLocalPlayer() {
-            return true;
-          },
-          isRemotePlayer() {
-            return false;
-          },
-          isServer() {
-            return true;
-          },
-          isClient() {
-            return false;
-          }
-        },
-        {
-          getID() {
-            return 1;
-          },
-          isLocalPlayer() {
-            return false;
-          },
-          isRemotePlayer() {
-            return true;
-          },
-          isServer() {
-            return false;
-          },
-          isClient() {
-            return true;
-          }
-        }
-      ];
-
-      let initialInputs = new Map<
-        NetplayPlayer,
-        { input: PongInput; isPrediction: boolean }
-      >();
-      initialInputs.set(players[0], {
-        input: new PongInput("none"),
-        isPrediction: false
-      });
-      initialInputs.set(players[1], {
-        input: new PongInput("none"),
-        isPrediction: false
-      });
-
-      netplayManager = new NetplayManager(
-        true,
-        initialState,
-        initialInputs,
-        10,
-        pingMeasure,
-        (frame, input) => {
-          conn.send({ type: "input", frame: frame, input: input.toJSON() });
-        },
-        (frame, state) => {
-          conn.send({ type: "state", frame: frame, state: state.toJSON() });
-        }
-      );
+      console.log("Client has connected... Starting game...");
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });
       }, PING_INTERVAL);
-
-      conn.on("data", data => {
-        if (data.type === "input") {
-          netplayManager!.onRemoteInput(
-            data.frame,
-            players![1],
-            PongInput.fromJSON(data.input)
-          );
-        } else if (data.type == "ping-req") {
-          conn.send({ type: "ping-resp", sent_time: data.sent_time });
-        } else if (data.type == "ping-resp") {
-          pingMeasure.update(Date.now() - data.sent_time);
-        }
-      });
 
       requestAnimationFrame(gameLoop);
     });
@@ -147,94 +146,92 @@ if (!isClient) {
     console.log(`Connecting to room ${parsedHash.room}.`);
     const conn = peer.connect(parsedHash.room as string, { serialization: 'json', reliable: true });
 
-    conn.on("error", err => console.error(err));
-    conn.on("open", () => {
-      console.log("Server has connected.");
-
-      players = [
-        {
-          getID() {
-            return 0;
-          },
-          isLocalPlayer() {
-            return false;
-          },
-          isRemotePlayer() {
-            return true;
-          },
-          isServer() {
-            return true;
-          },
-          isClient() {
-            return false;
-          }
+    players = [
+      {
+        getID() {
+          return 0;
         },
-        {
-          getID() {
-            return 1;
-          },
-          isLocalPlayer() {
-            return true;
-          },
-          isRemotePlayer() {
-            return false;
-          },
-          isServer() {
-            return false;
-          },
-          isClient() {
-            return true;
-          }
+        isLocalPlayer() {
+          return false;
+        },
+        isRemotePlayer() {
+          return true;
+        },
+        isServer() {
+          return true;
+        },
+        isClient() {
+          return false;
         }
-      ];
-
-      let initialInputs = new Map<
-        NetplayPlayer,
-        { input: PongInput; isPrediction: boolean }
-      >();
-      initialInputs.set(players[0], {
-        input: new PongInput("none"),
-        isPrediction: false
-      });
-      initialInputs.set(players[1], {
-        input: new PongInput("none"),
-        isPrediction: false
-      });
-
-      netplayManager = new NetplayManager(
-        false,
-        initialState,
-        initialInputs,
-        10,
-        pingMeasure,
-        (frame, input) => {
-          conn.send({ type: "input", frame: frame, input: input.toJSON() });
+      },
+      {
+        getID() {
+          return 1;
+        },
+        isLocalPlayer() {
+          return true;
+        },
+        isRemotePlayer() {
+          return false;
+        },
+        isServer() {
+          return false;
+        },
+        isClient() {
+          return true;
         }
-      );
+      }
+    ];
+
+    let initialInputs = new Map<
+      NetplayPlayer,
+      { input: PongInput; isPrediction: boolean }
+    >();
+    initialInputs.set(players[0], {
+      input: new PongInput("none"),
+      isPrediction: false
+    });
+    initialInputs.set(players[1], {
+      input: new PongInput("none"),
+      isPrediction: false
+    });
+
+    netplayManager = new NetplayManager(
+      false,
+      initialState,
+      initialInputs,
+      10,
+      pingMeasure,
+      (frame, input) => {
+        conn.send({ type: "input", frame: frame, input: input.toJSON() });
+      }
+    );
+
+    conn.on("error", err => console.error(err));
+    conn.on("data", data => {
+      if (data.type === "input") {
+        netplayManager!.onRemoteInput(
+          data.frame,
+          players![0],
+          PongInput.fromJSON(data.input)
+        );
+      } else if (data.type === "state") {
+        netplayManager!.onStateSync(
+          data.frame,
+          PongState.fromJSON(data.state)
+        );
+      } else if (data.type == "ping-req") {
+        conn.send({ type: "ping-resp", sent_time: data.sent_time });
+      } else if (data.type == "ping-resp") {
+        pingMeasure.update(Date.now() - data.sent_time);
+      }
+    });
+    conn.on("open", () => {
+      console.log("Successfully connected to server... Starting game...");
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });
       }, PING_INTERVAL);
-
-      conn.on("data", data => {
-        if (data.type === "input") {
-          netplayManager!.onRemoteInput(
-            data.frame,
-            players![0],
-            PongInput.fromJSON(data.input)
-          );
-        } else if (data.type === "state") {
-          netplayManager!.onStateSync(
-            data.frame,
-            PongState.fromJSON(data.state)
-          );
-        } else if (data.type == "ping-req") {
-          conn.send({ type: "ping-resp", sent_time: data.sent_time });
-        } else if (data.type == "ping-resp") {
-          pingMeasure.update(Date.now() - data.sent_time);
-        }
-      });
-
       requestAnimationFrame(gameLoop);
     });
   });
