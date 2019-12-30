@@ -1,20 +1,21 @@
 import { NetplayState, NetplayInput, NetplayPlayer } from "./netplay";
+import { GameType } from "./lobby";
 import { assert } from "chai";
 
-export const PONG_WIDTH = 600;
-export const PONG_HEIGHT = 300;
+const PONG_WIDTH = 600;
+const PONG_HEIGHT = 300;
 
-export const PADDLE_WIDTH = 10;
-export const PADDLE_HEIGHT = 100;
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 100;
 
-export const LEFT_PADDLE_X = 0 + 100;
-export const RIGHT_PADDLE_X = PONG_WIDTH - 100 - PADDLE_WIDTH;
+const LEFT_PADDLE_X = 0 + 100;
+const RIGHT_PADDLE_X = PONG_WIDTH - 100 - PADDLE_WIDTH;
 
-export const BALL_WIDTH = 10;
-export const BALL_HEIGHT = 10;
+const BALL_WIDTH = 10;
+const BALL_HEIGHT = 10;
 
-export const PADDLE_MOVE_SPEED = 5;
-export const BALL_MOVE_SPEED = 5;
+const PADDLE_MOVE_SPEED = 5;
+const BALL_MOVE_SPEED = 5;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -225,7 +226,7 @@ export class PongState implements NetplayState<PongState, PongInput> {
     );
   }
 
-  static getInitialState() {
+  static getInitialState(): PongState {
     return new PongState(
       PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2,
       PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2,
@@ -234,10 +235,6 @@ export class PongState implements NetplayState<PongState, PongInput> {
       0,
       0
     );
-  }
-
-  static getTimestep() {
-    return 1000 / 60;
   }
 }
 
@@ -271,3 +268,95 @@ export class PongInput implements NetplayInput<PongInput> {
     return new PongInput(val);
   }
 }
+
+export var PongGameType: GameType<PongState, PongInput> = {
+  timestep: 1000 / 60,
+
+  canvasWidth: PONG_WIDTH,
+  canvasHeight: PONG_HEIGHT,
+
+  getInitialStateAndInputs(
+    players: Array<NetplayPlayer>
+  ): [PongState, Map<NetplayPlayer, PongInput>] {
+    assert.lengthOf(players, 2);
+    return [
+      PongState.getInitialState(),
+      new Map(
+        players.map(
+          p => [p, new PongInput("none")] as [NetplayPlayer, PongInput]
+        )
+      )
+    ];
+  },
+
+  getInputFromJSON(val: any): PongInput {
+    return PongInput.fromJSON(val);
+  },
+
+  getStateFromJSON(val: any): PongState {
+    return PongState.fromJSON(val);
+  },
+
+  draw(
+    state: PongState,
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D
+  ) {
+    state.draw(canvas, ctx);
+  },
+
+  getInputReader(document, canvas): () => PongInput {
+    const PRESSED_KEYS = {};
+    document.addEventListener(
+      "keydown",
+      event => {
+        PRESSED_KEYS[event.keyCode] = true;
+      },
+      false
+    );
+    document.addEventListener(
+      "keyup",
+      event => {
+        PRESSED_KEYS[event.keyCode] = false;
+      },
+      false
+    );
+
+    const TOUCH = { x: 0, y: 0, down: false };
+    canvas.addEventListener(
+      "touchstart",
+      function(e) {
+        const rect = canvas.getBoundingClientRect();
+        TOUCH.x = e.touches[0].clientX - rect.left;
+        TOUCH.y = e.touches[0].clientY - rect.top;
+        TOUCH.down = true;
+      },
+      false
+    );
+    canvas.addEventListener(
+      "touchend",
+      function(e) {
+        TOUCH.down = false;
+      },
+      false
+    );
+    canvas.addEventListener(
+      "touchmove",
+      function(e) {
+        const rect = canvas.getBoundingClientRect();
+        TOUCH.x = e.touches[0].clientX - rect.left;
+        TOUCH.y = e.touches[0].clientY - rect.top;
+      },
+      false
+    );
+
+    return () => {
+      let input = new PongInput("none");
+      if (PRESSED_KEYS[38] || (TOUCH.down && TOUCH.y < PONG_HEIGHT / 2))
+        input = new PongInput("up");
+      if (PRESSED_KEYS[40] || (TOUCH.down && TOUCH.y > PONG_HEIGHT / 2))
+        input = new PongInput("down");
+      return input;
+    };
+  }
+};

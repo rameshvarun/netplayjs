@@ -214,15 +214,20 @@ export class NetplayManager<
   constructor(
     isServer: boolean,
     initialState: TState,
-    initialInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>,
+    initialInputs: Map<NetplayPlayer, TInput>,
     maxPredictedFrames: number,
     pingMeasure: any,
     timestep: number,
     broadcastInput: (frame: number, TInput) => void,
     broadcastState?: (frame, TState) => void
   ) {
+    let historyInputs = new Map();
+    for (const [player, input] of initialInputs.entries()) {
+      historyInputs.set(player, { input, isPrediction: false });
+    }
+    this.history = [new NetplayHistory(0, initialState, historyInputs)];
+
     this.isServer = isServer;
-    this.history = [new NetplayHistory(0, initialState, initialInputs)];
     this.maxPredictedFrames = maxPredictedFrames;
     this.broadcastInput = broadcastInput;
     this.pingMeasure = pingMeasure;
