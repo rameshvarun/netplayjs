@@ -1,0 +1,24 @@
+{
+  "name": "netplayjs-demo",
+  "private": true,
+  "dependencies": {
+    "netplayjs": "^0.1.0"
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.1.0",
+    "prettier": "^2.2.1",
+    "ts-loader": "^8.0.17",
+    "typescript": "^4.1.5",
+    "webpack": "^5.22.0",
+    "webpack-cli": "^4.5.0",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "scripts": {
+    "start": "webpack serve --open --env development",
+    "build": "webpack --env production",
+    "format": "prettier --write src/**/*.ts src/**/*.tsx",
+    "typecheck": "tsc --noEmit",
+    "check-format": "prettier-check src/**/*.ts src/**/*.tsx",
+    "test": "npm run typecheck && npm run check-format && npm run build"
+  }
+}

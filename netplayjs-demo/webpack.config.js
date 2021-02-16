@@ -1,5 +1,6 @@
 const path = require("path");
 const {merge} = require('webpack-merge');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const common = {
   entry: "./src/index.ts",
@@ -17,25 +18,26 @@ const common = {
   },
   output: {
     path: path.resolve(__dirname, "dist"),
-    library: 'netplayjs',
-    libraryTarget: 'umd',
+    filename: "bundle.js",
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: 'src/index.html',
+      title: 'NetplayJS Demo'
+    }),
+  ]
 };
 
 const development = {
   mode: 'development',
-  devtool: "source-map",
-  output: {
-    filename: "netplay.js",
+  devtool: "inline-source-map",
+  devServer: {
+    contentBase: "./dist"
   },
 }
 
 const production = {
   mode: 'production',
-  devtool: "source-map",
-  output: {
-    filename: "netplay.min.js",
-  },
 }
 
 module.exports = (env) => {

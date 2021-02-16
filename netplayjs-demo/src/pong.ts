@@ -1,5 +1,5 @@
-import { NetplayState, NetplayInput, NetplayPlayer } from "./netplay";
-import { GameType } from "./lobby";
+import { NetplayState, NetplayInput, NetplayPlayer } from "netplayjs";
+import { GameType } from "netplayjs";
 import { assert } from "chai";
 
 const PONG_WIDTH = 600;
