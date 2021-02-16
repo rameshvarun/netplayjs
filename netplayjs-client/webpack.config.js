@@ -10,10 +10,6 @@ const common = {
         test: /\.tsx?$/,
         use: "ts-loader",
         exclude: /node_modules/
-      },
-      {
-        test: /\.(png|svg|jpg|gif)$/,
-        use: ["file-loader"]
       }
     ]
   },
@@ -21,27 +17,26 @@ const common = {
     extensions: [".tsx", ".ts", ".js"]
   },
   output: {
-    filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
+    library: 'netplayjs',
+    libraryTarget: 'umd',
   },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: 'src/index.html',
-      title: 'NetplayJS Demo'
-    }),
-  ]
 };
 
 const development = {
   mode: 'development',
-  devtool: "inline-source-map",
-  devServer: {
-    contentBase: "./dist"
+  devtool: "source-map",
+  output: {
+    filename: "netplay.js",
   },
 }
 
 const production = {
   mode: 'production',
+  devtool: "source-map",
+  output: {
+    filename: "netplay.min.js",
+  },
 }
 
 module.exports = (env) => {

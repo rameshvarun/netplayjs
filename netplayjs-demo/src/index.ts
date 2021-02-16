@@ -1,4 +1,4 @@
-import { start } from "./lobby";
+import { start } from "netplayjs/src/lobby";
 import { PongGameType } from "./pong";
 
 start(PongGameType);

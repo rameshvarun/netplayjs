@@ -5,10 +5,6 @@ import {
   NetplayManager
 } from "./netplay";
 
-import { PongInput } from "./pong";
-
-import { assert } from "chai";
-
 import * as query from "query-string";
 import * as QRCode from "qrcode";
 

@@ -1,6 +1,7 @@
 {
-  "private": true,
-  "version": "0.1.0",
+  "name": "netplayjs",
+  "version": "0.0.0",
+  "main": "dist/netplay.js",
   "dependencies": {
     "chai": "^4.2.0",
     "loglevel": "^1.6.1",
@@ -9,8 +10,7 @@
     "query-string": "^6.3.0"
   },
   "scripts": {
-    "start": "webpack-dev-server --open --env development",
-    "build": "webpack --env production",
+    "build": "webpack --env production && webpack --env development",
     "format": "prettier --write src/**/*.ts src/**/*.tsx",
     "typecheck": "tsc --noEmit",
     "check-format": "prettier-check src/**/*.ts src/**/*.tsx",
