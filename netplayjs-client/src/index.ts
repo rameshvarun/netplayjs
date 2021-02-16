@@ -1,1 +1,1 @@
-export {start} from "./lobby";
+export { start } from "./lobby";

@@ -1,32 +1,13 @@
-import { get, shift } from "./utils";
+import { NetplayPlayer, PredictableInput, RewindableState } from "../types";
+import { get, shift } from "../utils";
 
 const dev = process.env.NODE_ENV === "development";
 const log = dev && require("loglevel");
 const assert = dev && require("chai").assert;
 
-export interface NetplayState<
-  TState extends NetplayState<TState, TInput>,
-  TInput extends NetplayInput<TInput>
-> {
-  tick(playerInputs: Map<NetplayPlayer, TInput>): TState;
-}
-
-export interface NetplayInput<TInput extends NetplayInput<TInput>> {
-  equals(other: TInput): boolean;
-  predictNext(): TInput;
-}
-
-export interface NetplayPlayer {
-  isLocalPlayer(): boolean;
-  isRemotePlayer(): boolean;
-  isServer(): boolean;
-  isClient(): boolean;
-  getID(): number;
-}
-
 class NetplayHistory<
-  TState extends NetplayState<TState, TInput>,
-  TInput extends NetplayInput<TInput>
+  TState extends RewindableState<TState, TInput>,
+  TInput extends PredictableInput<TInput>
 > {
   frame: number;
   state: TState;
@@ -73,9 +54,9 @@ class NetplayHistory<
   }
 }
 
-export class NetplayManager<
-  TState extends NetplayState<TState, TInput>,
-  TInput extends NetplayInput<TInput>
+export class RollbackNetcode<
+  TState extends RewindableState<TState, TInput>,
+  TInput extends PredictableInput<TInput>
 > {
   history: Array<NetplayHistory<TState, TInput>>;
   maxPredictedFrames: number;
@@ -184,8 +165,9 @@ export class NetplayManager<
 
     dev &&
       log.trace(
-        `Resimulated ${this.history.length -
-          firstPrediction!} states after rollback.`
+        `Resimulated ${
+          this.history.length - firstPrediction!
+        } states after rollback.`
       );
 
     // If this is the server, we can cleanup states for which input has been synced.
@@ -218,8 +200,8 @@ export class NetplayManager<
     maxPredictedFrames: number,
     pingMeasure: any,
     timestep: number,
-    broadcastInput: (frame: number, TInput) => void,
-    broadcastState?: (frame, TState) => void
+    broadcastInput: (frame: number, input: TInput) => void,
+    broadcastState?: (frame: number, state: TState) => void
   ) {
     let historyInputs = new Map();
     for (const [player, input] of initialInputs.entries()) {
@@ -256,7 +238,7 @@ export class NetplayManager<
   }
 
   largestFutureSize(): number {
-    return Math.max(...Array.from(this.future.values()).map(a => a.length));
+    return Math.max(...Array.from(this.future.values()).map((a) => a.length));
   }
 
   // Returns the number of frames for which at least one player's input is predicted.
@@ -314,13 +296,13 @@ export class NetplayManager<
           dev && assert.equal(lastState.frame + 1, future.frame);
           newInputs.set(player, {
             input: future.input,
-            isPrediction: false
+            isPrediction: false,
           });
         } else {
           // Otherwise, set the next input based off of the previous input.
           newInputs.set(player, {
             input: input.input.predictNext(),
-            isPrediction: true
+            isPrediction: true,
           });
         }
       }

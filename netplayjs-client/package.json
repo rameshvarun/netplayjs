@@ -11,12 +11,14 @@
   },
   "scripts": {
     "build": "webpack --env production && webpack --env development",
-    "format": "prettier --write src/**/*.ts src/**/*.tsx",
+    "format": "prettier --write src/**/*.ts",
     "typecheck": "tsc --noEmit",
-    "check-format": "prettier-check src/**/*.ts src/**/*.tsx",
+    "check-format": "prettier-check src/**/*.ts",
     "test": "npm run typecheck && npm run check-format && npm run build"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.15",
+    "ceylon": "^0.9.1",
     "prettier": "^2.2.1",
     "prettier-check": "^2.0.0",
     "ts-loader": "^8.0.17",
