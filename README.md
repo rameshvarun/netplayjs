@@ -2,6 +2,8 @@
 
 Make peer-to-peer multiplayer games in just a few lines of Javascript, no server or network synchronization code required! Powered by PeerJS and an implementation of rollback netcode.
 
+[CHECK THE DEMO](https://rameshvarun.github.io/netplayjs/)
+
 ## Creating a Basic Game
 
 Add this script tag to your HTML.
