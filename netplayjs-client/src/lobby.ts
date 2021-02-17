@@ -91,9 +91,11 @@ export function start<
         }
       ];
 
-      let [initialState, initialInputs] = gameType.getInitialStateAndInputs(
-        players
-      );
+      let initialState = gameType.constructInitialState(players);
+      let initialInputs: Map<NetplayPlayer, TInput> = new Map();
+      for (let player of players) {
+        initialInputs.set(player, gameType.constructDefaultInput());
+      }
 
       netplayManager = new NetplayManager(
         true,
@@ -113,10 +115,13 @@ export function start<
       conn.on("error", err => console.error(err));
       conn.on("data", data => {
         if (data.type === "input") {
+          let input = gameType.constructDefaultInput();
+          input.deserialize(data.input);
+
           netplayManager!.onRemoteInput(
             data.frame,
             players![1],
-            gameType.getInputFromJSON(data.input)
+            input
           );
         } else if (data.type == "ping-req") {
           conn.send({ type: "ping-resp", sent_time: data.sent_time });
@@ -182,9 +187,11 @@ export function start<
         }
       ];
 
-      let [initialState, initialInputs] = gameType.getInitialStateAndInputs(
-        players
-      );
+      let initialState = gameType.constructInitialState(players);
+      let initialInputs: Map<NetplayPlayer, TInput> = new Map();
+      for (let player of players) {
+        initialInputs.set(player, gameType.constructDefaultInput());
+      }
 
       netplayManager = new NetplayManager(
         false,
@@ -201,10 +208,13 @@ export function start<
       conn.on("error", err => console.error(err));
       conn.on("data", data => {
         if (data.type === "input") {
+          let input = gameType.constructDefaultInput();
+          input.deserialize(data.input);
+
           netplayManager!.onRemoteInput(
             data.frame,
             players![0],
-            gameType.getInputFromJSON(data.input)
+            input
           );
         } else if (data.type === "state") {
           netplayManager!.onStateSync(

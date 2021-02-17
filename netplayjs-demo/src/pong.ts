@@ -149,26 +149,6 @@ export class PongState extends NetplayState<PongState, PongInput> {
     this.rightScore = 0;
   }
 
-  serialize(): JSONValue {
-    return {
-      leftPaddle: this.leftPaddle,
-      rightPaddle: this.rightPaddle,
-      ballPosition: this.ballPosition.slice(),
-      ballVelocity: this.ballVelocity.slice(),
-      leftScore: this.leftScore,
-      rightScore: this.rightScore
-    };
-  }
-
-  deserialize(value: any): void {
-    this.leftPaddle = value.leftPaddle;
-    this.rightPaddle = value.rightPaddle;
-    this.ballPosition = value.ballPosition.slice();
-    this.ballVelocity = value.ballVelocity;
-    this.leftScore = value.leftScore;
-    this.rightScore = value.rightScore;
-  }
-
   draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -210,27 +190,10 @@ export class PongInput extends NetplayInput<PongInput> {
     this.direction = direction;
   }
 
-  predictNext(): PongInput {
-    return new PongInput(this.direction);
-  }
-
-  equals(other: PongInput): boolean {
-    return other instanceof PongInput && other.direction == this.direction;
-  }
-
   delta(): number {
     if (this.direction == "up") return -1;
     else if (this.direction == "down") return 1;
     else return 0;
-  }
-
-  serialize(): JSONValue {
-    return this.direction;
-  }
-
-  static fromJSON(val: any): PongInput {
-    assert.isString(val);
-    return new PongInput(val);
   }
 }
 
@@ -240,22 +203,13 @@ export var PongGameType: GameType<PongState, PongInput> = {
   canvasWidth: PONG_WIDTH,
   canvasHeight: PONG_HEIGHT,
 
-  getInitialStateAndInputs(
-    players: Array<NetplayPlayer>
-  ): [PongState, Map<NetplayPlayer, PongInput>] {
+  constructInitialState(players: Array<NetplayPlayer>): PongState {
     assert.lengthOf(players, 2);
-    return [
-      new PongState(),
-      new Map(
-        players.map(
-          p => [p, new PongInput("none")] as [NetplayPlayer, PongInput]
-        )
-      )
-    ];
+    return new PongState();
   },
 
-  getInputFromJSON(val: any): PongInput {
-    return PongInput.fromJSON(val);
+  constructDefaultInput(): PongInput {
+    return new PongInput("none");
   },
 
   draw(

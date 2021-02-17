@@ -3,19 +3,51 @@ export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 export type JSONObject = { [member: string]: JSONValue };
 export interface JSONArray extends Array<JSONValue> {}
 
+import * as autoserialize from "./autoserialize";
+
 export abstract class NetplayState<
   TState extends NetplayState<TState, TInput>,
   TInput extends NetplayInput<TInput>
 > {
   abstract tick(playerInputs: Map<NetplayPlayer, TInput>): void;
 
-  abstract serialize(): JSONValue;
-  abstract deserialize(value: JSONValue): void;
+  /**
+   * By default, use the auto serializer.
+   */
+  serialize(): JSONValue {
+    return autoserialize.serialize(this);
+  };
+
+  /**
+   * By default, use the auto deserializer.
+   */
+  deserialize(value: JSONValue): void {
+    autoserialize.deserialize(value as JSONObject, this);
+  };
 }
 
 export abstract class NetplayInput<TInput extends NetplayInput<TInput>> {
-  abstract predictNext(): TInput;
-  abstract serialize(): JSONValue;
+  /**
+   * By default, the prediction is to just use the same value.
+   */
+  predictNext(): TInput {
+    // @ts-ignore
+    return this;
+  };
+
+  /**
+   * By default, use the auto serializer.
+   */
+  serialize(): JSONValue {
+    return autoserialize.serialize(this);
+  };
+
+  /**
+   * By default, use the auto deserializer.
+   */
+  deserialize(value: JSONValue): void {
+    autoserialize.deserialize(value as JSONObject, this);
+  };
 }
 
 export interface NetplayPlayer {
@@ -27,19 +59,27 @@ export interface NetplayPlayer {
 }
 
 export interface GameType<TState, TInput> {
-  // Given a list of players, return the initial game state and initial inputs.
-  getInitialStateAndInputs(
+  /**
+   * Given a list of players, return the initial game state.
+   */
+  constructInitialState(
     players: Array<NetplayPlayer>
-  ): [TState, Map<NetplayPlayer, TInput>];
+  ): TState;
 
-  // The game simulation timestep, in milliseconds.
+  /**
+   * Construct a new input object with a default value. A new object
+   * needs to be constructed, since serialized values will be copied into this.
+   */
+  constructDefaultInput(): TInput;
+
+  /**
+   * The game simulation timestep, in milliseconds.
+   */
   timestep: number;
 
   // The dimensions of the rendering canvas.
   canvasWidth: number;
   canvasHeight: number;
-
-  getInputFromJSON(json: any): TInput;
 
   draw(state: TState, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D);
 
