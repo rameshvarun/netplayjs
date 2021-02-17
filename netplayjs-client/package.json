@@ -15,13 +15,16 @@
     "format": "prettier --write src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "check-format": "prettier-check src/**/*.ts",
-    "test": "npm run typecheck && npm run check-format && npm run build",
+    "test": "jest",
     "typegen": "tsc --outDir ./dist --declaration --emitDeclarationOnly"
   },
   "devDependencies": {
     "@types/chai": "^4.2.15",
+    "@types/jest": "^26.0.20",
+    "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "prettier-check": "^2.0.0",
+    "ts-jest": "^26.5.1",
     "ts-loader": "^8.0.17",
     "typescript": "^4.1.5",
     "webpack": "^5.22.0",

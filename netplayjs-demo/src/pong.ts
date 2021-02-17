@@ -153,8 +153,8 @@ export class PongState extends NetplayState<PongState, PongInput> {
     return {
       leftPaddle: this.leftPaddle,
       rightPaddle: this.rightPaddle,
-      ballPosition: this.ballPosition,
-      ballVelocity: this.ballVelocity,
+      ballPosition: this.ballPosition.slice(),
+      ballVelocity: this.ballVelocity.slice(),
       leftScore: this.leftScore,
       rightScore: this.rightScore
     };
@@ -163,7 +163,7 @@ export class PongState extends NetplayState<PongState, PongInput> {
   deserialize(value: any): void {
     this.leftPaddle = value.leftPaddle;
     this.rightPaddle = value.rightPaddle;
-    this.ballPosition = value.ballPosition;
+    this.ballPosition = value.ballPosition.slice();
     this.ballVelocity = value.ballVelocity;
     this.leftScore = value.leftScore;
     this.rightScore = value.rightScore;

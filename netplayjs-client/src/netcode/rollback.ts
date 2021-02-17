@@ -93,7 +93,7 @@ export class NetplayManager<
         cleanedUpStates++;
       } else break;
     }
-    dev && log.trace(`Cleaned up ${cleanedUpStates} states.`);
+    dev && log.debug(`Cleaned up ${cleanedUpStates} states.`);
 
     // Update the first state with the definitive server state.
     dev && assert.equal(this.history[0].frame, frame);
@@ -111,7 +111,7 @@ export class NetplayManager<
       currentState.state = this.state.serialize();
     }
     dev &&
-      log.trace(
+      log.debug(
         `Resimulated ${this.history.length - 1} states after state sync.`
       );
   }
@@ -181,7 +181,7 @@ export class NetplayManager<
     }
 
     dev &&
-      log.trace(
+      log.debug(
         `Resimulated ${this.history.length -
           firstPrediction!} states after rollback.`
       );
@@ -200,7 +200,7 @@ export class NetplayManager<
           this.broadcastState!(syncedState.frame, syncedState.state);
         } else break;
       }
-      dev && log.trace(`Cleaned up ${cleanedUpStates} states.`);
+      dev && log.debug(`Cleaned up ${cleanedUpStates} states.`);
     }
   }
 
