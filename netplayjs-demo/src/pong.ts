@@ -35,22 +35,22 @@ function rectOverlap(
 }
 
 export class PongState extends NetplayState<PongState, PongInput> {
-  leftPaddle: number;
-  rightPaddle: number;
+  leftPaddle: number = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
+  rightPaddle: number = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
 
-  ballPosition: [number, number];
-  ballVelocity: [number, number];
+  ballPosition: [number, number] = [PONG_WIDTH / 2 - BALL_WIDTH / 2, PONG_HEIGHT / 2 - BALL_HEIGHT / 2];
+  ballVelocity: [number, number] = [BALL_MOVE_SPEED, 0];
 
-  leftScore: number;
-  rightScore: number;
+  leftScore: number = 0;
+  rightScore: number = 0;
 
   tick(playerInputs: Map<NetplayPlayer, PongInput>): void {
     // Move paddles up and down.
     for (const [player, input] of playerInputs.entries()) {
       if (player.getID() == 0) {
-        this.leftPaddle += input.delta() * PADDLE_MOVE_SPEED;
+        this.leftPaddle += input.direction * PADDLE_MOVE_SPEED;
       } else if (player.getID() == 1) {
-        this.rightPaddle += input.delta() * PADDLE_MOVE_SPEED;
+        this.rightPaddle += input.direction * PADDLE_MOVE_SPEED;
       }
     }
 
@@ -136,29 +136,17 @@ export class PongState extends NetplayState<PongState, PongInput> {
     }
   }
 
-  constructor() {
-    super();
-
-    this.leftPaddle = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
-    this.rightPaddle = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
-
-    this.ballPosition = [PONG_WIDTH / 2 - BALL_WIDTH / 2, PONG_HEIGHT / 2 - BALL_HEIGHT / 2];
-    this.ballVelocity = [BALL_MOVE_SPEED, 0];
-
-    this.leftScore = 0;
-    this.rightScore = 0;
-  }
-
   draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Draw paddles.
     ctx.fillStyle = "white";
     ctx.fillRect(LEFT_PADDLE_X, this.leftPaddle, PADDLE_WIDTH, PADDLE_HEIGHT);
-
     ctx.fillStyle = "white";
     ctx.fillRect(RIGHT_PADDLE_X, this.rightPaddle, PADDLE_WIDTH, PADDLE_HEIGHT);
 
+    // Draw ball.
     ctx.fillStyle = "white";
     ctx.fillRect(
       this.ballPosition[0],
@@ -167,6 +155,7 @@ export class PongState extends NetplayState<PongState, PongInput> {
       BALL_HEIGHT
     );
 
+    // Draw scores.
     ctx.font = "40px Arial";
     ctx.textAlign = "center";
     ctx.fillText(
@@ -183,18 +172,7 @@ export class PongState extends NetplayState<PongState, PongInput> {
 }
 
 export class PongInput extends NetplayInput<PongInput> {
-  direction: "up" | "down" | "none";
-
-  constructor(direction: "up" | "down" | "none") {
-    super();
-    this.direction = direction;
-  }
-
-  delta(): number {
-    if (this.direction == "up") return -1;
-    else if (this.direction == "down") return 1;
-    else return 0;
-  }
+  direction: 1 | 0 | -1 = 0;
 }
 
 export var PongGameType: GameType<PongState, PongInput> = {
@@ -204,12 +182,11 @@ export var PongGameType: GameType<PongState, PongInput> = {
   canvasHeight: PONG_HEIGHT,
 
   constructInitialState(players: Array<NetplayPlayer>): PongState {
-    assert.lengthOf(players, 2);
     return new PongState();
   },
 
   constructDefaultInput(): PongInput {
-    return new PongInput("none");
+    return new PongInput();
   },
 
   draw(
@@ -266,11 +243,11 @@ export var PongGameType: GameType<PongState, PongInput> = {
     );
 
     return () => {
-      let input = new PongInput("none");
+      let input = new PongInput();
       if (PRESSED_KEYS[38] || (TOUCH.down && TOUCH.y < PONG_HEIGHT / 2))
-        input = new PongInput("up");
+        input.direction = 1;
       if (PRESSED_KEYS[40] || (TOUCH.down && TOUCH.y > PONG_HEIGHT / 2))
-        input = new PongInput("down");
+        input.direction = -1;
       return input;
     };
   }
