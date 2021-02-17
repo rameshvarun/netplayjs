@@ -34,7 +34,7 @@ function rectOverlap(
   return aLeft < bRight && aRight > bLeft && aTop < bBottom && aBottom > bTop;
 }
 
-export class PongState implements NetplayState<PongState, PongInput> {
+export class PongState extends NetplayState<PongState, PongInput> {
   leftPaddle: number;
   rightPaddle: number;
 
@@ -162,6 +162,8 @@ export class PongState implements NetplayState<PongState, PongInput> {
     leftScore: number,
     rightScore: number
   ) {
+    super();
+
     this.leftPaddle = leftPaddle;
     this.rightPaddle = rightPaddle;
 
@@ -238,10 +240,11 @@ export class PongState implements NetplayState<PongState, PongInput> {
   }
 }
 
-export class PongInput implements NetplayInput<PongInput> {
+export class PongInput extends NetplayInput<PongInput> {
   direction: "up" | "down" | "none";
 
   constructor(direction: "up" | "down" | "none") {
+    super();
     this.direction = direction;
   }
 

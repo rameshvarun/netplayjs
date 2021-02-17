@@ -1,13 +1,13 @@
-export interface NetplayState<
+export abstract class NetplayState<
   TState extends NetplayState<TState, TInput>,
   TInput extends NetplayInput<TInput>
 > {
-  tick(playerInputs: Map<NetplayPlayer, TInput>): TState;
+  abstract tick(playerInputs: Map<NetplayPlayer, TInput>): TState;
 }
 
-export interface NetplayInput<TInput extends NetplayInput<TInput>> {
-  equals(other: TInput): boolean;
-  predictNext(): TInput;
+export abstract class NetplayInput<TInput extends NetplayInput<TInput>> {
+  abstract equals(other: TInput): boolean;
+  abstract predictNext(): TInput;
 }
 
 export interface NetplayPlayer {
