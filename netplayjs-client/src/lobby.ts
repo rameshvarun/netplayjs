@@ -1,41 +1,22 @@
 import {
-  RollbackNetcode
-} from "./netcode/rollback";
+  NetplayState,
+  NetplayInput,
+  NetplayPlayer,
+  GameType,
+} from "./types";
+
+import { assert } from "chai";
 
 import * as query from "query-string";
 import * as QRCode from "qrcode";
 
 import Peer from "peerjs";
 import EWMASD from "./ewmasd";
-import { NetplayPlayer, PredictableInput, RewindableState, Serializer } from "./types";
-
-export interface GameType<TState, TInput> {
-  // Given a list of players, return the initial game state and initial inputs.
-  getInitialStateAndInputs(
-    players: Array<NetplayPlayer>
-  ): [TState, Map<NetplayPlayer, TInput>];
-
-  // The game simulation timestep, in milliseconds.
-  timestep: number;
-
-  // The dimensions of the rendering canvas.
-  canvasWidth: number;
-  canvasHeight: number;
-
-  inputSerializer: Serializer<TInput>;
-  stateSerializer: Serializer<TState>;
-
-  draw(state: TState, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D);
-
-  getInputReader(
-    document: HTMLDocument,
-    canvas: HTMLCanvasElement
-  ): () => TInput;
-}
+import { NetplayManager } from "./netcode/rollback";
 
 export function start<
-  TInput extends PredictableInput<TInput>,
-  TState extends RewindableState<TState, TInput>,
+  TInput extends NetplayInput<TInput>,
+  TState extends NetplayState<TState, TInput>,
   TGameType extends GameType<TState, TInput>
 >(gameType: TGameType) {
   const pingMeasure = new EWMASD(0.2);
@@ -54,7 +35,7 @@ export function start<
   const stats = document.createElement("div");
   document.body.appendChild(stats);
 
-  let netplayManager: RollbackNetcode<TState, TInput> | null = null;
+  let netplayManager: NetplayManager<TState, TInput> | null = null;
   let players: Array<NetplayPlayer> | null = null;
 
   const PING_INTERVAL = 100;
@@ -84,7 +65,7 @@ export function start<
           isRemotePlayer() {
             return false;
           },
-          isHost() {
+          isServer() {
             return true;
           },
           isClient() {
@@ -101,7 +82,7 @@ export function start<
           isRemotePlayer() {
             return true;
           },
-          isHost() {
+          isServer() {
             return false;
           },
           isClient() {
@@ -114,7 +95,7 @@ export function start<
         players
       );
 
-      netplayManager = new RollbackNetcode(
+      netplayManager = new NetplayManager(
         true,
         initialState,
         initialInputs,
@@ -122,10 +103,10 @@ export function start<
         pingMeasure,
         gameType.timestep,
         (frame, input) => {
-          conn.send({ type: "input", frame: frame, input: gameType.inputSerializer.toJSON(input) });
+          conn.send({ type: "input", frame: frame, input: input.toJSON() });
         },
         (frame, state) => {
-          conn.send({ type: "state", frame: frame, state: gameType.stateSerializer.toJSON(state) });
+          conn.send({ type: "state", frame: frame, state: state.toJSON() });
         }
       );
 
@@ -135,7 +116,7 @@ export function start<
           netplayManager!.onRemoteInput(
             data.frame,
             players![1],
-            gameType.inputSerializer.fromJSON(data.input)
+            gameType.getInputFromJSON(data.input)
           );
         } else if (data.type == "ping-req") {
           conn.send({ type: "ping-resp", sent_time: data.sent_time });
@@ -175,7 +156,7 @@ export function start<
           isRemotePlayer() {
             return true;
           },
-          isHost() {
+          isServer() {
             return true;
           },
           isClient() {
@@ -192,7 +173,7 @@ export function start<
           isRemotePlayer() {
             return false;
           },
-          isHost() {
+          isServer() {
             return false;
           },
           isClient() {
@@ -205,7 +186,7 @@ export function start<
         players
       );
 
-      netplayManager = new RollbackNetcode(
+      netplayManager = new NetplayManager(
         false,
         initialState,
         initialInputs,

@@ -1,1 +1,2 @@
-export { start } from "./lobby";
+export * from "./types";
+export {start} from "./lobby";

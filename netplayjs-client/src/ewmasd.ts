@@ -1,3 +1,7 @@
+/**
+ * Expontentially weighted moving average and standard deviation.
+ * Can be used for measuring values like ping.
+ */
 export default class EWMASD {
   discount: number;
 

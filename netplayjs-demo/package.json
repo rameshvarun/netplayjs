@@ -2,7 +2,8 @@
   "name": "netplayjs-demo",
   "private": true,
   "dependencies": {
-    "netplayjs": "^0.1.0"
+    "netplayjs": "^0.1.0",
+    "three": "^0.125.2"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.1.0",
