@@ -1,4 +1,4 @@
-import { NetplayState, NetplayInput, NetplayPlayer } from "netplayjs";
+import { NetplayState, NetplayInput, NetplayPlayer, JSONValue } from "netplayjs";
 import { GameType } from "netplayjs";
 import { assert } from "chai";
 
@@ -44,137 +44,112 @@ export class PongState extends NetplayState<PongState, PongInput> {
   leftScore: number;
   rightScore: number;
 
-  tick(playerInputs: Map<NetplayPlayer, PongInput>): PongState {
-    let newLeftPaddle = this.leftPaddle;
-    let newRightPaddle = this.rightPaddle;
-
+  tick(playerInputs: Map<NetplayPlayer, PongInput>): void {
+    // Move paddles up and down.
     for (const [player, input] of playerInputs.entries()) {
       if (player.getID() == 0) {
-        newLeftPaddle += input.delta() * PADDLE_MOVE_SPEED;
+        this.leftPaddle += input.delta() * PADDLE_MOVE_SPEED;
       } else if (player.getID() == 1) {
-        newRightPaddle += input.delta() * PADDLE_MOVE_SPEED;
+        this.rightPaddle += input.delta() * PADDLE_MOVE_SPEED;
       }
     }
 
-    newLeftPaddle = clamp(newLeftPaddle, 0, PONG_HEIGHT - PADDLE_HEIGHT);
-    newRightPaddle = clamp(newRightPaddle, 0, PONG_HEIGHT - PADDLE_HEIGHT);
+    // Clamp paddles onto the screen.
+    this.leftPaddle = clamp(this.leftPaddle, 0, PONG_HEIGHT - PADDLE_HEIGHT);
+    this.rightPaddle = clamp(this.rightPaddle, 0, PONG_HEIGHT - PADDLE_HEIGHT);
 
-    let newBallPosition: [number, number] = [
-      this.ballPosition[0] + this.ballVelocity[0],
-      this.ballPosition[1] + this.ballVelocity[1]
-    ];
+    // Apply ball velocity.
+    this.ballPosition[0] += this.ballVelocity[0];
+    this.ballPosition[1] += this.ballVelocity[1];
 
-    let newBallVelocity: [number, number] = [
-      this.ballVelocity[0],
-      this.ballVelocity[1]
-    ];
-
-    if (newBallPosition[1] < 0) {
-      newBallPosition[1] = 0;
-      newBallVelocity[1] = -newBallVelocity[1];
+    // Bounce ball on bottom / top of screen.
+    if (this.ballPosition[1] < 0) {
+      this.ballPosition[1] = 0;
+      this.ballVelocity[1] = -this.ballVelocity[1];
     }
-
-    if (newBallPosition[1] > PONG_HEIGHT - BALL_HEIGHT) {
-      newBallPosition[1] = PONG_HEIGHT - BALL_HEIGHT;
-      newBallVelocity[1] = -newBallVelocity[1];
+    if (this.ballPosition[1] > PONG_HEIGHT - BALL_HEIGHT) {
+      this.ballPosition[1] = PONG_HEIGHT - BALL_HEIGHT;
+      this.ballVelocity[1] = -this.ballVelocity[1];
     }
 
     if (
       rectOverlap(
-        newBallPosition[0],
-        newBallPosition[0] + BALL_WIDTH,
-        newBallPosition[1],
-        newBallPosition[1] + BALL_HEIGHT,
+        this.ballPosition[0],
+        this.ballPosition[0] + BALL_WIDTH,
+        this.ballPosition[1],
+        this.ballPosition[1] + BALL_HEIGHT,
         LEFT_PADDLE_X,
         LEFT_PADDLE_X + PADDLE_WIDTH,
-        newLeftPaddle,
-        newLeftPaddle + PADDLE_HEIGHT
+        this.leftPaddle,
+        this.leftPaddle + PADDLE_HEIGHT
       )
     ) {
       let offset =
-        (newBallPosition[1] +
+        (this.ballPosition[1] +
           BALL_HEIGHT / 2 -
-          (newLeftPaddle + PADDLE_HEIGHT / 2)) /
+          (this.leftPaddle + PADDLE_HEIGHT / 2)) /
         PADDLE_HEIGHT;
 
-      newBallVelocity[0] = -newBallVelocity[0];
-      newBallVelocity[1] = BALL_MOVE_SPEED * Math.sin(2 * offset);
-      newBallPosition[0] = LEFT_PADDLE_X + PADDLE_WIDTH;
+      this.ballVelocity[0] = -this.ballVelocity[0];
+      this.ballVelocity[1] = BALL_MOVE_SPEED * Math.sin(2 * offset);
+      this.ballPosition[0] = LEFT_PADDLE_X + PADDLE_WIDTH;
     }
 
     if (
       rectOverlap(
-        newBallPosition[0],
-        newBallPosition[0] + BALL_WIDTH,
-        newBallPosition[1],
-        newBallPosition[1] + BALL_HEIGHT,
+        this.ballPosition[0],
+        this.ballPosition[0] + BALL_WIDTH,
+        this.ballPosition[1],
+        this.ballPosition[1] + BALL_HEIGHT,
         RIGHT_PADDLE_X,
         RIGHT_PADDLE_X + PADDLE_WIDTH,
-        newRightPaddle,
-        newRightPaddle + PADDLE_HEIGHT
+        this.rightPaddle,
+        this.rightPaddle + PADDLE_HEIGHT
       )
     ) {
       let offset =
-        (newBallPosition[1] +
+        (this.ballPosition[1] +
           BALL_HEIGHT / 2 -
-          (newRightPaddle + PADDLE_HEIGHT / 2)) /
+          (this.rightPaddle + PADDLE_HEIGHT / 2)) /
         PADDLE_HEIGHT;
 
-      newBallVelocity[0] = -newBallVelocity[0];
-      newBallVelocity[1] = BALL_MOVE_SPEED * Math.sin(2 * offset);
-      newBallPosition[0] = RIGHT_PADDLE_X - BALL_WIDTH;
+        this.ballVelocity[0] = -this.ballVelocity[0];
+      this.ballVelocity[1] = BALL_MOVE_SPEED * Math.sin(2 * offset);
+      this.ballPosition[0] = RIGHT_PADDLE_X - BALL_WIDTH;
     }
 
-    let newLeftScore = this.leftScore;
-    let newRightScore = this.rightScore;
-    if (newBallPosition[0] > PONG_WIDTH) {
-      newLeftScore += 1;
-      newBallPosition = [
+    if (this.ballPosition[0] > PONG_WIDTH) {
+      this.leftScore += 1;
+      this.ballPosition = [
         PONG_WIDTH / 2 - BALL_WIDTH / 2,
         PONG_HEIGHT / 2 - BALL_HEIGHT / 2
       ];
-      newBallVelocity = [-BALL_MOVE_SPEED, 0];
+      this.ballVelocity = [-BALL_MOVE_SPEED, 0];
     }
-    if (newBallPosition[0] < -BALL_HEIGHT) {
-      newRightScore += 1;
-      newBallPosition = [
+    if (this.ballPosition[0] < -BALL_HEIGHT) {
+      this.rightScore += 1;
+      this.ballPosition = [
         PONG_WIDTH / 2 - BALL_WIDTH / 2,
         PONG_HEIGHT / 2 - BALL_HEIGHT / 2
       ];
-      newBallVelocity = [BALL_MOVE_SPEED, 0];
+      this.ballVelocity = [BALL_MOVE_SPEED, 0];
     }
-
-    return new PongState(
-      newLeftPaddle,
-      newRightPaddle,
-      newBallPosition,
-      newBallVelocity,
-      newLeftScore,
-      newRightScore
-    );
   }
 
-  constructor(
-    leftPaddle: number,
-    rightPaddle: number,
-    ballPosition: [number, number],
-    ballVelocity: [number, number],
-    leftScore: number,
-    rightScore: number
-  ) {
+  constructor() {
     super();
 
-    this.leftPaddle = leftPaddle;
-    this.rightPaddle = rightPaddle;
+    this.leftPaddle = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
+    this.rightPaddle = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
 
-    this.ballPosition = ballPosition;
-    this.ballVelocity = ballVelocity;
+    this.ballPosition = [PONG_WIDTH / 2 - BALL_WIDTH / 2, PONG_HEIGHT / 2 - BALL_HEIGHT / 2];
+    this.ballVelocity = [BALL_MOVE_SPEED, 0];
 
-    this.leftScore = leftScore;
-    this.rightScore = rightScore;
+    this.leftScore = 0;
+    this.rightScore = 0;
   }
 
-  toJSON(): any {
+  serialize(): JSONValue {
     return {
       leftPaddle: this.leftPaddle,
       rightPaddle: this.rightPaddle,
@@ -185,15 +160,13 @@ export class PongState extends NetplayState<PongState, PongInput> {
     };
   }
 
-  static fromJSON(value: any): PongState {
-    return new PongState(
-      value.leftPaddle,
-      value.rightPaddle,
-      value.ballPosition,
-      value.ballVelocity,
-      value.leftScore,
-      value.rightScore
-    );
+  deserialize(value: any): void {
+    this.leftPaddle = value.leftPaddle;
+    this.rightPaddle = value.rightPaddle;
+    this.ballPosition = value.ballPosition;
+    this.ballVelocity = value.ballVelocity;
+    this.leftScore = value.leftScore;
+    this.rightScore = value.rightScore;
   }
 
   draw(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
@@ -227,17 +200,6 @@ export class PongState extends NetplayState<PongState, PongInput> {
       PONG_HEIGHT * 0.2
     );
   }
-
-  static getInitialState(): PongState {
-    return new PongState(
-      PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2,
-      PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2,
-      [PONG_WIDTH / 2 - BALL_WIDTH / 2, PONG_HEIGHT / 2 - BALL_HEIGHT / 2],
-      [BALL_MOVE_SPEED, 0],
-      0,
-      0
-    );
-  }
 }
 
 export class PongInput extends NetplayInput<PongInput> {
@@ -262,7 +224,7 @@ export class PongInput extends NetplayInput<PongInput> {
     else return 0;
   }
 
-  toJSON(): any {
+  serialize(): JSONValue {
     return this.direction;
   }
 
@@ -283,7 +245,7 @@ export var PongGameType: GameType<PongState, PongInput> = {
   ): [PongState, Map<NetplayPlayer, PongInput>] {
     assert.lengthOf(players, 2);
     return [
-      PongState.getInitialState(),
+      new PongState(),
       new Map(
         players.map(
           p => [p, new PongInput("none")] as [NetplayPlayer, PongInput]
@@ -294,10 +256,6 @@ export var PongGameType: GameType<PongState, PongInput> = {
 
   getInputFromJSON(val: any): PongInput {
     return PongInput.fromJSON(val);
-  },
-
-  getStateFromJSON(val: any): PongState {
-    return PongState.fromJSON(val);
   },
 
   draw(

@@ -32,7 +32,10 @@ const development = {
   mode: 'development',
   devtool: "inline-source-map",
   devServer: {
-    contentBase: "./dist"
+    contentBase: "./dist",
+    host: "0.0.0.0",
+    useLocalIp: true,
+    https: true
   },
 }
 

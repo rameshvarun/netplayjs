@@ -1,4 +1,4 @@
-import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
+import { NetplayInput, NetplayPlayer, NetplayState, JSONValue } from "../types";
 import { get, shift } from "../utils";
 
 const dev = process.env.NODE_ENV === "development";
@@ -9,13 +9,25 @@ class NetplayHistory<
   TState extends NetplayState<TState, TInput>,
   TInput extends NetplayInput<TInput>
 > {
+  /**
+   * The frame number that this history entry represents.
+   */
   frame: number;
-  state: TState;
+
+  /**
+   * The serialized state of the game at this frame.
+   */
+  state: JSONValue;
+
+  /**
+   * These inputs represent the set of inputs that produced this state
+   * from the previous state. So history[n].state = history[n - 1].state.tick(history)
+   */
   inputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>;
 
   constructor(
     frame: number,
-    state: TState,
+    state: JSONValue,
     inputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>
   ) {
     this.frame = frame;
@@ -37,39 +49,37 @@ class NetplayHistory<
   allInputsSynced(): boolean {
     return !this.anyInputPredicted();
   }
-
-  tick(
-    newInputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>
-  ): NetplayHistory<TState, TInput> {
-    let stateInputs = new Map();
-    for (const [player, { input }] of newInputs.entries()) {
-      stateInputs.set(player, input);
-    }
-
-    return new NetplayHistory<TState, TInput>(
-      this.frame + 1,
-      this.state.tick(stateInputs),
-      newInputs
-    );
-  }
 }
 
 export class NetplayManager<
   TState extends NetplayState<TState, TInput>,
   TInput extends NetplayInput<TInput>
 > {
+  /**
+   * The rollback history buffer.
+   */
   history: Array<NetplayHistory<TState, TInput>>;
+
+  /**
+   * The max number of frames that we can predict ahead before we have to stall.
+   */
   maxPredictedFrames: number;
 
-  // Inputs from other players that have already arrived, but have not been
-  // applied due to our simulation being behind.
+  /**
+   * Inputs from other players that have already arrived, but have not been
+   * applied due to our simulation being behind.
+   */
   future: Map<NetplayPlayer, Array<{ frame: number; input: TInput }>>;
 
   highestFrameReceived: Map<NetplayPlayer, number>;
 
+  /**
+   * Whether or not we are the host of this match. The host is responsible for
+   * sending our authoritative state updates.
+   */
   isServer: boolean;
 
-  onStateSync(frame: number, state: TState) {
+  onStateSync(frame: number, state: JSONValue) {
     dev && assert.isFalse(this.isServer, "Only clients recieve state syncs.");
 
     // Cleanup states that we don't need anymore because we have the definitive
@@ -89,16 +99,16 @@ export class NetplayManager<
     dev && assert.equal(this.history[0].frame, frame);
     this.history[0].state = state;
 
+    // Rollback to this state
+    this.state.deserialize(state);
+
     // Resimulate up to the current point.
     for (let i = 1; i < this.history.length; ++i) {
       let currentState = this.history[i];
       let previousState = this.history[i - 1];
 
-      let stateInputs = new Map<NetplayPlayer, TInput>();
-      for (const [player, { input }] of currentState.inputs.entries()) {
-        stateInputs.set(player, input);
-      }
-      currentState.state = previousState.state.tick(stateInputs);
+      this.state.tick(this.getStateInputs(currentState.inputs));
+      currentState.state = this.state.serialize();
     }
     dev &&
       log.trace(
@@ -125,7 +135,8 @@ export class NetplayManager<
       return; // Skip rest of logic in this function.
     }
 
-    // Find the first index where the input for this player is a prediction.
+    // If we have simulated this frame, it must be the case that at least
+    // one frame has a predicted input for this player. Find the first such frame.
     let firstPrediction: number | null = null;
     for (let i = 0; i < this.history.length; ++i) {
       if (this.history[i].isPlayerInputPredicted(player)) {
@@ -139,28 +150,34 @@ export class NetplayManager<
     }
     dev && assert.exists(firstPrediction);
 
+    // The state before the first prediction is, by definition,
+    // not a prediction. There must be one such state.
+    let lastActualState = this.history[firstPrediction! - 1];
+
+    // Roll back to that previous state.
+    this.state.deserialize(lastActualState.state);
+
     // Rollback and resimulate state.
     for (let i = firstPrediction!; i < this.history.length; ++i) {
       let currentState = this.history[i];
-      let previousState = this.history[i - 1];
-
       let currentPlayerInput = get(currentState.inputs, player);
-      let previousPlayerInput = get(previousState.inputs, player);
 
       dev && assert.isTrue(currentPlayerInput.isPrediction);
 
       if (i === firstPrediction) {
+        dev && assert.equal(currentState.frame, frame);
+
         currentPlayerInput.isPrediction = false;
         currentPlayerInput.input = input;
       } else {
+        let previousState = this.history[i - 1];
+        let previousPlayerInput = get(previousState.inputs, player);
+
         currentPlayerInput.input = previousPlayerInput.input.predictNext();
       }
 
-      let stateInputs = new Map<NetplayPlayer, TInput>();
-      for (const [player, { input }] of currentState.inputs.entries()) {
-        stateInputs.set(player, input);
-      }
-      currentState.state = previousState.state.tick(stateInputs);
+      this.state.tick(this.getStateInputs(currentState.inputs))
+      currentState.state = this.state.serialize();
     }
 
     dev &&
@@ -187,10 +204,13 @@ export class NetplayManager<
     }
   }
 
-  broadcastInput: (frame: number, TInput) => void;
-  broadcastState?: (frame: number, TState) => void;
+  broadcastInput: (frame: number, input: TInput) => void;
+  broadcastState?: (frame: number, state: JSONValue) => void;
+
   pingMeasure: any;
   timestep: number;
+
+  state: TState;
 
   constructor(
     isServer: boolean,
@@ -199,14 +219,16 @@ export class NetplayManager<
     maxPredictedFrames: number,
     pingMeasure: any,
     timestep: number,
-    broadcastInput: (frame: number, TInput) => void,
-    broadcastState?: (frame, TState) => void
+    broadcastInput: (frame: number, input: TInput) => void,
+    broadcastState?: (frame: number, state: JSONValue) => void
   ) {
+    this.state = initialState;
+
     let historyInputs = new Map();
     for (const [player, input] of initialInputs.entries()) {
       historyInputs.set(player, { input, isPrediction: false });
     }
-    this.history = [new NetplayHistory(0, initialState, historyInputs)];
+    this.history = [new NetplayHistory(0, this.state.serialize(), historyInputs)];
 
     this.isServer = isServer;
     this.maxPredictedFrames = maxPredictedFrames;
@@ -225,10 +247,6 @@ export class NetplayManager<
       dev && assert.exists(broadcastState);
       this.broadcastState = broadcastState;
     }
-  }
-
-  getState() {
-    return this.history[this.history.length - 1].state;
   }
 
   currentFrame(): number {
@@ -281,7 +299,7 @@ export class NetplayManager<
     const lastState = this.history[this.history.length - 1];
 
     // Construct the new map of inputs for this frame.
-    const newInputs = new Map();
+    const newInputs: Map<NetplayPlayer, { input: TInput, isPrediction: boolean } > = new Map();
     for (const [player, input] of lastState.inputs.entries()) {
       if (player.isLocalPlayer()) {
         // Local player gets the local input.
@@ -307,6 +325,25 @@ export class NetplayManager<
       }
     }
 
-    this.history.push(lastState.tick(newInputs));
+    // Tick our state with the new inputs, which may include predictions.
+    this.state.tick(this.getStateInputs(newInputs));
+
+    // Add a history entry into our rollback buffer.
+    this.history.push(new NetplayHistory(lastState.frame + 1, this.state.serialize(), newInputs));
+  }
+
+  /**
+   * Internally, we store inputs with a flag indicating whether or not that input is
+   * a prediction. Before sending that to the state, we need to remove the prediction
+   * flags, since the game logic doesn't care.
+   */
+  getStateInputs(
+    inputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>
+  ): Map<NetplayPlayer, TInput>{
+    let stateInputs: Map<NetplayPlayer, TInput> = new Map();
+    for (const [player, { input }] of inputs.entries()) {
+      stateInputs.set(player, input);
+    }
+    return stateInputs;
   }
 }

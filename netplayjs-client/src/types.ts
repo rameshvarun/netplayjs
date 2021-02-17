@@ -1,13 +1,21 @@
+export type JSONPrimitive = string | number | boolean | null;
+export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
+export type JSONObject = { [member: string]: JSONValue };
+export interface JSONArray extends Array<JSONValue> {}
+
 export abstract class NetplayState<
   TState extends NetplayState<TState, TInput>,
   TInput extends NetplayInput<TInput>
 > {
-  abstract tick(playerInputs: Map<NetplayPlayer, TInput>): TState;
+  abstract tick(playerInputs: Map<NetplayPlayer, TInput>): void;
+
+  abstract serialize(): JSONValue;
+  abstract deserialize(value: JSONValue): void;
 }
 
 export abstract class NetplayInput<TInput extends NetplayInput<TInput>> {
-  abstract equals(other: TInput): boolean;
   abstract predictNext(): TInput;
+  abstract serialize(): JSONValue;
 }
 
 export interface NetplayPlayer {
@@ -32,7 +40,6 @@ export interface GameType<TState, TInput> {
   canvasHeight: number;
 
   getInputFromJSON(json: any): TInput;
-  getStateFromJSON(json: any): TState;
 
   draw(state: TState, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D);
 

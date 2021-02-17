@@ -103,10 +103,10 @@ export function start<
         pingMeasure,
         gameType.timestep,
         (frame, input) => {
-          conn.send({ type: "input", frame: frame, input: input.toJSON() });
+          conn.send({ type: "input", frame: frame, input: input.serialize() });
         },
         (frame, state) => {
-          conn.send({ type: "state", frame: frame, state: state.toJSON() });
+          conn.send({ type: "state", frame: frame, state: state });
         }
       );
 
@@ -194,7 +194,7 @@ export function start<
         pingMeasure,
         gameType.timestep,
         (frame, input) => {
-          conn.send({ type: "input", frame: frame, input: input.toJSON() });
+          conn.send({ type: "input", frame: frame, input: input.serialize() });
         }
       );
 
@@ -209,7 +209,7 @@ export function start<
         } else if (data.type === "state") {
           netplayManager!.onStateSync(
             data.frame,
-            gameType.getStateFromJSON(data.state)
+            data.state
           );
         } else if (data.type == "ping-req") {
           conn.send({ type: "ping-resp", sent_time: data.sent_time });
@@ -240,7 +240,7 @@ export function start<
       netplayManager!.tick(input);
 
       // Draw state to canvas.
-      gameType.draw(netplayManager!.getState(), canvas, ctx);
+      gameType.draw(netplayManager!.state, canvas, ctx);
 
       // Update stats
       stats.innerHTML = `
