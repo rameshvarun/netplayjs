@@ -16,7 +16,7 @@ import { NetplayManager } from "./netcode/rollback";
 
 export function start<
   TInput extends NetplayInput<TInput>,
-  TState extends NetplayState<TState, TInput>,
+  TState extends NetplayState<TInput>,
   TGameType extends GameType<TState, TInput>
 >(gameType: TGameType) {
   const pingMeasure = new EWMASD(0.2);

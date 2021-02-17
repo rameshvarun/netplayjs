@@ -6,7 +6,6 @@ export interface JSONArray extends Array<JSONValue> {}
 import * as autoserialize from "./autoserialize";
 
 export abstract class NetplayState<
-  TState extends NetplayState<TState, TInput>,
   TInput extends NetplayInput<TInput>
 > {
   abstract tick(playerInputs: Map<NetplayPlayer, TInput>): void;

@@ -1,5 +1,4 @@
 import { start } from "netplayjs";
-import { PongGameType } from "./pong";
-import { SimpleGameType } from "./simple";
+import { SimpleGame } from "./simple";
 
-start(SimpleGameType);
+start(SimpleGame);

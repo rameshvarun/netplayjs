@@ -6,7 +6,6 @@ const log = dev && require("loglevel");
 const assert = dev && require("chai").assert;
 
 class NetplayHistory<
-  TState extends NetplayState<TState, TInput>,
   TInput extends NetplayInput<TInput>
 > {
   /**
@@ -52,13 +51,13 @@ class NetplayHistory<
 }
 
 export class NetplayManager<
-  TState extends NetplayState<TState, TInput>,
+  TState extends NetplayState<TInput>,
   TInput extends NetplayInput<TInput>
 > {
   /**
    * The rollback history buffer.
    */
-  history: Array<NetplayHistory<TState, TInput>>;
+  history: Array<NetplayHistory<TInput>>;
 
   /**
    * The max number of frames that we can predict ahead before we have to stall.
@@ -176,14 +175,15 @@ export class NetplayManager<
         currentPlayerInput.input = previousPlayerInput.input.predictNext();
       }
 
-      this.state.tick(this.getStateInputs(currentState.inputs))
+      this.state.tick(this.getStateInputs(currentState.inputs));
       currentState.state = this.state.serialize();
     }
 
     dev &&
       log.debug(
-        `Resimulated ${this.history.length -
-          firstPrediction!} states after rollback.`
+        `Resimulated ${
+          this.history.length - firstPrediction!
+        } states after rollback.`
       );
 
     // If this is the server, we can cleanup states for which input has been synced.
@@ -228,7 +228,9 @@ export class NetplayManager<
     for (const [player, input] of initialInputs.entries()) {
       historyInputs.set(player, { input, isPrediction: false });
     }
-    this.history = [new NetplayHistory(0, this.state.serialize(), historyInputs)];
+    this.history = [
+      new NetplayHistory(0, this.state.serialize(), historyInputs),
+    ];
 
     this.isServer = isServer;
     this.maxPredictedFrames = maxPredictedFrames;
@@ -255,7 +257,7 @@ export class NetplayManager<
   }
 
   largestFutureSize(): number {
-    return Math.max(...Array.from(this.future.values()).map(a => a.length));
+    return Math.max(...Array.from(this.future.values()).map((a) => a.length));
   }
 
   // Returns the number of frames for which at least one player's input is predicted.
@@ -299,7 +301,10 @@ export class NetplayManager<
     const lastState = this.history[this.history.length - 1];
 
     // Construct the new map of inputs for this frame.
-    const newInputs: Map<NetplayPlayer, { input: TInput, isPrediction: boolean } > = new Map();
+    const newInputs: Map<
+      NetplayPlayer,
+      { input: TInput; isPrediction: boolean }
+    > = new Map();
     for (const [player, input] of lastState.inputs.entries()) {
       if (player.isLocalPlayer()) {
         // Local player gets the local input.
@@ -313,13 +318,13 @@ export class NetplayManager<
           dev && assert.equal(lastState.frame + 1, future.frame);
           newInputs.set(player, {
             input: future.input,
-            isPrediction: false
+            isPrediction: false,
           });
         } else {
           // Otherwise, set the next input based off of the previous input.
           newInputs.set(player, {
             input: input.input.predictNext(),
-            isPrediction: true
+            isPrediction: true,
           });
         }
       }
@@ -329,7 +334,9 @@ export class NetplayManager<
     this.state.tick(this.getStateInputs(newInputs));
 
     // Add a history entry into our rollback buffer.
-    this.history.push(new NetplayHistory(lastState.frame + 1, this.state.serialize(), newInputs));
+    this.history.push(
+      new NetplayHistory(lastState.frame + 1, this.state.serialize(), newInputs)
+    );
   }
 
   /**
@@ -339,7 +346,7 @@ export class NetplayManager<
    */
   getStateInputs(
     inputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>
-  ): Map<NetplayPlayer, TInput>{
+  ): Map<NetplayPlayer, TInput> {
     let stateInputs: Map<NetplayPlayer, TInput> = new Map();
     for (const [player, { input }] of inputs.entries()) {
       stateInputs.set(player, input);
