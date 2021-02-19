@@ -6,7 +6,7 @@ import { Octree } from "THREE/examples/jsm/math/Octree.js";
 import { Capsule } from "THREE/examples/jsm/math/Capsule.js";
 import { MathUtils, StaticReadUsage } from "three";
 
-const GRAVITY = 30;
+export const GRAVITY = 30;
 
 const NUM_SPHERES = 20;
 const SPHERE_RADIUS = 0.2;
@@ -17,13 +17,20 @@ type PlayerState = {
 
   position: THREE.Vector3;
   velocity: THREE.Vector3;
+
+  onFloor: boolean;
 };
 
-export const PLAYER_HEIGHT = 1.35;
-export const PLAYER_RADIUS = 0.35;
+const PLAYER_HEIGHT = 1.35;
+const PLAYER_RADIUS = 0.35;
 
-export const UP_VECTOR = new THREE.Vector3(0, 1, 0);
+const PLAYER_JUMP = 15;
 
+const UP_VECTOR = new THREE.Vector3(0, 1, 0);
+
+const PLAYER_COLLIDER = new Capsule();
+
+// Adapted from https://github.com/mrdoob/three.js/blob/master/examples/games_fps.html
 export class PhysicsGame extends Game {
   static timestep = 1000 / 60;
   static canvasSize = { width: 600, height: 300 };
@@ -47,11 +54,23 @@ export class PhysicsGame extends Game {
 
       position: new THREE.Vector3(),
       velocity: new THREE.Vector3(),
+
+      onFloor: false
     };
   }
 
   createPlayerObject(): THREE.Object3D {
-    return new THREE.Object3D();
+    const geometry = new THREE.CylinderGeometry(
+      PLAYER_RADIUS,
+      PLAYER_RADIUS,
+      PLAYER_HEIGHT,
+      6
+    );
+    const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.castShadow = true;
+
+    return mesh;
   }
 
   constructor(canvas: HTMLCanvasElement, players: Array<NetplayPlayer>) {
@@ -150,6 +169,11 @@ export class PhysicsGame extends Game {
           );
         }
 
+        console.log(input.pressed)
+        if (input.pressed[" "] && state.onFloor) {
+          state.velocity.y = PLAYER_JUMP;
+        }
+
         if (input.mouseDelta) {
           state.angleHorizontal -= input.mouseDelta.x / 500;
           state.angleVertical -= input.mouseDelta.y / 500;
@@ -163,6 +187,23 @@ export class PhysicsGame extends Game {
       const damping = Math.exp( - 3 * dt ) - 1;
       state.velocity.addScaledVector( state.velocity, damping );
       state.position.addScaledVector( state.velocity, dt);
+
+      let offset = new THREE.Vector3(0, PLAYER_HEIGHT / 2 - PLAYER_RADIUS, 0);
+      PLAYER_COLLIDER.set(state.position.clone().sub(offset), state.position.clone().add(offset), PLAYER_RADIUS);
+
+      const result = PhysicsGame.octree.capsuleIntersect(PLAYER_COLLIDER);
+      state.onFloor = false;
+      if (result) {
+        state.onFloor = result.normal.y > 0.1;
+        const resolution = result.normal.clone().multiplyScalar(result.depth);
+        state.position.add(resolution);
+      }
+
+      if (state.onFloor) {
+        state.velocity.y = 0;
+      } else {
+        state.velocity.y -= GRAVITY * dt;
+      }
     }
   }
 
@@ -170,20 +211,13 @@ export class PhysicsGame extends Game {
     for (let [player, state] of this.players) {
       let forward = this.getForwardVector(state);
       if (player.isLocalPlayer()) {
-        this.camera.position.copy(state.position);
-        this.camera.lookAt(state.position.clone().add(forward));
+        this.camera.position.copy(state.position).add(new THREE.Vector3(0, PLAYER_HEIGHT / 2 - PLAYER_RADIUS, 0));
+        this.camera.lookAt(this.camera.position.clone().add(forward));
         this.camera.rotation.x = state.angleVertical;
       } else {
         let object = this.playerObjects.get(player);
         if (!object) {
-          const geometry = new THREE.CylinderGeometry(
-            PLAYER_RADIUS,
-            PLAYER_RADIUS,
-            PLAYER_HEIGHT,
-            6
-          );
-          const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-          object = new THREE.Mesh(geometry, material);
+          object = this.createPlayerObject();
           this.scene.add(object);
           this.playerObjects.set(player, object);
         }

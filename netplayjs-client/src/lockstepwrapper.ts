@@ -15,8 +15,6 @@ const PING_INTERVAL = 100;
 export class LockstepWrapper extends GameWrapper {
   pingMeasure: EWMASD = new EWMASD(0.2);
 
-  stats: HTMLDivElement;
-
   inputReader: DefaultInputReader;
   game?: Game;
 
@@ -24,15 +22,6 @@ export class LockstepWrapper extends GameWrapper {
 
   constructor(gameClass: GameClass) {
     super(gameClass);
-
-    this.stats = document.createElement("div");
-    this.stats.style.zIndex = "1";
-    this.stats.style.position = "absolute";
-    this.stats.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    this.stats.style.color = "white";
-    this.stats.style.padding = "5px";
-
-    document.body.appendChild(this.stats);
 
     this.inputReader = new DefaultInputReader(this.canvas, this.gameClass.pointerLock || false);
   }
