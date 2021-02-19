@@ -1,13 +1,8 @@
 import {
-  NetplayState,
-  NetplayInput,
   NetplayPlayer,
-  JSONValue,
   Game,
   DefaultInput,
 } from "netplayjs";
-import { GameType } from "netplayjs";
-import { assert } from "chai";
 
 const PONG_WIDTH = 600;
 const PONG_HEIGHT = 300;

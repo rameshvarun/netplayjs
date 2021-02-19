@@ -1,89 +1,31 @@
 import Peer from "peerjs";
 import { DefaultInput, DefaultInputReader } from "./defaultinput";
 import EWMASD from "./ewmasd";
-import { LockstepCore } from "./netcode/lockstep";
+import { LockstepNetcode } from "./netcode/lockstep";
 import { NetplayPlayer, NetplayState } from "./types";
 
 import * as query from "query-string";
 import * as QRCode from "qrcode";
 import * as log from "loglevel";
-import { assert } from "chai";
-import { doc } from "prettier";
-
-export abstract class Game extends NetplayState<DefaultInput> {
-  abstract draw(canvas: HTMLCanvasElement);
-}
-
-type GameClass = {
-  new (): Game;
-  timestep: number;
-
-  /**
-   * Canvases need to have a fixed pixel size. This allows us to normalize
-   * mouse position and touches across the network.
-   */
-  canvasSize: { width: number; height: number };
-};
+import { GameWrapper } from "./gamewrapper";
+import { Game, GameClass } from "./game";
 
 const PING_INTERVAL = 100;
 
-export class LockstepNetcode {
+export class LockstepWrapper extends GameWrapper {
   pingMeasure: EWMASD = new EWMASD(0.2);
-  gameClass: GameClass;
 
-  canvas: HTMLCanvasElement;
   stats: HTMLDivElement;
 
   inputReader: DefaultInputReader;
   game: Game;
 
-  lockstepCore?: LockstepCore<Game, DefaultInput>;
-
-  calculateLayout(
-    container: { width: number; height: number },
-    canvas: { width: number; height: number }
-  ): { width: number; height: number; left: number; top: number } {
-    const widthRatio = container.width / canvas.width;
-    const heightRatio = container.height / canvas.height;
-
-    // We are constrained by the height of the canvas.
-    const heightLimited = canvas.width * heightRatio >= container.width;
-
-    const ratio = heightLimited ? widthRatio : heightRatio;
-
-    let width = canvas.width * ratio;
-    let height = canvas.height * ratio;
-
-    let left = 0;
-    let top = 0;
-
-    if (heightLimited) {
-      top = container.height / 2 - height / 2;
-    } else {
-      left = container.width / 2 - width / 2;
-    }
-
-    return { width, height, left, top };
-  }
+  lockstepCore?: LockstepNetcode<Game, DefaultInput>;
 
   constructor(gameClass: GameClass) {
-    this.gameClass = gameClass;
+    super(gameClass);
 
     this.game = new this.gameClass();
-
-    this.canvas = document.createElement("canvas");
-    this.canvas.width = gameClass.canvasSize.width;
-    this.canvas.height = gameClass.canvasSize.height;
-
-    this.canvas.style.backgroundColor = "black";
-    this.canvas.style.position = "absolute";
-    this.canvas.style.zIndex = "0";
-    this.canvas.style.boxShadow = "0px 0px 10px black";
-
-    window.addEventListener("resize", () => this.resize());
-    this.resize();
-
-    document.body.appendChild(this.canvas);
 
     this.stats = document.createElement("div");
     this.stats.style.zIndex = "1";
@@ -95,20 +37,6 @@ export class LockstepNetcode {
     document.body.appendChild(this.stats);
 
     this.inputReader = new DefaultInputReader(this.canvas);
-  }
-
-  resize() {
-    const layout = this.calculateLayout(
-      { width: window.innerWidth, height: window.innerHeight },
-      this.gameClass.canvasSize
-    );
-    log.debug("Calculating new layout: %o", layout);
-
-    this.canvas.style.width = `${layout.width}px`;
-    this.canvas.style.height = `${layout.height}px`;
-
-    this.canvas.style.top = `${layout.top}px`;
-    this.canvas.style.left = `${layout.left}px`;
   }
 
   peer?: Peer;
@@ -177,7 +105,7 @@ export class LockstepNetcode {
         },
       ];
 
-      this.lockstepCore = new LockstepCore(
+      this.lockstepCore = new LockstepNetcode(
         true,
         this.game,
         players,
@@ -261,7 +189,7 @@ export class LockstepNetcode {
         },
       ];
 
-      this.lockstepCore = new LockstepCore(
+      this.lockstepCore = new LockstepNetcode(
         false,
         this.game,
         players,

@@ -1,5 +1,4 @@
-import { LockstepNetcode } from "netplayjs";
-import { SimpleGame } from "./simple";
+import { LockstepWrapper } from "netplayjs";
 import { Pong } from "./pong";
 
-new LockstepNetcode(Pong).start();
+new LockstepWrapper(Pong).start();

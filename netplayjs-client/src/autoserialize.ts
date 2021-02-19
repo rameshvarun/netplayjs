@@ -1,4 +1,4 @@
-import { JSONObject, JSONValue } from "./types";
+import { JSONObject, JSONValue } from "./json";
 
 export function serialize(data: any): JSONValue {
   return JSON.parse(JSON.stringify(data)) as JSONValue;

@@ -1,12 +1,13 @@
-import { NetplayInput, NetplayPlayer, NetplayState, JSONValue } from "../types";
+import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
 import { get, shift } from "../utils";
 
 import * as log from "loglevel";
 
 import { DEV } from "../debugging";
 import { assert } from "chai";
+import { JSONValue } from "../json";
 
-class NetplayHistory<TInput extends NetplayInput<TInput>> {
+class RollbackHistory<TInput extends NetplayInput<TInput>> {
   /**
    * The frame number that this history entry represents.
    */
@@ -49,14 +50,14 @@ class NetplayHistory<TInput extends NetplayInput<TInput>> {
   }
 }
 
-export class NetplayManager<
+export class RollbackNetcode<
   TState extends NetplayState<TInput>,
   TInput extends NetplayInput<TInput>
 > {
   /**
    * The rollback history buffer.
    */
-  history: Array<NetplayHistory<TInput>>;
+  history: Array<RollbackHistory<TInput>>;
 
   /**
    * The max number of frames that we can predict ahead before we have to stall.
@@ -228,7 +229,7 @@ export class NetplayManager<
       historyInputs.set(player, { input, isPrediction: false });
     }
     this.history = [
-      new NetplayHistory(0, this.state.serialize(), historyInputs),
+      new RollbackHistory(0, this.state.serialize(), historyInputs),
     ];
 
     this.isServer = isServer;
@@ -334,7 +335,11 @@ export class NetplayManager<
 
     // Add a history entry into our rollback buffer.
     this.history.push(
-      new NetplayHistory(lastState.frame + 1, this.state.serialize(), newInputs)
+      new RollbackHistory(
+        lastState.frame + 1,
+        this.state.serialize(),
+        newInputs
+      )
     );
   }
 

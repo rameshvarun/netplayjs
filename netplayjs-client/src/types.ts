@@ -1,9 +1,6 @@
-export type JSONPrimitive = string | number | boolean | null;
-export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
-export type JSONObject = { [member: string]: JSONValue };
-export interface JSONArray extends Array<JSONValue> {}
 
 import * as autoserialize from "./autoserialize";
+import { JSONObject, JSONValue } from "./json";
 
 export abstract class NetplayState<TInput extends NetplayInput<TInput>> {
   abstract tick(playerInputs: Map<NetplayPlayer, TInput>): void;

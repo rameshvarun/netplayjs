@@ -97,7 +97,8 @@ export class DefaultInputReader {
     for (let key in this.PRESSED_KEYS) {
       if (this.PRESSED_KEYS[key]) input.pressed[key] = true;
     }
-    if (this.mousePosition) input.mousePosition = utils.clone(this.mousePosition);
+    if (this.mousePosition)
+      input.mousePosition = utils.clone(this.mousePosition);
     input.touches = utils.clone(this.touches);
 
     return input;

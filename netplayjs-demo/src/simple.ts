@@ -1,5 +1,4 @@
 import { NetplayPlayer, DefaultInput, Game } from "netplayjs";
-import { GameType } from "netplayjs";
 
 export class SimpleGame extends Game {
   static timestep = 1000 / 60;

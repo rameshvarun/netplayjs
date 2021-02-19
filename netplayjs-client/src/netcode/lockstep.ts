@@ -1,5 +1,4 @@
-import { NetplayInput, NetplayPlayer, NetplayState, JSONValue } from "../types";
-import { get, shift } from "../utils";
+import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
 
 import { DEV } from "../debugging";
 import { assert } from "chai";
@@ -9,7 +8,7 @@ import { assert } from "chai";
  * broadcasts their own local input while waiting for inputs from remote players.
  * Once all remote player imputs have been received, the game can tick forward one step.
  */
-export class LockstepCore<
+export class LockstepNetcode<
   TState extends NetplayState<TInput>,
   TInput extends NetplayInput<TInput>
 > {
