@@ -7,6 +7,8 @@ import { NetplayPlayer, NetplayState } from "./types";
 import * as query from "query-string";
 import * as QRCode from "qrcode";
 import * as log from "loglevel";
+import { assert } from "chai";
+import { doc } from "prettier";
 
 export abstract class Game extends NetplayState<DefaultInput> {
   abstract draw(canvas: HTMLCanvasElement);
@@ -15,6 +17,11 @@ export abstract class Game extends NetplayState<DefaultInput> {
 type GameClass = {
   new (): Game;
   timestep: number;
+
+  /**
+   * Canvases need to have a fixed pixel size. This allows us to normalize
+   * mouse position and touches across the network.
+   */
   canvasSize: { width: number; height: number };
 };
 
@@ -32,6 +39,35 @@ export class LockstepNetcode {
 
   lockstepCore?: LockstepCore<Game, DefaultInput>;
 
+  calculateLayout(
+    container: { width: number; height: number },
+    canvas: { width: number; height: number }
+  ): { width: number; height: number, left: number, top: number } {
+    const widthRatio = container.width / canvas.width;
+    const heightRatio = container.height / canvas.height;
+
+
+    // We are constrained by the height of the canvas.
+    const heightLimited = canvas.width * heightRatio >= container.width;
+
+    const ratio = heightLimited ? widthRatio : heightRatio;
+
+    let width = canvas.width * ratio;
+    let height = canvas.height * ratio;
+
+    let left = 0;
+    let top = 0;
+
+    if (heightLimited) {
+      top = container.height / 2 - height / 2;
+    } else {
+      left = container.width / 2 - width / 2;
+    }
+
+
+    return { width, height, left, top };
+  }
+
   constructor(gameClass: GameClass) {
     this.gameClass = gameClass;
 
@@ -40,10 +76,39 @@ export class LockstepNetcode {
     this.canvas = document.createElement("canvas");
     this.canvas.width = gameClass.canvasSize.width;
     this.canvas.height = gameClass.canvasSize.height;
+
+    this.canvas.style.backgroundColor = 'black';
+    this.canvas.style.position = "absolute";
+    this.canvas.style.zIndex = "0";
+    this.canvas.style.boxShadow = "0px 0px 10px black"
+
+    window.addEventListener('resize', () => this.resize());
+    this.resize();
+
     document.body.appendChild(this.canvas);
 
     this.stats = document.createElement("div");
+    this.stats.style.zIndex = "1";
+    this.stats.style.position = "absolute";
+    this.stats.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    this.stats.style.color = "white";
+    this.stats.style.padding = "5px";
+
     document.body.appendChild(this.stats);
+  }
+
+  resize() {
+    const layout = this.calculateLayout(
+      { width: window.innerWidth, height: window.innerHeight },
+      this.gameClass.canvasSize
+    );
+    log.debug("Calculating new layout: %o", layout);
+
+    this.canvas.style.width = `${layout.width}px`;
+    this.canvas.style.height = `${layout.height}px`;
+
+    this.canvas.style.top = `${layout.top}px`;
+    this.canvas.style.left = `${layout.left}px`;
   }
 
   peer?: Peer;

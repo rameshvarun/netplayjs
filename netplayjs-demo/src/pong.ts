@@ -42,7 +42,7 @@ function rectOverlap(
 }
 
 export class Pong extends Game {
-  static timestep = 1000 / 30;
+  static timestep = 1000 / 60;
   static canvasSize = { width: PONG_WIDTH, height: PONG_HEIGHT };
 
   leftPaddle: number = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
