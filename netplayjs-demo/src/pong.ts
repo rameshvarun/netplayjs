@@ -66,10 +66,20 @@ export class Pong extends Game {
       const direction =
         (input.pressed["ArrowDown"] ? 1 : 0) +
         (input.pressed["ArrowUp"] ? -1 : 0);
+
+      let paddlePos: number | null = null;
+      if (input.touches.length > 0) {
+        paddlePos = input.touches[0].y - PADDLE_HEIGHT / 2;
+      } else if (input.mousePosition) {
+        paddlePos = input.mousePosition.y - PADDLE_HEIGHT / 2;
+      }
+
       if (player.getID() == 0) {
-        this.leftPaddle += direction * PADDLE_MOVE_SPEED * dt;
+        if (paddlePos) this.leftPaddle = paddlePos;
+        else this.leftPaddle += direction * PADDLE_MOVE_SPEED * dt;
       } else if (player.getID() == 1) {
-        this.rightPaddle += direction * PADDLE_MOVE_SPEED * dt;
+        if (paddlePos) this.rightPaddle = paddlePos;
+        else this.rightPaddle += direction * PADDLE_MOVE_SPEED * dt;
       }
     }
 

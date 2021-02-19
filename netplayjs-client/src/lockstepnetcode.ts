@@ -34,7 +34,7 @@ export class LockstepNetcode {
   canvas: HTMLCanvasElement;
   stats: HTMLDivElement;
 
-  inputReader: DefaultInputReader = new DefaultInputReader();
+  inputReader: DefaultInputReader;
   game: Game;
 
   lockstepCore?: LockstepCore<Game, DefaultInput>;
@@ -42,10 +42,9 @@ export class LockstepNetcode {
   calculateLayout(
     container: { width: number; height: number },
     canvas: { width: number; height: number }
-  ): { width: number; height: number, left: number, top: number } {
+  ): { width: number; height: number; left: number; top: number } {
     const widthRatio = container.width / canvas.width;
     const heightRatio = container.height / canvas.height;
-
 
     // We are constrained by the height of the canvas.
     const heightLimited = canvas.width * heightRatio >= container.width;
@@ -64,7 +63,6 @@ export class LockstepNetcode {
       left = container.width / 2 - width / 2;
     }
 
-
     return { width, height, left, top };
   }
 
@@ -77,12 +75,12 @@ export class LockstepNetcode {
     this.canvas.width = gameClass.canvasSize.width;
     this.canvas.height = gameClass.canvasSize.height;
 
-    this.canvas.style.backgroundColor = 'black';
+    this.canvas.style.backgroundColor = "black";
     this.canvas.style.position = "absolute";
     this.canvas.style.zIndex = "0";
-    this.canvas.style.boxShadow = "0px 0px 10px black"
+    this.canvas.style.boxShadow = "0px 0px 10px black";
 
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener("resize", () => this.resize());
     this.resize();
 
     document.body.appendChild(this.canvas);
@@ -95,6 +93,8 @@ export class LockstepNetcode {
     this.stats.style.padding = "5px";
 
     document.body.appendChild(this.stats);
+
+    this.inputReader = new DefaultInputReader(this.canvas);
   }
 
   resize() {
