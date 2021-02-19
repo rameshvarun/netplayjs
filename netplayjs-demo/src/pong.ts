@@ -21,8 +21,8 @@ const RIGHT_PADDLE_X = PONG_WIDTH - 100 - PADDLE_WIDTH;
 const BALL_WIDTH = 10;
 const BALL_HEIGHT = 10;
 
-const PADDLE_MOVE_SPEED = 5;
-const BALL_MOVE_SPEED = 5;
+const PADDLE_MOVE_SPEED = 300;
+const BALL_MOVE_SPEED = 300;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -42,7 +42,7 @@ function rectOverlap(
 }
 
 export class Pong extends Game {
-  static timestep = 1000 / 60;
+  static timestep = 1000 / 30;
   static canvasSize = { width: PONG_WIDTH, height: PONG_HEIGHT };
 
   leftPaddle: number = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
@@ -58,15 +58,18 @@ export class Pong extends Game {
   rightScore: number = 0;
 
   tick(playerInputs: Map<NetplayPlayer, DefaultInput>): void {
+    // The delta time in seconds.
+    let dt = Pong.timestep / 1000;
+
     // Move paddles up and down.
     for (const [player, input] of playerInputs.entries()) {
-      const delta =
+      const direction =
         (input.pressed["ArrowDown"] ? 1 : 0) +
         (input.pressed["ArrowUp"] ? -1 : 0);
       if (player.getID() == 0) {
-        this.leftPaddle += delta * PADDLE_MOVE_SPEED;
+        this.leftPaddle += direction * PADDLE_MOVE_SPEED * dt;
       } else if (player.getID() == 1) {
-        this.rightPaddle += delta * PADDLE_MOVE_SPEED;
+        this.rightPaddle += direction * PADDLE_MOVE_SPEED * dt;
       }
     }
 
@@ -75,8 +78,8 @@ export class Pong extends Game {
     this.rightPaddle = clamp(this.rightPaddle, 0, PONG_HEIGHT - PADDLE_HEIGHT);
 
     // Apply ball velocity.
-    this.ballPosition[0] += this.ballVelocity[0];
-    this.ballPosition[1] += this.ballVelocity[1];
+    this.ballPosition[0] += this.ballVelocity[0] * dt;
+    this.ballPosition[1] += this.ballVelocity[1] * dt;
 
     // Bounce ball on bottom / top of screen.
     if (this.ballPosition[1] < 0) {
