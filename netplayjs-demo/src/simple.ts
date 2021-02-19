@@ -1,12 +1,4 @@
-import {
-  NetplayState,
-  NetplayInput,
-  NetplayPlayer,
-  JSONValue,
-  DefaultInput,
-  getDefaultInputReader,
-  Game
-} from "netplayjs";
+import { NetplayPlayer, DefaultInput, Game } from "netplayjs";
 import { GameType } from "netplayjs";
 
 export class SimpleGame extends Game {

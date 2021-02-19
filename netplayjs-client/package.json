@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "rm -rf dist/ && npm run typegen && webpack --env production && webpack --env development",
-    "format": "prettier --write src/**/*.ts",
+    "format": "prettier --write src/**/*.ts src/*.ts",
     "typecheck": "tsc --noEmit",
     "check-format": "prettier-check src/**/*.ts",
     "test": "jest",

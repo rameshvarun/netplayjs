@@ -1,31 +1,34 @@
 import { NetplayInput } from "./types";
 
 export class DefaultInput extends NetplayInput<DefaultInput> {
-    pressed: {[key: string]: boolean} = {};
+  pressed: { [key: string]: boolean } = {};
 }
 
-export function getDefaultInputReader(document): () => DefaultInput {
-    const PRESSED_KEYS = {};
-    document.addEventListener(
-        "keydown",
-        event => {
-        PRESSED_KEYS[event.key] = true;
-        },
-        false
-    );
-    document.addEventListener(
-        "keyup",
-        event => {
-        PRESSED_KEYS[event.key] = false;
-        },
-        false
-    );
+export class DefaultInputReader {
+  PRESSED_KEYS = {};
 
-    return () => {
-        let input = new DefaultInput();
-        for (let key in PRESSED_KEYS) {
-            if (PRESSED_KEYS[key]) input.pressed[key] = true;
-        }
-        return input;
-      };
+  constructor() {
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        this.PRESSED_KEYS[event.key] = true;
+      },
+      false
+    );
+    document.addEventListener(
+      "keyup",
+      (event) => {
+        this.PRESSED_KEYS[event.key] = false;
+      },
+      false
+    );
+  }
+
+  getInput(): DefaultInput {
+    let input = new DefaultInput();
+    for (let key in this.PRESSED_KEYS) {
+      if (this.PRESSED_KEYS[key]) input.pressed[key] = true;
+    }
+    return input;
+  }
 }

@@ -5,9 +5,7 @@ export interface JSONArray extends Array<JSONValue> {}
 
 import * as autoserialize from "./autoserialize";
 
-export abstract class NetplayState<
-  TInput extends NetplayInput<TInput>
-> {
+export abstract class NetplayState<TInput extends NetplayInput<TInput>> {
   abstract tick(playerInputs: Map<NetplayPlayer, TInput>): void;
 
   /**
@@ -15,14 +13,14 @@ export abstract class NetplayState<
    */
   serialize(): JSONValue {
     return autoserialize.serialize(this);
-  };
+  }
 
   /**
    * By default, use the auto deserializer.
    */
   deserialize(value: JSONValue): void {
     autoserialize.deserialize(value as JSONObject, this);
-  };
+  }
 }
 
 export abstract class NetplayInput<TInput extends NetplayInput<TInput>> {
@@ -32,21 +30,21 @@ export abstract class NetplayInput<TInput extends NetplayInput<TInput>> {
   predictNext(): TInput {
     // @ts-ignore
     return this;
-  };
+  }
 
   /**
    * By default, use the auto serializer.
    */
   serialize(): JSONValue {
     return autoserialize.serialize(this);
-  };
+  }
 
   /**
    * By default, use the auto deserializer.
    */
   deserialize(value: JSONValue): void {
     autoserialize.deserialize(value as JSONObject, this);
-  };
+  }
 }
 
 export interface NetplayPlayer {
@@ -61,9 +59,7 @@ export interface GameType<TState, TInput> {
   /**
    * Given a list of players, return the initial game state.
    */
-  constructInitialState(
-    players: Array<NetplayPlayer>
-  ): TState;
+  constructInitialState(players: Array<NetplayPlayer>): TState;
 
   /**
    * Construct a new input object with a default value. A new object
