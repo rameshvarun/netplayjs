@@ -3,7 +3,10 @@ import * as utils from "./utils";
 
 export class DefaultInput extends NetplayInput<DefaultInput> {
   pressed: { [key: string]: boolean } = {};
+
   mousePosition?: { x: number; y: number };
+  mouseDelta?: { x: number; y: number };
+
   touches: Array<{ x: number; y: number }> = [];
 }
 
@@ -12,7 +15,8 @@ export class DefaultInputReader {
 
   PRESSED_KEYS = {};
 
-  mousePosition: { x: number; y: number } | null = null;
+  mousePosition: { x: number; y: number; } | null = null;
+  mouseDelta: {x: number; y: number} | null = null;
   touches: Array<{ x: number; y: number }> = [];
 
   projectClientPosition(
@@ -31,7 +35,7 @@ export class DefaultInputReader {
     };
   }
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, pointerLock: boolean) {
     this.canvas = canvas;
 
     document.addEventListener(
@@ -72,6 +76,12 @@ export class DefaultInputReader {
     canvas.addEventListener("touchstart", (e) => this.updateTouches(e), false);
     canvas.addEventListener("touchmove", (e) => this.updateTouches(e), false);
     canvas.addEventListener("touchend", (e) => this.updateTouches(e), false);
+
+    canvas.addEventListener( 'mousedown', () => {
+      if (pointerLock) {
+        canvas.requestPointerLock();
+      }
+    });
   }
 
   updateMousePosition(event: MouseEvent) {
@@ -79,6 +89,7 @@ export class DefaultInputReader {
       event.clientX,
       event.clientY
     );
+    this.mouseDelta = { x: event.movementX, y: event.movementY };
   }
 
   updateTouches(event: TouchEvent) {
@@ -99,6 +110,8 @@ export class DefaultInputReader {
     }
     if (this.mousePosition)
       input.mousePosition = utils.clone(this.mousePosition);
+    if (this.mouseDelta)
+      input.mouseDelta = utils.clone(this.mouseDelta);
     input.touches = utils.clone(this.touches);
 
     return input;

@@ -18,14 +18,12 @@ export class LockstepWrapper extends GameWrapper {
   stats: HTMLDivElement;
 
   inputReader: DefaultInputReader;
-  game: Game;
+  game?: Game;
 
   lockstepCore?: LockstepNetcode<Game, DefaultInput>;
 
   constructor(gameClass: GameClass) {
     super(gameClass);
-
-    this.game = new this.gameClass();
 
     this.stats = document.createElement("div");
     this.stats.style.zIndex = "1";
@@ -36,7 +34,7 @@ export class LockstepWrapper extends GameWrapper {
 
     document.body.appendChild(this.stats);
 
-    this.inputReader = new DefaultInputReader(this.canvas);
+    this.inputReader = new DefaultInputReader(this.canvas, this.gameClass.pointerLock || false);
   }
 
   peer?: Peer;
@@ -105,9 +103,11 @@ export class LockstepWrapper extends GameWrapper {
         },
       ];
 
+      this.game = new this.gameClass(this.canvas, players);
+
       this.lockstepCore = new LockstepNetcode(
         true,
-        this.game,
+        this.game!,
         players,
         (frame, input) => {
           conn.send({ type: "input", frame: frame, input: input.serialize() });
@@ -189,9 +189,10 @@ export class LockstepWrapper extends GameWrapper {
         },
       ];
 
+      this.game = new this.gameClass(this.canvas, players);
       this.lockstepCore = new LockstepNetcode(
         false,
-        this.game,
+        this.game!,
         players,
         (frame, input) => {
           conn.send({ type: "input", frame: frame, input: input.serialize() });
@@ -238,7 +239,7 @@ export class LockstepWrapper extends GameWrapper {
         this.lockstepCore!.tick(input);
 
         // Draw state to canvas.
-        this.game.draw(this.canvas);
+        this.game!.draw(this.canvas);
 
         // Update stats
         this.stats.innerHTML = `

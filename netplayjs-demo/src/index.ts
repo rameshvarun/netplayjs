@@ -1,4 +1,4 @@
 import { LockstepWrapper } from "netplayjs";
-import { Pong } from "./pong";
+import { start } from "./physics";
 
-new LockstepWrapper(Pong).start();
+start();

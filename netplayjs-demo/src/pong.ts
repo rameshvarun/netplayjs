@@ -1,8 +1,4 @@
-import {
-  NetplayPlayer,
-  Game,
-  DefaultInput,
-} from "netplayjs";
+import { NetplayPlayer, Game, DefaultInput } from "netplayjs";
 
 const PONG_WIDTH = 600;
 const PONG_HEIGHT = 300;

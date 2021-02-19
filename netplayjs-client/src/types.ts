@@ -1,4 +1,3 @@
-
 import * as autoserialize from "./autoserialize";
 import { JSONObject, JSONValue } from "./json";
 

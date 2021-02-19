@@ -4,10 +4,12 @@ import { NetplayState } from "./types";
 import * as log from "loglevel";
 import { GameClass } from "./game";
 
-
 export abstract class GameWrapper {
   gameClass: GameClass;
+
   canvas: HTMLCanvasElement;
+
+  stats: HTMLDivElement;
 
   constructor(gameClass: GameClass) {
     this.gameClass = gameClass;
@@ -26,6 +28,16 @@ export abstract class GameWrapper {
     window.addEventListener("resize", () => this.resize());
 
     document.body.appendChild(this.canvas);
+
+    // Create stats UI
+    this.stats = document.createElement("div");
+    this.stats.style.zIndex = "1";
+    this.stats.style.position = "absolute";
+    this.stats.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    this.stats.style.color = "white";
+    this.stats.style.padding = "5px";
+
+    document.body.appendChild(this.stats);
   }
 
   /**
