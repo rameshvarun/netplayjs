@@ -1,8 +1,11 @@
-import { DefaultInput } from "./defaultinput";
+import { DefaultInput, DefaultInputReader } from "./defaultinput";
 import { NetplayState } from "./types";
 
 import * as log from "loglevel";
 import { GameClass } from "./game";
+import Peer from "peerjs";
+
+import * as query from "query-string";
 
 export abstract class GameWrapper {
   gameClass: GameClass;
@@ -10,6 +13,8 @@ export abstract class GameWrapper {
   canvas: HTMLCanvasElement;
 
   stats: HTMLDivElement;
+
+  inputReader: DefaultInputReader;
 
   constructor(gameClass: GameClass) {
     this.gameClass = gameClass;
@@ -38,6 +43,11 @@ export abstract class GameWrapper {
     this.stats.style.padding = "5px";
 
     document.body.appendChild(this.stats);
+
+    this.inputReader = new DefaultInputReader(
+      this.canvas,
+      this.gameClass.pointerLock || false
+    );
   }
 
   /**
@@ -87,4 +97,26 @@ export abstract class GameWrapper {
     this.canvas.style.top = `${layout.top}px`;
     this.canvas.style.left = `${layout.left}px`;
   }
+
+  peer?: Peer;
+
+  start() {
+    log.info("Creating a PeerJS instance.");
+
+    this.peer = new Peer();
+    this.peer.on("error", (err) => console.error(err));
+
+    this.peer!.on("open", (id) => {
+      // Try to parse the room from the hash. If we find one,
+      // we are a client.
+      const parsedHash = query.parse(window.location.hash);
+      const isClient = !!parsedHash.room;
+
+      if (isClient) this.startClient(parsedHash.room as string);
+      else this.startHost(id);
+    });
+  }
+
+  abstract startHost(hostID: string);
+  abstract startClient(joinID: string);
 }

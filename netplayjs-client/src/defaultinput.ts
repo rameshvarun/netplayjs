@@ -15,8 +15,8 @@ export class DefaultInputReader {
 
   PRESSED_KEYS = {};
 
-  mousePosition: { x: number; y: number; } | null = null;
-  mouseDelta: {x: number; y: number} | null = null;
+  mousePosition: { x: number; y: number } | null = null;
+  mouseDelta: { x: number; y: number } | null = null;
   touches: Array<{ x: number; y: number }> = [];
 
   projectClientPosition(
@@ -77,7 +77,7 @@ export class DefaultInputReader {
     canvas.addEventListener("touchmove", (e) => this.updateTouches(e), false);
     canvas.addEventListener("touchend", (e) => this.updateTouches(e), false);
 
-    canvas.addEventListener( 'mousedown', () => {
+    canvas.addEventListener("mousedown", () => {
       if (pointerLock) {
         canvas.requestPointerLock();
       }
@@ -110,8 +110,7 @@ export class DefaultInputReader {
     }
     if (this.mousePosition)
       input.mousePosition = utils.clone(this.mousePosition);
-    if (this.mouseDelta)
-      input.mouseDelta = utils.clone(this.mouseDelta);
+    if (this.mouseDelta) input.mouseDelta = utils.clone(this.mouseDelta);
     input.touches = utils.clone(this.touches);
 
     return input;

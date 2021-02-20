@@ -169,7 +169,6 @@ export class PhysicsGame extends Game {
           );
         }
 
-        console.log(input.pressed)
         if (input.pressed[" "] && state.onFloor) {
           state.velocity.y = PLAYER_JUMP;
         }

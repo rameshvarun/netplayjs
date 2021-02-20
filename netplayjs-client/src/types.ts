@@ -43,12 +43,31 @@ export abstract class NetplayInput<TInput extends NetplayInput<TInput>> {
   }
 }
 
-export interface NetplayPlayer {
-  isLocalPlayer(): boolean;
-  isRemotePlayer(): boolean;
-  isServer(): boolean;
-  isClient(): boolean;
-  getID(): number;
+export class NetplayPlayer {
+  id: number;
+  isLocal: boolean;
+  isHost: boolean;
+
+  constructor(id: number, isLocal: boolean, isHost: boolean) {
+    this.id = id;
+    this.isLocal = isLocal;
+    this.isHost = isHost;
+  }
+  isLocalPlayer(): boolean {
+    return this.isLocal;
+  }
+  isRemotePlayer(): boolean {
+    return !this.isLocal;
+  }
+  isServer(): boolean {
+    return this.isHost;
+  }
+  isClient(): boolean {
+    return !this.isHost;
+  }
+  getID(): number {
+    return this.id;
+  }
 }
 
 export interface GameType<TState, TInput> {

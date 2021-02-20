@@ -4,7 +4,6 @@ import EWMASD from "./ewmasd";
 import { LockstepNetcode } from "./netcode/lockstep";
 import { NetplayPlayer, NetplayState } from "./types";
 
-import * as query from "query-string";
 import * as QRCode from "qrcode";
 import * as log from "loglevel";
 import { GameWrapper } from "./gamewrapper";
@@ -15,81 +14,32 @@ const PING_INTERVAL = 100;
 export class LockstepWrapper extends GameWrapper {
   pingMeasure: EWMASD = new EWMASD(0.2);
 
-  inputReader: DefaultInputReader;
   game?: Game;
 
   lockstepCore?: LockstepNetcode<Game, DefaultInput>;
 
   constructor(gameClass: GameClass) {
     super(gameClass);
-
-    this.inputReader = new DefaultInputReader(this.canvas, this.gameClass.pointerLock || false);
   }
 
-  peer?: Peer;
-  start() {
-    this.peer = new Peer();
-    this.peer.on("error", (err) => console.error(err));
-
-    const parsedHash = query.parse(window.location.hash);
-    const isClient = !!parsedHash.room;
-
-    if (isClient) this.startClient(parsedHash.room as string);
-    else this.startHost();
-  }
-
-  startHost() {
+  startHost(hostID: string) {
     log.info("Starting a lockstep host..");
 
-    this.peer!.on("open", (id) => {
-      let joinURL = `${window.location.href}#room=${id}`;
-      this.stats.innerHTML = `<div>Join URL (Open in a new window or send to a friend): <a href="${joinURL}">${joinURL}<div>`;
+    let joinURL = `${window.location.href}#room=${hostID}`;
+    this.stats.innerHTML = `<div>Join URL (Open in a new window or send to a friend): <a href="${joinURL}">${joinURL}<div>`;
 
-      const qrCanvas = document.createElement("canvas");
-      this.stats.appendChild(qrCanvas);
-      QRCode.toCanvas(qrCanvas, joinURL);
-    });
+    const qrCanvas = document.createElement("canvas");
+    this.stats.appendChild(qrCanvas);
+    QRCode.toCanvas(qrCanvas, joinURL);
 
     this.peer!.on("connection", (conn) => {
       conn.on("error", (err) => console.error(err));
 
       const players: Array<NetplayPlayer> = [
-        // Player 0 is us, the host.
-        {
-          getID() {
-            return 0;
-          },
-          isLocalPlayer() {
-            return true;
-          },
-          isRemotePlayer() {
-            return false;
-          },
-          isServer() {
-            return true;
-          },
-          isClient() {
-            return false;
-          },
-        },
-        // Player 1 is the peer.
-        {
-          getID() {
-            return 1;
-          },
-          isLocalPlayer() {
-            return false;
-          },
-          isRemotePlayer() {
-            return true;
-          },
-          isServer() {
-            return false;
-          },
-          isClient() {
-            return true;
-          },
-        },
+        // Player 0 is us, acting as a host.
+        new NetplayPlayer(0, true, true),
+        // Player 1 is our peer, acting as a client.
+        new NetplayPlayer(1, false, false),
       ];
 
       this.game = new this.gameClass(this.canvas, players);
@@ -130,88 +80,53 @@ export class LockstepWrapper extends GameWrapper {
 
   startClient(room: string) {
     log.info("Starting a lockstep client..");
+    log.info(`Connecting to room ${room}.`);
 
-    this.peer!.on("open", () => {
-      log.info(`Connecting to room ${room}.`);
+    const conn = this.peer!.connect(room as string, {
+      serialization: "json",
+      reliable: true,
+    });
 
-      const conn = this.peer!.connect(room as string, {
-        serialization: "json",
-        reliable: true,
-      });
+    const players = [
+      // Player 0 is our peer, who is the host.
+      new NetplayPlayer(0, false, true),
+      // Player 1 is us, acting as a client
+      new NetplayPlayer(1, true, false),
+    ];
 
-      const players = [
-        // Player 0 is our host, the peer.
-        {
-          getID() {
-            return 0;
-          },
-          isLocalPlayer() {
-            return false;
-          },
-          isRemotePlayer() {
-            return true;
-          },
-          isServer() {
-            return true;
-          },
-          isClient() {
-            return false;
-          },
-        },
-        // Player 1 is us, a client.
-        {
-          getID() {
-            return 1;
-          },
-          isLocalPlayer() {
-            return true;
-          },
-          isRemotePlayer() {
-            return false;
-          },
-          isServer() {
-            return false;
-          },
-          isClient() {
-            return true;
-          },
-        },
-      ];
+    this.game = new this.gameClass(this.canvas, players);
+    this.lockstepCore = new LockstepNetcode(
+      false,
+      this.game!,
+      players,
+      (frame, input) => {
+        conn.send({ type: "input", frame: frame, input: input.serialize() });
+      }
+    );
 
-      this.game = new this.gameClass(this.canvas, players);
-      this.lockstepCore = new LockstepNetcode(
-        false,
-        this.game!,
-        players,
-        (frame, input) => {
-          conn.send({ type: "input", frame: frame, input: input.serialize() });
-        }
-      );
+    conn.on("error", (err) => console.error(err));
+    conn.on("data", (data) => {
+      if (data.type === "input") {
+        let input = new DefaultInput();
+        input.deserialize(data.input);
 
-      conn.on("error", (err) => console.error(err));
-      conn.on("data", (data) => {
-        if (data.type === "input") {
-          let input = new DefaultInput();
-          input.deserialize(data.input);
+        this.lockstepCore!.onRemoteInput(data.frame, players![0], input);
+      } else if (data.type === "state") {
+        //   netplayManager!.onStateSync(data.frame, data.state);
+      } else if (data.type == "ping-req") {
+        conn.send({ type: "ping-resp", sent_time: data.sent_time });
+      } else if (data.type == "ping-resp") {
+        this.pingMeasure.update(Date.now() - data.sent_time);
+      }
+    });
+    conn.on("open", () => {
+      console.log("Successfully connected to server... Starting game...");
 
-          this.lockstepCore!.onRemoteInput(data.frame, players![0], input);
-        } else if (data.type === "state") {
-          //   netplayManager!.onStateSync(data.frame, data.state);
-        } else if (data.type == "ping-req") {
-          conn.send({ type: "ping-resp", sent_time: data.sent_time });
-        } else if (data.type == "ping-resp") {
-          this.pingMeasure.update(Date.now() - data.sent_time);
-        }
-      });
-      conn.on("open", () => {
-        console.log("Successfully connected to server... Starting game...");
+      setInterval(() => {
+        conn.send({ type: "ping-req", sent_time: Date.now() });
+      }, PING_INTERVAL);
 
-        setInterval(() => {
-          conn.send({ type: "ping-req", sent_time: Date.now() });
-        }, PING_INTERVAL);
-
-        this.startGameLoop();
-      });
+      this.startGameLoop();
     });
   }
 
