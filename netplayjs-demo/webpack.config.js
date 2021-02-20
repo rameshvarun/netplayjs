@@ -46,6 +46,9 @@ for (let example of EXAMPLES) {
 PLUGINS.push(
   new CopyPlugin({
     patterns: [{ from: "src/index.html", to: "index.html" }],
+  }),
+  new CopyPlugin({
+    patterns: [{ from: "src/files/", to: "files" }],
   })
 );
 
