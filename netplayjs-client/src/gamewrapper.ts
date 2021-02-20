@@ -6,13 +6,20 @@ import { GameClass } from "./game";
 import Peer from "peerjs";
 
 import * as query from "query-string";
+import { doc } from "prettier";
+import * as QRCode from "qrcode";
 
 export abstract class GameWrapper {
   gameClass: GameClass;
 
+  /** The canvas that the game will be rendered onto. */
   canvas: HTMLCanvasElement;
 
+  /** The network stats UI. */
   stats: HTMLDivElement;
+
+  /** The floating menu used to select a match. */
+  menu: HTMLDivElement;
 
   inputReader: DefaultInputReader;
 
@@ -41,8 +48,22 @@ export abstract class GameWrapper {
     this.stats.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
     this.stats.style.color = "white";
     this.stats.style.padding = "5px";
+    this.stats.style.display = "none";
 
     document.body.appendChild(this.stats);
+
+    // Create menu UI
+    this.menu = document.createElement("div");
+    this.menu.style.zIndex = "1";
+    this.menu.style.position = "absolute";
+    this.menu.style.backgroundColor = "white";
+    this.menu.style.padding = "5px";
+    this.menu.style.left = "50%";
+    this.menu.style.top = "50%";
+    this.menu.style.boxShadow = "0px 0px 10px black";
+    this.menu.style.transform = "translate(-50%, -50%)";
+
+    document.body.appendChild(this.menu);
 
     this.inputReader = new DefaultInputReader(
       this.canvas,
@@ -102,6 +123,7 @@ export abstract class GameWrapper {
 
   start() {
     log.info("Creating a PeerJS instance.");
+    this.menu.innerHTML = "Connecting to PeerJS...";
 
     this.peer = new Peer();
     this.peer.on("error", (err) => console.error(err));
@@ -112,11 +134,45 @@ export abstract class GameWrapper {
       const parsedHash = query.parse(window.location.hash);
       const isClient = !!parsedHash.room;
 
-      if (isClient) this.startClient(parsedHash.room as string);
-      else this.startHost(id);
+      if (isClient) {
+        // We are a client, so connect to the room from the hash.
+        this.menu.style.display = "none";
+
+        log.info(`Connecting to room ${parsedHash.room}.`);
+
+        const conn = this.peer!.connect(parsedHash.room as string, {
+          serialization: "json",
+          reliable: true,
+        });
+
+        conn.on("error", (err) => console.error(err));
+
+        this.startClient(conn);
+      } else {
+        // We are host, so we need to show a join link.
+        log.info("Showing join link.");
+
+        // Show the join link.
+        let joinURL = `${window.location.href}#room=${id}`;
+        this.menu.innerHTML = `<div>Join URL (Open in a new window or send to a friend): <a href="${joinURL}">${joinURL}<div>`;
+
+        // Add a QR code for joining.
+        const qrCanvas = document.createElement("canvas");
+        this.menu.appendChild(qrCanvas);
+        QRCode.toCanvas(qrCanvas, joinURL);
+
+        // Wait for a connection from a client.
+        this.peer!.on("connection", (conn) => {
+          // Make the menu disappear.
+          this.menu.style.display = "none";
+          conn.on("error", (err) => console.error(err));
+
+          this.startHost(conn);
+        });
+      }
     });
   }
 
-  abstract startHost(hostID: string);
-  abstract startClient(joinID: string);
+  abstract startHost(conn: Peer.DataConnection);
+  abstract startClient(conn: Peer.DataConnection);
 }
