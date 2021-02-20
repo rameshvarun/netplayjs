@@ -7,5 +7,6 @@
   "devDependencies": {
     "loglevel": "^1.7.1",
     "prettier": "^2.2.1"
-  }
+  },
+  "license": "ISC"
 }

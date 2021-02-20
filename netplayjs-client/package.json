@@ -3,6 +3,7 @@
   "version": "0.2.0",
   "main": "dist/netplay.js",
   "types": "./dist/src/index.d.ts",
+  "description": "A framework for making P2P multiplayer games in Javascript.",
   "dependencies": {
     "chai": "^4.3.0",
     "loglevel": "^1.7.1",
@@ -18,6 +19,7 @@
     "test": "jest",
     "typegen": "tsc --outDir ./dist --declaration --emitDeclarationOnly"
   },
+  "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.2.15",
     "@types/jest": "^26.0.20",
