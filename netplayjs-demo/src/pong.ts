@@ -1,4 +1,4 @@
-import { NetplayPlayer, Game, DefaultInput, LockstepWrapper } from "netplayjs";
+import { NetplayPlayer, Game, DefaultInput, RollbackWrapper } from "netplayjs";
 
 const PONG_WIDTH = 600;
 const PONG_HEIGHT = 300;
@@ -193,4 +193,4 @@ export class Pong extends Game {
   }
 }
 
-new LockstepWrapper(Pong).start();
+new RollbackWrapper(Pong).start();

@@ -1,5 +1,5 @@
 import { DefaultInput, DefaultInputReader } from "./defaultinput";
-import { NetplayState } from "./types";
+import { NetplayPlayer, NetplayState } from "./types";
 
 import * as log from "loglevel";
 import { GameClass } from "./game";
@@ -147,7 +147,13 @@ export abstract class GameWrapper {
 
         conn.on("error", (err) => console.error(err));
 
-        this.startClient(conn);
+        // Construct the players array.
+        const players = [
+          new NetplayPlayer(0, false, true), // Player 0 is our peer, the host.
+          new NetplayPlayer(1, true, false), // Player 1 is us, a client
+        ];
+
+        this.startClient(players, conn);
       } else {
         // We are host, so we need to show a join link.
         log.info("Showing join link.");
@@ -161,18 +167,27 @@ export abstract class GameWrapper {
         this.menu.appendChild(qrCanvas);
         QRCode.toCanvas(qrCanvas, joinURL);
 
+        // Construct the players array.
+        const players: Array<NetplayPlayer> = [
+          new NetplayPlayer(0, true, true), // Player 0 is us, acting as a host.
+          new NetplayPlayer(1, false, false), // Player 1 is our peer, acting as a client.
+        ];
+
         // Wait for a connection from a client.
         this.peer!.on("connection", (conn) => {
           // Make the menu disappear.
           this.menu.style.display = "none";
           conn.on("error", (err) => console.error(err));
 
-          this.startHost(conn);
+          this.startHost(players, conn);
         });
       }
     });
   }
 
-  abstract startHost(conn: Peer.DataConnection);
-  abstract startClient(conn: Peer.DataConnection);
+  abstract startHost(players: Array<NetplayPlayer>, conn: Peer.DataConnection);
+  abstract startClient(
+    players: Array<NetplayPlayer>,
+    conn: Peer.DataConnection
+  );
 }

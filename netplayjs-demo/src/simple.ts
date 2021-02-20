@@ -1,4 +1,4 @@
-import { NetplayPlayer, DefaultInput, Game, LockstepWrapper } from "netplayjs";
+import { NetplayPlayer, DefaultInput, Game, RollbackWrapper } from "netplayjs";
 
 export class SimpleGame extends Game {
   static timestep = 1000 / 60;
@@ -42,4 +42,4 @@ export class SimpleGame extends Game {
   }
 }
 
-new LockstepWrapper(SimpleGame).start();
+new RollbackWrapper(SimpleGame).start();

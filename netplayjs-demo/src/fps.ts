@@ -1,10 +1,11 @@
-import { NetplayPlayer, DefaultInput, Game, LockstepWrapper } from "netplayjs";
+import { NetplayPlayer, DefaultInput, Game, RollbackWrapper } from "netplayjs";
 import * as THREE from "three";
 
 import { GLTFLoader } from "THREE/examples/jsm/loaders/GLTFLoader.js";
 import { Octree } from "THREE/examples/jsm/math/Octree.js";
 import { Capsule } from "THREE/examples/jsm/math/Capsule.js";
 import { MathUtils, StaticReadUsage } from "three";
+import { JSONObject, JSONValue } from "netplayjs/dist/src/json";
 
 export const GRAVITY = 30;
 
@@ -24,7 +25,8 @@ type PlayerState = {
 const PLAYER_HEIGHT = 1.35;
 const PLAYER_RADIUS = 0.35;
 
-const PLAYER_JUMP = 15;
+const PLAYER_JUMP = 10;
+const PLAYER_MOVE_SPEED = 10;
 
 const UP_VECTOR = new THREE.Vector3(0, 1, 0);
 
@@ -44,7 +46,9 @@ export class PhysicsGame extends Game {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
 
-  players: Map<NetplayPlayer, PlayerState> = new Map();
+  players: Array<NetplayPlayer>;
+
+  playerStates: Map<NetplayPlayer, PlayerState> = new Map();
   playerObjects: Map<NetplayPlayer, THREE.Object3D> = new Map();
 
   createPlayerState(): PlayerState {
@@ -76,6 +80,8 @@ export class PhysicsGame extends Game {
   constructor(canvas: HTMLCanvasElement, players: Array<NetplayPlayer>) {
     super();
 
+    this.players = players;
+
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x88ccff);
     this.scene.add(PhysicsGame.level);
@@ -89,7 +95,7 @@ export class PhysicsGame extends Game {
     this.camera.rotation.order = "YXZ";
 
     for (let player of players) {
-      this.players.set(player, this.createPlayerState());
+      this.playerStates.set(player, this.createPlayerState());
     }
 
     const ambientlight = new THREE.AmbientLight(0x6688cc);
@@ -126,12 +132,24 @@ export class PhysicsGame extends Game {
     this.renderer.shadowMap.type = THREE.VSMShadowMap;
   }
 
-  serialize() {
-    return {};
+  serialize(): Array<JSONObject> {
+    return this.players.map(p => {
+      // @ts-ignore
+      return this.playerStates.get(p)! as JSONObject;
+    });
   }
 
-  deserialize() {
-    return {};
+  deserialize(value: Array<JSONObject>) {
+    this.players.forEach((player, i) => {
+      let serialized = value[i];
+      let state = this.playerStates.get(player)!;
+
+      state.angleHorizontal = serialized.angleHorizontal as number;
+      state.angleVertical = serialized.angleVertical as number;
+      state.onFloor = serialized.onFloor as boolean;
+      state.position.copy(serialized.position as any);
+      state.velocity.copy(serialized.velocity as any);
+    })
   }
 
   getForwardVector(state: PlayerState) {
@@ -150,10 +168,9 @@ export class PhysicsGame extends Game {
 
   tick(playerInputs: Map<NetplayPlayer, DefaultInput>): void {
     const dt = PhysicsGame.timestep / 1000;
-    const PLAYER_MOVE_SPEED = 25;
 
     for (let [player, input] of playerInputs) {
-      let state = this.players.get(player)!;
+      let state = this.playerStates.get(player)!;
       if (input.pressed["w"]) {
         state.velocity.add(
           this.getForwardVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt)
@@ -188,7 +205,7 @@ export class PhysicsGame extends Game {
       this.camera.position.copy(state.position);
     }
 
-    for (let [player, state] of this.players) {
+    for (let [player, state] of this.playerStates) {
       const damping = Math.exp(-3 * dt) - 1;
       state.velocity.addScaledVector(state.velocity, damping);
       state.position.addScaledVector(state.velocity, dt);
@@ -217,7 +234,7 @@ export class PhysicsGame extends Game {
   }
 
   draw(canvas: HTMLCanvasElement) {
-    for (let [player, state] of this.players) {
+    for (let [player, state] of this.playerStates) {
       let forward = this.getForwardVector(state);
       if (player.isLocalPlayer()) {
         this.camera.position
@@ -253,6 +270,6 @@ loader.load(
     PhysicsGame.level = gltf.scene;
     PhysicsGame.octree.fromGraphNode(gltf.scene);
 
-    new LockstepWrapper(PhysicsGame).start();
+    new RollbackWrapper(PhysicsGame).start();
   }
 );

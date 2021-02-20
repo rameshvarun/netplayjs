@@ -7,16 +7,29 @@ import { NetplayPlayer, NetplayState } from "./types";
 import * as log from "loglevel";
 import { GameWrapper } from "./gamewrapper";
 import { Game, GameClass } from "./game";
+import { RollbackNetcode } from "./netcode/rollback";
 
 const PING_INTERVAL = 100;
 
-export class LockstepWrapper extends GameWrapper {
+export class RollbackWrapper extends GameWrapper {
   pingMeasure: EWMASD = new EWMASD(0.2);
+
   game?: Game;
-  lockstepNetcode?: LockstepNetcode<Game, DefaultInput>;
+
+  rollbackNetcode?: RollbackNetcode<Game, DefaultInput>;
 
   constructor(gameClass: GameClass) {
     super(gameClass);
+  }
+
+  getInitialInputs(
+    players: Array<NetplayPlayer>
+  ): Map<NetplayPlayer, DefaultInput> {
+    let initialInputs: Map<NetplayPlayer, DefaultInput> = new Map();
+    for (let player of players) {
+      initialInputs.set(player, new DefaultInput());
+    }
+    return initialInputs;
   }
 
   startHost(players: Array<NetplayPlayer>, conn: Peer.DataConnection) {
@@ -24,12 +37,18 @@ export class LockstepWrapper extends GameWrapper {
 
     this.game = new this.gameClass(this.canvas, players);
 
-    this.lockstepNetcode = new LockstepNetcode(
+    this.rollbackNetcode = new RollbackNetcode(
       true,
       this.game!,
-      players,
+      this.getInitialInputs(players),
+      10,
+      this.pingMeasure,
+      this.gameClass.timestep,
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
+      },
+      (frame, state) => {
+        conn.send({ type: "state", frame: frame, state: state });
       }
     );
 
@@ -37,8 +56,7 @@ export class LockstepWrapper extends GameWrapper {
       if (data.type === "input") {
         let input = new DefaultInput();
         input.deserialize(data.input);
-
-        this.lockstepNetcode!.onRemoteInput(data.frame, players![1], input);
+        this.rollbackNetcode!.onRemoteInput(data.frame, players![1], input);
       } else if (data.type == "ping-req") {
         conn.send({ type: "ping-resp", sent_time: data.sent_time });
       } else if (data.type == "ping-resp") {
@@ -61,10 +79,13 @@ export class LockstepWrapper extends GameWrapper {
     log.info("Starting a lockstep client.");
 
     this.game = new this.gameClass(this.canvas, players);
-    this.lockstepNetcode = new LockstepNetcode(
+    this.rollbackNetcode = new RollbackNetcode(
       false,
       this.game!,
-      players,
+      this.getInitialInputs(players),
+      10,
+      this.pingMeasure,
+      this.gameClass.timestep,
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
       }
@@ -74,10 +95,9 @@ export class LockstepWrapper extends GameWrapper {
       if (data.type === "input") {
         let input = new DefaultInput();
         input.deserialize(data.input);
-
-        this.lockstepNetcode!.onRemoteInput(data.frame, players![0], input);
+        this.rollbackNetcode!.onRemoteInput(data.frame, players![0], input);
       } else if (data.type === "state") {
-        //   netplayManager!.onStateSync(data.frame, data.state);
+        this.rollbackNetcode!.onStateSync(data.frame, data.state);
       } else if (data.type == "ping-req") {
         conn.send({ type: "ping-resp", sent_time: data.sent_time });
       } else if (data.type == "ping-resp") {
@@ -107,19 +127,23 @@ export class LockstepWrapper extends GameWrapper {
       if (timestamp - lastFrameTime! >= Math.floor(timestep)) {
         // Tick state forward.
         let input = this.inputReader.getInput();
-        this.lockstepNetcode!.tick(input);
+        this.rollbackNetcode!.tick(input);
 
         // Draw state to canvas.
         this.game!.draw(this.canvas);
 
         // Update stats
         this.stats.innerHTML = `
-        <div>Netcode Algorithm: Lockstep</div>
+        <div>Netcode Algorithm: Rollback</div>
         <div>Timestep: ${timestamp - lastFrameTime!}</div>
         <div>Ping: ${this.pingMeasure
           .average()
           .toFixed(2)} ms +/- ${this.pingMeasure.stddev().toFixed(2)} ms</div>
-        <div>Frame Number: ${this.lockstepNetcode!.frame}</div>
+        <div>History Size: ${this.rollbackNetcode!.history.length}</div>
+        <div>Frame Number: ${this.rollbackNetcode!.currentFrame()}</div>
+        <div>Largest Future Size: ${this.rollbackNetcode!.largestFutureSize()}</div>
+        <div>Predicted Frames: ${this.rollbackNetcode!.predictedFrames()}</div>
+        <div title="If true, then the other player is running slow, so we wait for them.">Stalling: ${this.rollbackNetcode!.shouldStall()}</div>
         `;
 
         lastFrameTime = timestamp;
