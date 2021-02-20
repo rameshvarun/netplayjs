@@ -1,4 +1,4 @@
-import { NetplayPlayer, DefaultInput, Game } from "netplayjs";
+import { NetplayPlayer, DefaultInput, Game, LockstepWrapper } from "netplayjs";
 
 export class SimpleGame extends Game {
   static timestep = 1000 / 60;
@@ -41,3 +41,5 @@ export class SimpleGame extends Game {
     ctx.fillRect(this.bPos.x - 5, this.bPos.y - 5, 10, 10);
   }
 }
+
+new LockstepWrapper(SimpleGame).start();

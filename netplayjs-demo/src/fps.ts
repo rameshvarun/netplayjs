@@ -55,7 +55,7 @@ export class PhysicsGame extends Game {
       position: new THREE.Vector3(),
       velocity: new THREE.Vector3(),
 
-      onFloor: false
+      onFloor: false,
     };
   }
 
@@ -135,11 +135,17 @@ export class PhysicsGame extends Game {
   }
 
   getForwardVector(state: PlayerState) {
-    return new THREE.Vector3(1, 0, 0).applyAxisAngle(UP_VECTOR, state.angleHorizontal);
+    return new THREE.Vector3(1, 0, 0).applyAxisAngle(
+      UP_VECTOR,
+      state.angleHorizontal
+    );
   }
 
   getSideVector(state: PlayerState) {
-    return new THREE.Vector3(0, 0, 1).applyAxisAngle(UP_VECTOR, state.angleHorizontal);
+    return new THREE.Vector3(0, 0, 1).applyAxisAngle(
+      UP_VECTOR,
+      state.angleHorizontal
+    );
   }
 
   tick(playerInputs: Map<NetplayPlayer, DefaultInput>): void {
@@ -147,48 +153,52 @@ export class PhysicsGame extends Game {
     const PLAYER_MOVE_SPEED = 25;
 
     for (let [player, input] of playerInputs) {
-        let state = this.players.get(player)!;
-        if (input.pressed["w"]) {
-          state.velocity.add(
-            this.getForwardVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt)
-          );
-        }
-        if (input.pressed["s"]) {
-          state.velocity.add(
-            this.getForwardVector(state).multiplyScalar(- PLAYER_MOVE_SPEED * dt)
-          );
-        }
-        if (input.pressed["d"]) {
-          state.velocity.add(
-            this.getSideVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt)
-          );
-        }
-        if (input.pressed["a"]) {
-          state.velocity.add(
-            this.getSideVector(state).multiplyScalar(- PLAYER_MOVE_SPEED * dt)
-          );
-        }
+      let state = this.players.get(player)!;
+      if (input.pressed["w"]) {
+        state.velocity.add(
+          this.getForwardVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt)
+        );
+      }
+      if (input.pressed["s"]) {
+        state.velocity.add(
+          this.getForwardVector(state).multiplyScalar(-PLAYER_MOVE_SPEED * dt)
+        );
+      }
+      if (input.pressed["d"]) {
+        state.velocity.add(
+          this.getSideVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt)
+        );
+      }
+      if (input.pressed["a"]) {
+        state.velocity.add(
+          this.getSideVector(state).multiplyScalar(-PLAYER_MOVE_SPEED * dt)
+        );
+      }
 
-        if (input.pressed[" "] && state.onFloor) {
-          state.velocity.y = PLAYER_JUMP;
-        }
+      if (input.pressed[" "] && state.onFloor) {
+        state.velocity.y = PLAYER_JUMP;
+      }
 
-        if (input.mouseDelta) {
-          state.angleHorizontal -= input.mouseDelta.x / 500;
-          state.angleVertical -= input.mouseDelta.y / 500;
-          state.angleVertical = MathUtils.clamp(state.angleVertical, -1, 1);
-        }
+      if (input.mouseDelta) {
+        state.angleHorizontal -= input.mouseDelta.x / 500;
+        state.angleVertical -= input.mouseDelta.y / 500;
+        state.angleVertical = MathUtils.clamp(state.angleVertical, -1, 1);
+      }
 
-        this.camera.position.copy(state.position);
+      this.camera.position.copy(state.position);
     }
 
     for (let [player, state] of this.players) {
-      const damping = Math.exp( - 3 * dt ) - 1;
-      state.velocity.addScaledVector( state.velocity, damping );
-      state.position.addScaledVector( state.velocity, dt);
+      const damping = Math.exp(-3 * dt) - 1;
+      state.velocity.addScaledVector(state.velocity, damping);
+      state.position.addScaledVector(state.velocity, dt);
 
       let offset = new THREE.Vector3(0, PLAYER_HEIGHT / 2 - PLAYER_RADIUS, 0);
-      PLAYER_COLLIDER.set(state.position.clone().sub(offset), state.position.clone().add(offset), PLAYER_RADIUS);
+      PLAYER_COLLIDER.set(
+        state.position.clone().sub(offset),
+        state.position.clone().add(offset),
+        PLAYER_RADIUS
+      );
 
       const result = PhysicsGame.octree.capsuleIntersect(PLAYER_COLLIDER);
       state.onFloor = false;
@@ -210,7 +220,9 @@ export class PhysicsGame extends Game {
     for (let [player, state] of this.players) {
       let forward = this.getForwardVector(state);
       if (player.isLocalPlayer()) {
-        this.camera.position.copy(state.position).add(new THREE.Vector3(0, PLAYER_HEIGHT / 2 - PLAYER_RADIUS, 0));
+        this.camera.position
+          .copy(state.position)
+          .add(new THREE.Vector3(0, PLAYER_HEIGHT / 2 - PLAYER_RADIUS, 0));
         this.camera.lookAt(this.camera.position.clone().add(forward));
         this.camera.rotation.x = state.angleVertical;
       } else {
@@ -229,20 +241,18 @@ export class PhysicsGame extends Game {
   }
 }
 
-export function start() {
-  const loader = new GLTFLoader();
-  loader.load(
-    "https://threejs.org/examples/models/gltf/collision-world.glb",
-    (gltf) => {
-      gltf.scene.traverse(child => {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      });
+const loader = new GLTFLoader();
+loader.load(
+  "https://threejs.org/examples/models/gltf/collision-world.glb",
+  (gltf) => {
+    gltf.scene.traverse((child) => {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    });
 
-      PhysicsGame.level = gltf.scene;
-      PhysicsGame.octree.fromGraphNode(gltf.scene);
+    PhysicsGame.level = gltf.scene;
+    PhysicsGame.octree.fromGraphNode(gltf.scene);
 
-      new LockstepWrapper(PhysicsGame).start();
-    }
-  );
-}
+    new LockstepWrapper(PhysicsGame).start();
+  }
+);
