@@ -23,8 +23,12 @@ export abstract class GameWrapper {
 
   inputReader: DefaultInputReader;
 
+  stateSyncPeriod: number;
+
   constructor(gameClass: GameClass) {
     this.gameClass = gameClass;
+
+    this.stateSyncPeriod = this.gameClass.stateSyncPeriod || 1;
 
     // Create canvas for game.
     this.canvas = document.createElement("canvas");

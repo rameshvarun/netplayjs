@@ -29,9 +29,13 @@ export class LockstepWrapper extends GameWrapper {
       this.game!,
       players,
       this.gameClass.timestep,
+      this.stateSyncPeriod,
       () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
+      },
+      (frame, state) => {
+        conn.send({ type: "state", frame: frame, state: state });
       }
     );
 
@@ -68,6 +72,7 @@ export class LockstepWrapper extends GameWrapper {
       this.game!,
       players,
       this.gameClass.timestep,
+      this.stateSyncPeriod,
       () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
@@ -81,7 +86,7 @@ export class LockstepWrapper extends GameWrapper {
 
         this.lockstepNetcode!.onRemoteInput(data.frame, players![0], input);
       } else if (data.type === "state") {
-        //   netplayManager!.onStateSync(data.frame, data.state);
+        this.lockstepNetcode!.onStateSync(data.frame, data.state);
       } else if (data.type == "ping-req") {
         conn.send({ type: "ping-resp", sent_time: data.sent_time });
       } else if (data.type == "ping-resp") {
@@ -118,6 +123,8 @@ export class LockstepWrapper extends GameWrapper {
         .toFixed(2)} ms +/- ${this.pingMeasure.stddev().toFixed(2)} ms</div>
       <div>Frame Number: ${this.lockstepNetcode!.frame}</div>
       <div>Missed Frames: ${this.lockstepNetcode!.missedFrames}</div>
+
+      <div>State Syncs: ${this.lockstepNetcode!.stateSyncsSent} sent, ${this.lockstepNetcode!.stateSyncsReceived} received</div>
       `;
 
       // Request another frame.

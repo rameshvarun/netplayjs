@@ -43,6 +43,10 @@ export class PhysicsGame extends Game {
   static octree = new Octree();
   static level: THREE.Object3D = new THREE.Object3D();
 
+  // Behavior is quite deterministic, so synchronize the
+  // state every five seconds.
+  static stateSyncPeriod = 60 * 5;
+
   static pointerLock = true;
 
   static touchControls = {
