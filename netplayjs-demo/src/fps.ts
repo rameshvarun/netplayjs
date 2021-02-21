@@ -308,7 +308,7 @@ export class PhysicsGame extends Game {
 
 const loader = new GLTFLoader();
 loader.load(
-  "https://threejs.org/examples/models/gltf/collision-world.glb",
+  "../files/collision-world.glb",
   (gltf) => {
     gltf.scene.traverse((child) => {
       child.castShadow = true;
