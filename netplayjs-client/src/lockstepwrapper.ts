@@ -28,6 +28,8 @@ export class LockstepWrapper extends GameWrapper {
       true,
       this.game!,
       players,
+      this.gameClass.timestep,
+      () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
       }
@@ -65,6 +67,8 @@ export class LockstepWrapper extends GameWrapper {
       false,
       this.game!,
       players,
+      this.gameClass.timestep,
+      () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
       }
@@ -98,36 +102,26 @@ export class LockstepWrapper extends GameWrapper {
   startGameLoop() {
     this.stats.style.display = "inherit";
 
-    const timestep = this.gameClass.timestep;
-    let lastFrameTime = null;
+    // Start the netcode game loop.
+    this.lockstepNetcode!.start();
 
     let animate = (timestamp) => {
-      if (!lastFrameTime) lastFrameTime = timestamp;
+      // Draw state to canvas.
+      this.game!.draw(this.canvas);
 
-      if (timestamp - lastFrameTime! >= Math.floor(timestep)) {
-        // Tick state forward.
-        let input = this.inputReader.getInput();
-        this.lockstepNetcode!.tick(input);
+      // Update stats
+      this.stats.innerHTML = `
+      <div>Netcode Algorithm: Lockstep</div>
+      <div>Game Timestep: ${this.gameClass.timestep.toFixed(2)}</div>
+      <div>Ping: ${this.pingMeasure
+        .average()
+        .toFixed(2)} ms +/- ${this.pingMeasure.stddev().toFixed(2)} ms</div>
+      <div>Frame Number: ${this.lockstepNetcode!.frame}</div>
+      `;
 
-        // Draw state to canvas.
-        this.game!.draw(this.canvas);
-
-        // Update stats
-        this.stats.innerHTML = `
-        <div>Netcode Algorithm: Lockstep</div>
-        <div>Timestep: ${timestamp - lastFrameTime!}</div>
-        <div>Ping: ${this.pingMeasure
-          .average()
-          .toFixed(2)} ms +/- ${this.pingMeasure.stddev().toFixed(2)} ms</div>
-        <div>Frame Number: ${this.lockstepNetcode!.frame}</div>
-        `;
-
-        lastFrameTime = timestamp;
-      }
-
+      // Request another frame.
       requestAnimationFrame(animate);
     };
-
     requestAnimationFrame(animate);
   }
 }

@@ -46,11 +46,16 @@ export class LockstepNetcode<
   }
 
   broadcastInput: (frame: number, input: TInput) => void;
+  pollInput: () => TInput;
+
+  timestep: number;
 
   constructor(
     isHost: boolean,
     initialState: TState,
     players: Array<NetplayPlayer>,
+    timestep: number,
+    pollInput: () => TInput,
     broadcastInput: (frame: number, input: TInput) => void
   ) {
     this.isHost = isHost;
@@ -59,6 +64,9 @@ export class LockstepNetcode<
     this.partialInputs = new Map();
     this.players = players;
 
+    this.timestep = timestep;
+
+    this.pollInput = pollInput;
     this.broadcastInput = broadcastInput;
   }
 
@@ -104,5 +112,12 @@ export class LockstepNetcode<
       // Clear the inputs for the next frame.
       this.partialInputs.clear();
     }
+  }
+
+  start() {
+    // Tick state forward on a timestep.
+    setInterval(() => {
+      this.tick(this.pollInput());
+    }, this.timestep);
   }
 }
