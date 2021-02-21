@@ -23,7 +23,7 @@ export class DefaultInputReader {
 
   touchControls: { [name: string]: TouchControl };
 
-  getCanvasScale(): {x: number; y: number} {
+  getCanvasScale(): { x: number; y: number } {
     const rect = this.canvas.getBoundingClientRect();
     return {
       x: this.canvas.width / rect.width,

@@ -2,6 +2,8 @@ import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
 
 import { DEV } from "../debugging";
 import { assert } from "chai";
+import { DefaultInput } from "../defaultinput";
+import { get, shift } from "../utils";
 
 /**
  * Lockstep networking is the simplest networking architecture for games. Each player
@@ -24,31 +26,22 @@ export class LockstepNetcode<
   /** The current state of the game. */
   state: TState;
 
-  /** The partially filled inputs from local / remote players. */
-  partialInputs: Map<NetplayPlayer, TInput>;
-
   /** The list of players that are in this match. */
   players: Array<NetplayPlayer>;
-
-  onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
-    DEV && assert.isTrue(player.isRemotePlayer(), `'player' must be remote.`);
-    DEV &&
-      assert.equal(this.frame, frame, `Got an input for an unexpected frame.`);
-    DEV &&
-      assert.isFalse(
-        this.partialInputs.has(player),
-        `Got an input for a player when an input has already been registered.`
-      );
-
-    // Set the input and try to advance the state.
-    this.partialInputs.set(player, input);
-    this.tryAdvanceState();
-  }
 
   broadcastInput: (frame: number, input: TInput) => void;
   pollInput: () => TInput;
 
   timestep: number;
+
+  /**
+   * A queue of inputs for each player. When every player has at least one
+   * input in their queue, the game state can tick forward.
+   */
+  inputs: Map<
+    NetplayPlayer,
+    Array<{ frame: number; input: TInput }>
+  > = new Map();
 
   constructor(
     isHost: boolean,
@@ -61,63 +54,99 @@ export class LockstepNetcode<
     this.isHost = isHost;
     this.state = initialState;
 
-    this.partialInputs = new Map();
     this.players = players;
 
     this.timestep = timestep;
 
     this.pollInput = pollInput;
     this.broadcastInput = broadcastInput;
+
+    // Initalize each player's input queue to an empty list.
+    for (let player of this.players) {
+      this.inputs.set(player, []);
+    }
   }
 
   getLocalPlayer() {
     return this.players.filter((p) => p.isLocalPlayer())[0];
   }
 
-  tick(localInput: TInput) {
-    let localPlayer = this.getLocalPlayer();
-
-    // If we already have a local input registered, then we cannot
-    // use the new input, as we have already broadcasted an input
-    // and cannot contradict that.
-    if (this.partialInputs.has(localPlayer)) return;
-
-    // If we don't have a local input registered, register it then
-    // broadcast the input.
-    this.partialInputs.set(localPlayer, localInput);
-    this.broadcastInput(this.frame, localInput);
-
-    // Check if the game state can be advanced.
-    this.tryAdvanceState();
-  }
-
   /**
-   * Check if we have an input for every player.
+   * Check if we have at least one input queued for every player.
    */
   checkAllInputsReady() {
     for (let player of this.players) {
-      if (!this.partialInputs.has(player)) return false;
+      if (get(this.inputs, player).length === 0) return false;
     }
     return true;
   }
 
+  missedFrames: number = 0;
+
   tryAdvanceState() {
-    if (this.checkAllInputsReady()) {
-      // Tick the stack forward with the complete inputs.
-      this.state.tick(this.partialInputs);
-
-      // Increment our frame counter.
-      this.frame++;
-
-      // Clear the inputs for the next frame.
-      this.partialInputs.clear();
+    if (!this.checkAllInputsReady()) {
+      this.missedFrames++;
+      return;
     }
+
+    // Pull inputs out of the queue to create an input map.
+    let stateInputs: Map<NetplayPlayer, TInput> = new Map();
+    for (let player of this.players) {
+      let queue = get(this.inputs, player);
+      let queuedInput = shift(queue);
+
+      DEV && assert.equal(queuedInput.frame, this.frame);
+      stateInputs.set(player, queuedInput.input);
+    }
+
+    // Tick the state forward with the complete inputs.
+    this.state.tick(stateInputs);
+
+    // Increment our frame counter.
+    this.frame++;
+
+    // Process and broadcast new local input.
+    this.processLocalInput();
   }
 
   start() {
-    // Tick state forward on a timestep.
+    // Process and broadcast the first input.
+    this.processLocalInput();
     setInterval(() => {
-      this.tick(this.pollInput());
+      // Each timestep, try to advance the state.
+      this.tryAdvanceState();
     }, this.timestep);
+  }
+
+  processLocalInput() {
+    let localPlayer = this.getLocalPlayer();
+    let localInput = this.pollInput();
+
+    DEV &&
+      assert.isEmpty(
+        this.inputs.get(localPlayer),
+        "Local player already has input stored."
+      );
+
+    // Queue the local input for a game tick.
+    get(this.inputs, localPlayer).push({
+      frame: this.frame,
+      input: this.pollInput(),
+    });
+
+    // Broadcast the input.
+    this.broadcastInput(this.frame, localInput);
+  }
+
+  onRemoteInput(frame: number, player: NetplayPlayer, input: TInput) {
+    DEV && assert.isTrue(player.isRemotePlayer(), `'player' must be remote.`);
+
+    const queue = get(this.inputs, player);
+
+    const expectedFrame = queue.length === 0 ? this.frame : queue[queue.length - 1].frame + 1;
+    DEV && assert.equal(frame, expectedFrame, "Unexpected Frame");
+
+    // Queue the input.
+    queue.push({frame: frame, input: input});
   }
 }

@@ -20,7 +20,7 @@ export class LockstepWrapper extends GameWrapper {
   }
 
   startHost(players: Array<NetplayPlayer>, conn: Peer.DataConnection) {
-    log.info("Starting a lcokstep host.");
+    log.info("Starting a lockstep host.");
 
     this.game = new this.gameClass(this.canvas, players);
 
@@ -117,6 +117,7 @@ export class LockstepWrapper extends GameWrapper {
         .average()
         .toFixed(2)} ms +/- ${this.pingMeasure.stddev().toFixed(2)} ms</div>
       <div>Frame Number: ${this.lockstepNetcode!.frame}</div>
+      <div>Missed Frames: ${this.lockstepNetcode!.missedFrames}</div>
       `;
 
       // Request another frame.
