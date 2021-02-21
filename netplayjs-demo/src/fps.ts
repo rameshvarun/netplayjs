@@ -254,6 +254,28 @@ export class PhysicsGame extends Game {
         state.velocity.y -= GRAVITY * dt;
       }
     }
+
+    // Players collide with each other.
+    for (let i = 0; i < this.players.length; ++i) {
+      for (let j = i + 1; j < this.players.length; ++j) {
+        let a = this.playerStates.get(this.players[i])!;
+        let b = this.playerStates.get(this.players[j])!;
+
+        let aPos2D = new THREE.Vector2(a.position.x, a.position.z);
+        let bPos2D = new THREE.Vector2(b.position.x, b.position.z);
+
+        let dist = aPos2D.distanceTo(bPos2D);
+
+        if (Math.abs(a.position.y - b.position.y) < PLAYER_HEIGHT && dist < PLAYER_RADIUS * 2) {
+          let penetrationDepth = PLAYER_RADIUS * 2 - dist;
+          const resolution2D = bPos2D.clone().sub(aPos2D).normalize().multiplyScalar(penetrationDepth).multiplyScalar(0.5);
+          const resolution = new THREE.Vector3(resolution2D.x, 0, resolution2D.y);
+
+          b.position.add(resolution);
+          a.position.sub(resolution);
+        }
+      }
+    }
   }
 
   draw(canvas: HTMLCanvasElement) {
