@@ -1,17 +1,18 @@
 # (WIP) netplayjs [![Build Status](https://travis-ci.org/rameshvarun/netplayjs.svg?branch=master)](https://travis-ci.org/rameshvarun/netplayjs)
 
 
-Make peer-to-peer WebRTC-based multiplayer games in just a few lines of Javascript, no server or network synchronization code required! Powered by PeerJS and an implementation of rollback netcode.
+Make peer-to-peer WebRTC-based multiplayer games in just a few lines of Javascript, no server or network synchronization code required!
 
-<center>
-
-![](./demo.gif)
-
-[CHECK THE DEMO](https://rameshvarun.github.io/netplayjs/)
-
-</center>
+<p align="center">
+  <img src="./demo.gif">
+</p>
+<p align="center">
+  <a href="https://rameshvarun.github.io/netplayjs/">CHECK THE DEMO</a>
+</p>
 
 ## Basic Usage
+
+NetplayJS provides a simple protoyping framework. Here's a quickstart.
 
 Add this script tag to your HTML.
 ```html
@@ -21,14 +22,17 @@ Add this script tag to your HTML.
 Add this javascript code.
 ```javascript
 class SimpleGame extends netplayjs.Game {
+  // In the constructor, we initialize the state of our game.
   constructor() {
     super();
-
     // Initialize our player positions.
   	this.aPos = { x: 100, y: 150 };
     this.bPos = { x: 500, y: 150 };
   }
 
+  // The tick function takes a map of Player -> Input and
+  // simulates the game forward. Think of it like making
+  // a local multiplayer game with multiple controllers.
   tick(playerInputs) {
     for (const [player, input] of playerInputs.entries()) {
       // Generate player velocity from input keys.
@@ -52,9 +56,17 @@ class SimpleGame extends netplayjs.Game {
     }
   }
 
+  // Normally, we have to implement a serialize / deserialize function
+  // for our state. However, there is an autoserializer that can handle
+  // simple states for us. We don't need to do anything here!
+  // serialize() {}
+  // deserialize(value) {}
+
+  // Draw the state of our game onto a canvas.
   draw(canvas) {
     const ctx = canvas.getContext("2d");
 
+    // Fill with black.
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -76,21 +88,24 @@ And voila - a real-time networked game with rollback and client-side prediction.
 
 ## Detailed Usage
 
-`netplayjs` is written in typescript, and it is highly recommended that you use it with TypeScript as well.
+NetplayJS is powered by an implementation of Rollback netcode (like GGPO) in Javascript. The library is written in TypeScript, and it is highly recommended that you use it with TypeScript as well.
 
-```
+### Installation
+```bash
 npm install --save netplayjs
+```
+
+```typescript
+import { NetplayPlayer, DefaultInput, Game, RollbackWrapper } from "netplayjs";
 ```
 
 ### Game State Serialization
 The client-side prediction and rewind capabilities of `netplayjs` are based off of the ability to serialize and deserialize the state of the game. In the simple example above, the autoserializer can take care of rewinding our states and sending them over a network. For most games, however, you will need to implement your own logic. You can do this by overriding `Game.serialize` and `Game.deserialize` in your subclass.
 
-
-
 ## Advanced Usage
-netplayjs is designed to make multiplayer games as simple as possible to make. However, you may find the framework too restrictive to make more complex games. You can still use netplayjs, but instead use the core netcode algorithms, which are implemented in an abstract way such that they can be used in any project.
+If you want to integrate rollback into an existing game, or otherwise find the prototyping framework too restrictive, you can use the core netcode implementations. These implementations are abstract enough to be used in any project.
 
 ```
 let rollbackNetcode = new RollbackNetcode(...)
-rollbackNetcode.tick(localInput);
+rollbackNetcode.start();
 ```
