@@ -40,10 +40,12 @@ export class RollbackWrapper extends GameWrapper {
     this.rollbackNetcode = new RollbackNetcode(
       true,
       this.game!,
+      players,
       this.getInitialInputs(players),
       10,
       this.pingMeasure,
       this.gameClass.timestep,
+      () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
       },
@@ -82,10 +84,12 @@ export class RollbackWrapper extends GameWrapper {
     this.rollbackNetcode = new RollbackNetcode(
       false,
       this.game!,
+      players,
       this.getInitialInputs(players),
       10,
       this.pingMeasure,
       this.gameClass.timestep,
+      () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
       }
@@ -118,24 +122,16 @@ export class RollbackWrapper extends GameWrapper {
   startGameLoop() {
     this.stats.style.display = "inherit";
 
-    const timestep = this.gameClass.timestep;
-    let lastFrameTime = null;
+    // Start the netcode game loop.
+    this.rollbackNetcode!.start();
 
     let animate = (timestamp) => {
-      if (!lastFrameTime) lastFrameTime = timestamp;
+      // Draw state to canvas.
+      this.game!.draw(this.canvas);
 
-      if (timestamp - lastFrameTime! >= Math.floor(timestep)) {
-        // Tick state forward.
-        let input = this.inputReader.getInput();
-        this.rollbackNetcode!.tick(input);
-
-        // Draw state to canvas.
-        this.game!.draw(this.canvas);
-
-        // Update stats
-        this.stats.innerHTML = `
+      // Update stats
+      this.stats.innerHTML = `
         <div>Netcode Algorithm: Rollback</div>
-        <div>Timestep: ${timestamp - lastFrameTime!}</div>
         <div>Ping: ${this.pingMeasure
           .average()
           .toFixed(2)} ms +/- ${this.pingMeasure.stddev().toFixed(2)} ms</div>
@@ -146,9 +142,7 @@ export class RollbackWrapper extends GameWrapper {
         <div title="If true, then the other player is running slow, so we wait for them.">Stalling: ${this.rollbackNetcode!.shouldStall()}</div>
         `;
 
-        lastFrameTime = timestamp;
-      }
-
+      // Request another frame.
       requestAnimationFrame(animate);
     };
 

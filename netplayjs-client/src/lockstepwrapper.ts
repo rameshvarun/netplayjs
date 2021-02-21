@@ -117,7 +117,6 @@ export class LockstepWrapper extends GameWrapper {
       // Update stats
       this.stats.innerHTML = `
       <div>Netcode Algorithm: Lockstep</div>
-      <div>Game Timestep: ${this.gameClass.timestep.toFixed(2)}</div>
       <div>Ping: ${this.pingMeasure
         .average()
         .toFixed(2)} ms +/- ${this.pingMeasure.stddev().toFixed(2)} ms</div>

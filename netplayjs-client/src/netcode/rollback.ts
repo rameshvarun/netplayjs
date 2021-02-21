@@ -1,5 +1,5 @@
 import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
-import { get, shift } from "../utils";
+import { get, shift, clone } from "../utils";
 
 import * as log from "loglevel";
 
@@ -20,7 +20,8 @@ class RollbackHistory<TInput extends NetplayInput<TInput>> {
 
   /**
    * These inputs represent the set of inputs that produced this state
-   * from the previous state. So history[n].state = history[n - 1].state.tick(history)
+   * from the previous state.
+   * Eg: history[n].state = history[n - 1].state.tick(history[n].inputs)
    */
   inputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>;
 
@@ -76,10 +77,10 @@ export class RollbackNetcode<
    * Whether or not we are the host of this match. The host is responsible for
    * sending our authoritative state updates.
    */
-  isServer: boolean;
+  isHost: boolean;
 
   onStateSync(frame: number, state: JSONValue) {
-    DEV && assert.isFalse(this.isServer, "Only clients recieve state syncs.");
+    DEV && assert.isFalse(this.isHost, "Only clients recieve state syncs.");
 
     // Cleanup states that we don't need anymore because we have the definitive
     // server state. We have to leave at least one state in order to simulate
@@ -98,16 +99,15 @@ export class RollbackNetcode<
     DEV && assert.equal(this.history[0].frame, frame);
     this.history[0].state = state;
 
-    // Rollback to this state
+    // Rollback to this state.
     this.state.deserialize(state);
 
     // Resimulate up to the current point.
     for (let i = 1; i < this.history.length; ++i) {
       let currentState = this.history[i];
-      let previousState = this.history[i - 1];
 
       this.state.tick(this.getStateInputs(currentState.inputs));
-      currentState.state = this.state.serialize();
+      currentState.state = clone(this.state.serialize());
     }
     DEV &&
       log.debug(
@@ -134,20 +134,22 @@ export class RollbackNetcode<
       return; // Skip rest of logic in this function.
     }
 
-    // If we have simulated this frame, it must be the case that at least
-    // one frame has a predicted input for this player. Find the first such frame.
+    // If we have already simulated a frame F for which we are currently receiving
+    // an input, it must be the case that frame F is a prediction. This is because,
+    // when we simulated F, we didn't have this input available. Find F.
     let firstPrediction: number | null = null;
     for (let i = 0; i < this.history.length; ++i) {
       if (this.history[i].isPlayerInputPredicted(player)) {
-        // Assuming that input messages from a given client are ordered, the
-        // first history with a predicted input for this player is also the
-        // frame for which we just recieved a message.
-        DEV && assert.equal(this.history[i].frame, frame);
         firstPrediction = i;
         break;
       }
     }
     DEV && assert.exists(firstPrediction);
+
+    // Assuming that input messages from a given client are ordered, the
+    // first history with a predicted input for this player is also the
+    // frame for which we just recieved a message.
+    DEV && assert.equal(this.history[firstPrediction!].frame, frame);
 
     // The state before the first prediction is, by definition,
     // not a prediction. There must be one such state.
@@ -156,7 +158,7 @@ export class RollbackNetcode<
     // Roll back to that previous state.
     this.state.deserialize(lastActualState.state);
 
-    // Rollback and resimulate state.
+    // Resimulate forwards with the actual input.
     for (let i = firstPrediction!; i < this.history.length; ++i) {
       let currentState = this.history[i];
       let currentPlayerInput = get(currentState.inputs, player);
@@ -176,7 +178,7 @@ export class RollbackNetcode<
       }
 
       this.state.tick(this.getStateInputs(currentState.inputs));
-      currentState.state = this.state.serialize();
+      currentState.state = clone(this.state.serialize());
     }
 
     DEV &&
@@ -186,8 +188,11 @@ export class RollbackNetcode<
         } states after rollback.`
       );
 
-    // If this is the server, we can cleanup states for which input has been synced.
-    if (this.isServer) {
+    // If this is the server, then we can cleanup states for which input has been synced.
+    // However, we must maintain the invariant that there is always at least one state
+    // in the history buffer, and that the first entry in the history buffer is a
+    // synced state.
+    if (this.isHost) {
       let cleanedUpStates = 0;
       while (this.history.length >= 2) {
         let firstState = this.history[0];
@@ -211,43 +216,52 @@ export class RollbackNetcode<
   timestep: number;
 
   state: TState;
+  pollInput: () => TInput;
+
+  players: Array<NetplayPlayer>;
 
   constructor(
-    isServer: boolean,
+    isHost: boolean,
     initialState: TState,
+    players: Array<NetplayPlayer>,
     initialInputs: Map<NetplayPlayer, TInput>,
     maxPredictedFrames: number,
     pingMeasure: any,
     timestep: number,
+    pollInput: () => TInput,
     broadcastInput: (frame: number, input: TInput) => void,
     broadcastState?: (frame: number, state: JSONValue) => void
   ) {
+    this.isHost = isHost;
     this.state = initialState;
+    this.players = players;
+    this.maxPredictedFrames = maxPredictedFrames;
+    this.broadcastInput = broadcastInput;
+    this.pingMeasure = pingMeasure;
+    this.timestep = timestep;
+    this.pollInput = pollInput;
+
+    if (isHost) {
+      if (broadcastState) {
+        this.broadcastState = broadcastState;
+      } else {
+        throw new Error("Expected a broadcast state function.");
+      }
+    }
 
     let historyInputs = new Map();
     for (const [player, input] of initialInputs.entries()) {
       historyInputs.set(player, { input, isPrediction: false });
     }
     this.history = [
-      new RollbackHistory(0, this.state.serialize(), historyInputs),
+      new RollbackHistory(0, clone(this.state.serialize()), historyInputs),
     ];
-
-    this.isServer = isServer;
-    this.maxPredictedFrames = maxPredictedFrames;
-    this.broadcastInput = broadcastInput;
-    this.pingMeasure = pingMeasure;
-    this.timestep = timestep;
 
     this.future = new Map();
     this.highestFrameReceived = new Map();
-    for (let player of initialInputs.keys()) {
+    for (let player of this.players) {
       this.future.set(player, []);
       this.highestFrameReceived.set(player, 0);
-    }
-
-    if (isServer) {
-      DEV && assert.exists(broadcastState);
-      this.broadcastState = broadcastState;
     }
   }
 
@@ -270,34 +284,19 @@ export class RollbackNetcode<
     return 0;
   }
 
-  // Whether or not we should stall. The general goal of stalling is (1) slow
-  // down when our peer's game loop is slowing down. This occurs when the peer
-  // is simply a slow CPU, or when the browser throttles the tab. (2) slow
-  // down the game when latency is too high to make the game playable.
+  // Whether or not we should stall.
   shouldStall(): boolean {
-    // If we are predicting too many frames, then we have to stall - this
-    // condition should only be reached if latency is really bad - consider
-    // 3G or other mobile connections.
-    if (this.predictedFrames() > this.maxPredictedFrames) return true;
-
-    // Now, let's say we are predicting frames, however the number of frames
-    // predicted is greater than what we would expect just from the latency.
-    // This means that the other player is running slow, which is very common
-    // due to browser throttling of requestAnimationFrame. We should stall in
-    // this case.
-    return (
-      this.predictedFrames() * this.timestep >
-      (this.pingMeasure.average() + this.pingMeasure.stddev() * 2) / 2
-    );
+    // If we are predicting too many frames, then we have to stall.
+    return this.predictedFrames() > this.maxPredictedFrames;
   }
 
-  tick(localInput: TInput) {
+  tick() {
     DEV && assert.isNotEmpty(this.history, `'history' cannot be empty.`);
 
     // If we should stall, then don't peform a tick at all.
     if (this.shouldStall()) return;
 
-    // Get the most recent state and the current local input.
+    // Get the most recent state.
     const lastState = this.history[this.history.length - 1];
 
     // Construct the new map of inputs for this frame.
@@ -307,8 +306,11 @@ export class RollbackNetcode<
     > = new Map();
     for (const [player, input] of lastState.inputs.entries()) {
       if (player.isLocalPlayer()) {
+        let localInput = this.pollInput();
+
         // Local player gets the local input.
         newInputs.set(player, { input: localInput, isPrediction: false });
+        // Broadcast the input to the other players.
         this.broadcastInput(lastState.frame + 1, localInput);
       } else {
         if (get(this.future, player).length > 0) {
@@ -337,7 +339,7 @@ export class RollbackNetcode<
     this.history.push(
       new RollbackHistory(
         lastState.frame + 1,
-        this.state.serialize(),
+        clone(this.state.serialize()),
         newInputs
       )
     );
@@ -356,5 +358,24 @@ export class RollbackNetcode<
       stateInputs.set(player, input);
     }
     return stateInputs;
+  }
+
+  start() {
+    setInterval(() => {
+      // If us and our peer are running at the same simulation clock,
+      // we should expect inputs from our peer to arrive after we have
+      // simulated that state. If inputs from our peer are arriving before
+      // we simulate the state, that means we are running slow, and we
+      // have to tick faster. Otherwise we are needlessly forcing our
+      // peer to predict lots of frames.
+      let numTicks = 1;
+      if (this.largestFutureSize() > 0) {
+        numTicks = 2;
+      }
+
+      for (let i = 0; i < numTicks; ++i) {
+        this.tick();
+      }
+    }, this.timestep);
   }
 }

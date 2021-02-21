@@ -319,6 +319,6 @@ loader.load(
     PhysicsGame.level = gltf.scene;
     PhysicsGame.octree.fromGraphNode(gltf.scene);
 
-    new LockstepWrapper(PhysicsGame).start();
+    new RollbackWrapper(PhysicsGame).start();
   }
 );
