@@ -10,11 +10,10 @@ Make peer-to-peer WebRTC-based multiplayer games in just a few lines of Javascri
   <a href="https://rameshvarun.github.io/netplayjs/">CHECK THE DEMO</a>
 </p>
 
-## Basic Usage
+## Quick Start
 
-NetplayJS provides a simple protoyping framework. Here's a quickstart.
+NetplayJS provides a simple protoyping framework. Add this script tag to your HTML.
 
-Add this script tag to your HTML.
 ```html
 <script src="https://unpkg.com/netplayjs@0.2.0/dist/netplay.js"></script>
 ```
