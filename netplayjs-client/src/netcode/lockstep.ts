@@ -147,14 +147,18 @@ export class LockstepNetcode<
 
   stateSyncsReceived: number = 0;
   onStateSync(frame: number, serializedState: JSONValue) {
-    DEV && assert.equal(frame, this.frame, "Unexpected state sync frame.")
+    DEV && assert.equal(frame, this.frame, "Unexpected state sync frame.");
     this.state.deserialize(serializedState);
     this.stateSyncsReceived++;
   }
 
   stateSyncsSent: number = 0;
   tryStateSync() {
-    if (this.isHost && this.stateSyncPeriod > 0 && this.frame % this.stateSyncPeriod == 0) {
+    if (
+      this.isHost &&
+      this.stateSyncPeriod > 0 &&
+      this.frame % this.stateSyncPeriod == 0
+    ) {
       this.broadcastState!(this.frame, this.state.serialize());
       this.stateSyncsSent++;
     }

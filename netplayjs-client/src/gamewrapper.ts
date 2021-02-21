@@ -201,6 +201,32 @@ export abstract class GameWrapper {
     });
   }
 
+  formatRTCStats(stats: RTCStatsReport): string {
+    let output = "";
+    stats.forEach((report) => {
+      output += `<details>`;
+      output += `<summary>${report.type}</summary>`;
+
+      Object.keys(report).forEach((key) => {
+        if (key !== "type") {
+          output += `<div>${key}: ${report[key]}</div> `;
+        }
+      });
+
+      output += `</details>`;
+    });
+    return output;
+  }
+
+  rtcStats: string = "";
+  watchRTCStats(connection: RTCPeerConnection) {
+    setInterval(() => {
+      connection
+        .getStats()
+        .then((stats) => (this.rtcStats = this.formatRTCStats(stats)));
+    }, 1000);
+  }
+
   abstract startHost(players: Array<NetplayPlayer>, conn: Peer.DataConnection);
   abstract startClient(
     players: Array<NetplayPlayer>,

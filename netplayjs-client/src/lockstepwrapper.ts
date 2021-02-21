@@ -124,7 +124,9 @@ export class LockstepWrapper extends GameWrapper {
       <div>Frame Number: ${this.lockstepNetcode!.frame}</div>
       <div>Missed Frames: ${this.lockstepNetcode!.missedFrames}</div>
 
-      <div>State Syncs: ${this.lockstepNetcode!.stateSyncsSent} sent, ${this.lockstepNetcode!.stateSyncsReceived} received</div>
+      <div>State Syncs: ${this.lockstepNetcode!.stateSyncsSent} sent, ${
+        this.lockstepNetcode!.stateSyncsReceived
+      } received</div>
       `;
 
       // Request another frame.
