@@ -26,7 +26,7 @@ class SimpleGame extends netplayjs.Game {
   constructor() {
     super();
     // Initialize our player positions.
-  	this.aPos = { x: 100, y: 150 };
+    this.aPos = { x: 100, y: 150 };
     this.bPos = { x: 500, y: 150 };
   }
 
