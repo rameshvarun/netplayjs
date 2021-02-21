@@ -1,3 +1,9 @@
 language: node_js
 node_js:
   - "node"
+before_script:
+  - cd netplayjs-client
+  - npm install
+script:
+  - cd netplayjs-client
+  - npm test
