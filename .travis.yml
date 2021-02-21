@@ -5,5 +5,4 @@ before_script:
   - cd netplayjs-client
   - npm install
 script:
-  - cd netplayjs-client
   - npm test
