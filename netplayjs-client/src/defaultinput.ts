@@ -6,7 +6,6 @@ export class DefaultInput extends NetplayInput<DefaultInput> {
   pressed: { [key: string]: boolean } = {};
 
   mousePosition?: { x: number; y: number };
-  mouseDelta?: { x: number; y: number };
 
   touches: Array<{ x: number; y: number }> = [];
 
@@ -24,15 +23,20 @@ export class DefaultInputReader {
 
   touchControls: { [name: string]: TouchControl };
 
+  getCanvasScale(): {x: number; y: number} {
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      x: this.canvas.width / rect.width,
+      y: this.canvas.height / rect.height,
+    };
+  }
+
   projectClientPosition(
     clientX: number,
     clientY: number
   ): { x: number; y: number } {
     const rect = this.canvas.getBoundingClientRect();
-    const scale = {
-      x: this.canvas.width / rect.width,
-      y: this.canvas.height / rect.height,
-    };
+    const scale = this.getCanvasScale();
 
     return {
       x: (clientX - rect.left) * scale.x,
@@ -95,11 +99,26 @@ export class DefaultInputReader {
   }
 
   updateMousePosition(event: MouseEvent) {
-    this.mousePosition = this.projectClientPosition(
-      event.clientX,
-      event.clientY
-    );
-    this.mouseDelta = { x: event.movementX, y: event.movementY };
+    if (document.pointerLockElement === this.canvas) {
+      if (!this.mousePosition) {
+        // If we are pointer locked, the first position is projected onto the canvas.
+        this.mousePosition = this.projectClientPosition(
+          event.clientX,
+          event.clientY
+        );
+      } else {
+        // Subsequent positions are delta based off of our relative movement.
+        const scale = this.getCanvasScale();
+        this.mousePosition.x += event.movementX * scale.x;
+        this.mousePosition.y += event.movementY * scale.y;
+      }
+    } else {
+      // If we aren't pointer locked, just project the position onto the canvas.
+      this.mousePosition = this.projectClientPosition(
+        event.clientX,
+        event.clientY
+      );
+    }
   }
 
   updateTouches(event: TouchEvent) {
@@ -120,7 +139,6 @@ export class DefaultInputReader {
     }
     if (this.mousePosition)
       input.mousePosition = utils.clone(this.mousePosition);
-    if (this.mouseDelta) input.mouseDelta = utils.clone(this.mouseDelta);
     input.touches = utils.clone(this.touches);
 
     for (let [name, control] of Object.entries(this.touchControls)) {

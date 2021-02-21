@@ -179,6 +179,15 @@ export class PhysicsGame extends Game {
     );
   }
 
+  getMousePosition(input: DefaultInput): {x: number; y: number} | null {
+    if (input.touches && input.touches.length > 0) {
+      return input.touches[0];
+    }
+    if (input.mousePosition)
+      return input.mousePosition;
+    return null;
+  }
+
   tick(playerInputs: Map<NetplayPlayer, DefaultInput>): void {
     const dt = PhysicsGame.timestep / 1000;
 
@@ -201,21 +210,17 @@ export class PhysicsGame extends Game {
         this.getSideVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt * movement.x)
       );
 
-      if (input.touches.length > 0) {
-        let touch = input.touches[0];
+
+      let mouse = this.getMousePosition(input);
+      if (mouse) {
         if (state.lastMousePosition) {
-          state.angleHorizontal -= (touch.x - state.lastMousePosition.x) / 100;
-          state.angleVertical -= (touch.y - state.lastMousePosition.y) / 100;
+          state.angleHorizontal -= (mouse.x - state.lastMousePosition.x) / 100;
+          state.angleVertical -= (mouse.y - state.lastMousePosition.y) / 100;
         }
 
-        state.lastMousePosition = touch;
+        state.lastMousePosition = mouse;
       } else {
         state.lastMousePosition = null;
-      }
-
-      if (input.mouseDelta) {
-        state.angleHorizontal -= input.mouseDelta.x / 500;
-        state.angleVertical -= input.mouseDelta.y / 500;
       }
 
       state.angleVertical = MathUtils.clamp(state.angleVertical, -1, 1);
