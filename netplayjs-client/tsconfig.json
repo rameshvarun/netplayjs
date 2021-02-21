@@ -7,6 +7,11 @@
         "sourceMap": true,
         "allowJs": true,
         "moduleResolution": "node",
-        "esModuleInterop": true
-    }
+        "esModuleInterop": true,
+        "declarationDir": "dist/types",
+        "declaration": true
+    },
+    "include": [
+        "src"
+    ]
 }

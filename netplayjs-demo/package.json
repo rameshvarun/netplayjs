@@ -2,9 +2,6 @@
   "name": "netplayjs-demo",
   "private": true,
   "dependencies": {
-    "ammo.js": "0.0.10",
-    "cannon": "^0.6.2",
-    "cannon-es": "^0.16.0",
     "netplayjs": "^0.1.0",
     "three": "^0.125.2"
   },

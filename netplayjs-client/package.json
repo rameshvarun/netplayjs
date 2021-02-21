@@ -1,8 +1,8 @@
 {
   "name": "netplayjs",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "dist/netplay.js",
-  "types": "./dist/src/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "description": "A framework for making P2P multiplayer games in Javascript.",
   "dependencies": {
     "chai": "^4.3.0",
@@ -17,7 +17,8 @@
     "typecheck": "tsc --noEmit",
     "check-format": "prettier-check src/**/*.ts",
     "test": "jest",
-    "typegen": "tsc --outDir ./dist --declaration --emitDeclarationOnly"
+    "typegen": "tsc --declaration --emitDeclarationOnly",
+    "prepublish": "cp ../README.md ."
   },
   "license": "ISC",
   "devDependencies": {

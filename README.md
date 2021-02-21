@@ -1,4 +1,4 @@
-# (WIP) netplayjs [![Build Status](https://travis-ci.org/rameshvarun/netplayjs.svg?branch=master)](https://travis-ci.org/rameshvarun/netplayjs)
+# (WIP) NetplayJS [![Build Status](https://travis-ci.org/rameshvarun/netplayjs.svg?branch=master)](https://travis-ci.org/rameshvarun/netplayjs)
 
 
 Make peer-to-peer WebRTC-based multiplayer games in just a few lines of Javascript, no server or network synchronization code required!
@@ -12,7 +12,7 @@ Make peer-to-peer WebRTC-based multiplayer games in just a few lines of Javascri
 
 ## Quick Start
 
-NetplayJS provides a simple protoyping framework. Add this script tag to your HTML.
+NetplayJS provides a protoyping framework. Add this script tag to your HTML.
 
 ```html
 <script src="https://unpkg.com/netplayjs@0.2.0/dist/netplay.js"></script>
