@@ -1,5 +1,6 @@
 import { NetplayInput } from "./types";
 import * as utils from "./utils";
+import { TouchControl } from "./touchcontrols";
 
 export class DefaultInput extends NetplayInput<DefaultInput> {
   pressed: { [key: string]: boolean } = {};
@@ -8,6 +9,8 @@ export class DefaultInput extends NetplayInput<DefaultInput> {
   mouseDelta?: { x: number; y: number };
 
   touches: Array<{ x: number; y: number }> = [];
+
+  touchControls?: { [name: string]: any };
 }
 
 export class DefaultInputReader {
@@ -18,6 +21,8 @@ export class DefaultInputReader {
   mousePosition: { x: number; y: number } | null = null;
   mouseDelta: { x: number; y: number } | null = null;
   touches: Array<{ x: number; y: number }> = [];
+
+  touchControls: { [name: string]: TouchControl };
 
   projectClientPosition(
     clientX: number,
@@ -35,8 +40,13 @@ export class DefaultInputReader {
     };
   }
 
-  constructor(canvas: HTMLCanvasElement, pointerLock: boolean) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    pointerLock: boolean,
+    touchControls: { [name: string]: TouchControl }
+  ) {
     this.canvas = canvas;
+    this.touchControls = touchControls;
 
     document.addEventListener(
       "keydown",
@@ -112,6 +122,11 @@ export class DefaultInputReader {
       input.mousePosition = utils.clone(this.mousePosition);
     if (this.mouseDelta) input.mouseDelta = utils.clone(this.mouseDelta);
     input.touches = utils.clone(this.touches);
+
+    for (let [name, control] of Object.entries(this.touchControls)) {
+      input.touchControls = input.touchControls || {};
+      input.touchControls[name] = utils.clone(control.getValue());
+    }
 
     return input;
   }

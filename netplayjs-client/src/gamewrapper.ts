@@ -65,9 +65,21 @@ export abstract class GameWrapper {
 
     document.body.appendChild(this.menu);
 
+    if (
+      this.gameClass.touchControls &&
+      window.navigator.userAgent.toLowerCase().includes("mobile")
+    ) {
+      for (let [name, control] of Object.entries(
+        this.gameClass.touchControls
+      )) {
+        control.show();
+      }
+    }
+
     this.inputReader = new DefaultInputReader(
       this.canvas,
-      this.gameClass.pointerLock || false
+      this.gameClass.pointerLock || false,
+      this.gameClass.touchControls || {}
     );
   }
 

@@ -1,11 +1,12 @@
-import { NetplayPlayer, DefaultInput, Game, RollbackWrapper } from "netplayjs";
+import { NetplayPlayer, DefaultInput, Game, RollbackWrapper, VirtualJoystick, LockstepWrapper } from "netplayjs";
 import * as THREE from "three";
 
 import { GLTFLoader } from "THREE/examples/jsm/loaders/GLTFLoader.js";
 import { Octree } from "THREE/examples/jsm/math/Octree.js";
 import { Capsule } from "THREE/examples/jsm/math/Capsule.js";
-import { MathUtils, StaticReadUsage } from "three";
+import { MathUtils, RectAreaLight, StaticReadUsage } from "three";
 import { JSONObject, JSONValue } from "netplayjs/dist/src/json";
+import { Constraint } from "cannon-es";
 
 export const GRAVITY = 30;
 
@@ -18,6 +19,8 @@ type PlayerState = {
 
   position: THREE.Vector3;
   velocity: THREE.Vector3;
+
+  lastMousePosition: {x: number; y: number} | null;
 
   onFloor: boolean;
 };
@@ -42,6 +45,10 @@ export class PhysicsGame extends Game {
 
   static pointerLock = true;
 
+  static touchControls = {
+    leftStick: new VirtualJoystick()
+  };
+
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -58,6 +65,8 @@ export class PhysicsGame extends Game {
 
       position: new THREE.Vector3(),
       velocity: new THREE.Vector3(),
+
+      lastMousePosition: null,
 
       onFloor: false,
     };
@@ -146,7 +155,11 @@ export class PhysicsGame extends Game {
 
       state.angleHorizontal = serialized.angleHorizontal as number;
       state.angleVertical = serialized.angleVertical as number;
+
       state.onFloor = serialized.onFloor as boolean;
+
+      state.lastMousePosition = serialized.lastMousePosition as {x: number, y: number} | null;
+
       state.position.copy(serialized.position as any);
       state.velocity.copy(serialized.velocity as any);
     })
@@ -171,36 +184,41 @@ export class PhysicsGame extends Game {
 
     for (let [player, input] of playerInputs) {
       let state = this.playerStates.get(player)!;
-      if (input.pressed["w"]) {
-        state.velocity.add(
-          this.getForwardVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt)
-        );
-      }
-      if (input.pressed["s"]) {
-        state.velocity.add(
-          this.getForwardVector(state).multiplyScalar(-PLAYER_MOVE_SPEED * dt)
-        );
-      }
-      if (input.pressed["d"]) {
-        state.velocity.add(
-          this.getSideVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt)
-        );
-      }
-      if (input.pressed["a"]) {
-        state.velocity.add(
-          this.getSideVector(state).multiplyScalar(-PLAYER_MOVE_SPEED * dt)
-        );
+
+      let movement = {
+        x: (input.pressed["d"] ? 1 : 0) + (input.pressed["a"] ? -1 : 0),
+        y: (input.pressed["w"] ? 1 : 0) + (input.pressed["s"] ? -1 : 0)
       }
 
-      if (input.pressed[" "] && state.onFloor) {
-        state.velocity.y = PLAYER_JUMP;
+      if (movement.x === 0 && movement.y === 0 && input.touchControls) {
+        movement = input.touchControls.leftStick;
+      }
+
+      state.velocity.add(
+        this.getForwardVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt * movement.y)
+      );
+      state.velocity.add(
+        this.getSideVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt * movement.x)
+      );
+
+      if (input.touches.length > 0) {
+        let touch = input.touches[0];
+        if (state.lastMousePosition) {
+          state.angleHorizontal -= (touch.x - state.lastMousePosition.x) / 100;
+          state.angleVertical -= (touch.y - state.lastMousePosition.y) / 100;
+        }
+
+        state.lastMousePosition = touch;
+      } else {
+        state.lastMousePosition = null;
       }
 
       if (input.mouseDelta) {
         state.angleHorizontal -= input.mouseDelta.x / 500;
         state.angleVertical -= input.mouseDelta.y / 500;
-        state.angleVertical = MathUtils.clamp(state.angleVertical, -1, 1);
       }
+
+      state.angleVertical = MathUtils.clamp(state.angleVertical, -1, 1);
 
       this.camera.position.copy(state.position);
     }
@@ -270,6 +288,6 @@ loader.load(
     PhysicsGame.level = gltf.scene;
     PhysicsGame.octree.fromGraphNode(gltf.scene);
 
-    new RollbackWrapper(PhysicsGame).start();
+    new LockstepWrapper(PhysicsGame).start();
   }
 );
