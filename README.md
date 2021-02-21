@@ -7,7 +7,7 @@ Make peer-to-peer WebRTC-based multiplayer games in just a few lines of Javascri
   <img src="./demo.gif">
 </p>
 <p align="center">
-  <a href="https://rameshvarun.github.io/netplayjs/">CHECK THE DEMO</a>
+  <a href="https://rameshvarun.github.io/netplayjs/">CHECK THE DEMOS</a>
 </p>
 
 ## Quick Start
