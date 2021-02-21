@@ -8,6 +8,7 @@ import * as log from "loglevel";
 import { GameWrapper } from "./gamewrapper";
 import { Game, GameClass } from "./game";
 import { RollbackNetcode } from "./netcode/rollback";
+import { assert } from "chai";
 
 const PING_INTERVAL = 100;
 
@@ -68,6 +69,7 @@ export class RollbackWrapper extends GameWrapper {
 
     conn.on("open", () => {
       console.log("Client has connected... Starting game...");
+      this.checkChannel(conn.dataChannel);
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });
@@ -110,6 +112,7 @@ export class RollbackWrapper extends GameWrapper {
     });
     conn.on("open", () => {
       console.log("Successfully connected to server... Starting game...");
+      this.checkChannel(conn.dataChannel);
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });

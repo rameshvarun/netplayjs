@@ -54,6 +54,7 @@ export class LockstepWrapper extends GameWrapper {
 
     conn.on("open", () => {
       console.log("Client has connected... Starting game...");
+      this.checkChannel(conn.dataChannel);
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });
@@ -95,6 +96,7 @@ export class LockstepWrapper extends GameWrapper {
     });
     conn.on("open", () => {
       console.log("Successfully connected to server... Starting game...");
+      this.checkChannel(conn.dataChannel);
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });

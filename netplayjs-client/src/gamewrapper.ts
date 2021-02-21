@@ -8,6 +8,7 @@ import Peer from "peerjs";
 import * as query from "query-string";
 import { doc } from "prettier";
 import * as QRCode from "qrcode";
+import { assert } from "chai";
 
 export abstract class GameWrapper {
   gameClass: GameClass;
@@ -24,6 +25,24 @@ export abstract class GameWrapper {
   inputReader: DefaultInputReader;
 
   stateSyncPeriod: number;
+
+  isChannelOrdered(channel: RTCDataChannel) {
+    return channel.ordered;
+  }
+
+  isChannelReliable(channel: RTCDataChannel) {
+    return (
+      channel.maxPacketLifeTime === null && channel.maxRetransmits === null
+    );
+  }
+
+  checkChannel(channel: RTCDataChannel) {
+    assert.isTrue(
+      this.isChannelOrdered(channel),
+      "Data Channel must be ordered."
+    );
+    assert.isTrue(this.isChannelReliable(channel), "Channel must be reliable.");
+  }
 
   constructor(gameClass: GameClass) {
     this.gameClass = gameClass;
@@ -159,6 +178,12 @@ export abstract class GameWrapper {
         const conn = this.peer!.connect(parsedHash.room as string, {
           serialization: "json",
           reliable: true,
+          // @ts-ignore
+          _payload: {
+            // This is a hack to get around a bug in PeerJS
+            originator: true,
+            reliable: true,
+          },
         });
 
         conn.on("error", (err) => console.error(err));
