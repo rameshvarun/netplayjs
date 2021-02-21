@@ -15,7 +15,7 @@ Make peer-to-peer WebRTC-based multiplayer games in just a few lines of Javascri
 NetplayJS provides a protoyping framework. Add this script tag to your HTML.
 
 ```html
-<script src="https://unpkg.com/netplayjs@0.2.0/dist/netplay.js"></script>
+<script src="https://unpkg.com/netplayjs@0.3.0/dist/netplay.js"></script>
 ```
 
 Add this javascript code.
@@ -80,7 +80,9 @@ class SimpleGame extends netplayjs.Game {
 SimpleGame.timestep = 1000 / 60; // Our game runs at 60 FPS
 SimpleGame.canvasSize = { width: 600, height: 300 };
 
-netplayjs.start(SimpleGame);
+// Because our game can be easily rewound, we will use Rollback netcode
+// If your game cannot be rewound, you should use LockstepWrapper instead.
+new netplayjs.RollbackWrapper(SimpleGame).start();
 ```
 
 And voila - a real-time networked game with rollback and client-side prediction.
