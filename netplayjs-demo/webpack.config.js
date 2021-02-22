@@ -16,6 +16,11 @@ const EXAMPLES = [
     title: "NetplayJS FPS Example",
   },
   {
+    chunkName: "emulator",
+    entry: "./src/emulator.ts",
+    title: "NetplayJS Emulator Example",
+  },
+  {
     chunkName: "simple",
     entry: "./src/simple.ts",
     title: "NetplayJS Simple Game Example",

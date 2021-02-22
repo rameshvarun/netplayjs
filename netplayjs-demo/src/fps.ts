@@ -1,4 +1,11 @@
-import { NetplayPlayer, DefaultInput, Game, RollbackWrapper, VirtualJoystick, LockstepWrapper } from "netplayjs";
+import {
+  NetplayPlayer,
+  DefaultInput,
+  Game,
+  RollbackWrapper,
+  VirtualJoystick,
+  LockstepWrapper,
+} from "netplayjs";
 import * as THREE from "three";
 
 import { GLTFLoader } from "THREE/examples/jsm/loaders/GLTFLoader.js";
@@ -19,7 +26,7 @@ type PlayerState = {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
 
-  lastMousePosition: {x: number; y: number} | null;
+  lastMousePosition: { x: number; y: number } | null;
 
   onFloor: boolean;
 };
@@ -49,7 +56,7 @@ export class PhysicsGame extends Game {
   static pointerLock = true;
 
   static touchControls = {
-    leftStick: new VirtualJoystick()
+    leftStick: new VirtualJoystick(),
   };
 
   renderer: THREE.WebGLRenderer;
@@ -145,7 +152,7 @@ export class PhysicsGame extends Game {
   }
 
   serialize(): Array<JSONObject> {
-    return this.players.map(p => {
+    return this.players.map((p) => {
       // @ts-ignore
       return this.playerStates.get(p)! as JSONObject;
     });
@@ -161,11 +168,14 @@ export class PhysicsGame extends Game {
 
       state.onFloor = serialized.onFloor as boolean;
 
-      state.lastMousePosition = serialized.lastMousePosition as {x: number, y: number} | null;
+      state.lastMousePosition = serialized.lastMousePosition as {
+        x: number;
+        y: number;
+      } | null;
 
       state.position.copy(serialized.position as any);
       state.velocity.copy(serialized.velocity as any);
-    })
+    });
   }
 
   getForwardVector(state: PlayerState) {
@@ -182,12 +192,11 @@ export class PhysicsGame extends Game {
     );
   }
 
-  getMousePosition(input: DefaultInput): {x: number; y: number} | null {
+  getMousePosition(input: DefaultInput): { x: number; y: number } | null {
     if (input.touches && input.touches.length > 0) {
       return input.touches[0];
     }
-    if (input.mousePosition)
-      return input.mousePosition;
+    if (input.mousePosition) return input.mousePosition;
     return null;
   }
 
@@ -199,20 +208,23 @@ export class PhysicsGame extends Game {
 
       let movement = {
         x: (input.pressed["d"] ? 1 : 0) + (input.pressed["a"] ? -1 : 0),
-        y: (input.pressed["w"] ? 1 : 0) + (input.pressed["s"] ? -1 : 0)
-      }
+        y: (input.pressed["w"] ? 1 : 0) + (input.pressed["s"] ? -1 : 0),
+      };
 
       if (movement.x === 0 && movement.y === 0 && input.touchControls) {
         movement = input.touchControls.leftStick;
       }
 
       state.velocity.add(
-        this.getForwardVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt * movement.y)
+        this.getForwardVector(state).multiplyScalar(
+          PLAYER_MOVE_SPEED * dt * movement.y
+        )
       );
       state.velocity.add(
-        this.getSideVector(state).multiplyScalar(PLAYER_MOVE_SPEED * dt * movement.x)
+        this.getSideVector(state).multiplyScalar(
+          PLAYER_MOVE_SPEED * dt * movement.x
+        )
       );
-
 
       let mouse = this.getMousePosition(input);
       if (mouse) {
@@ -269,10 +281,22 @@ export class PhysicsGame extends Game {
 
         let dist = aPos2D.distanceTo(bPos2D);
 
-        if (Math.abs(a.position.y - b.position.y) < PLAYER_HEIGHT && dist < PLAYER_RADIUS * 2) {
+        if (
+          Math.abs(a.position.y - b.position.y) < PLAYER_HEIGHT &&
+          dist < PLAYER_RADIUS * 2
+        ) {
           let penetrationDepth = PLAYER_RADIUS * 2 - dist;
-          const resolution2D = bPos2D.clone().sub(aPos2D).normalize().multiplyScalar(penetrationDepth).multiplyScalar(0.5);
-          const resolution = new THREE.Vector3(resolution2D.x, 0, resolution2D.y);
+          const resolution2D = bPos2D
+            .clone()
+            .sub(aPos2D)
+            .normalize()
+            .multiplyScalar(penetrationDepth)
+            .multiplyScalar(0.5);
+          const resolution = new THREE.Vector3(
+            resolution2D.x,
+            0,
+            resolution2D.y
+          );
 
           b.position.add(resolution);
           a.position.sub(resolution);
@@ -307,17 +331,14 @@ export class PhysicsGame extends Game {
 }
 
 const loader = new GLTFLoader();
-loader.load(
-  "../files/collision-world.glb",
-  (gltf) => {
-    gltf.scene.traverse((child) => {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    });
+loader.load("../files/collision-world.glb", (gltf) => {
+  gltf.scene.traverse((child) => {
+    child.castShadow = true;
+    child.receiveShadow = true;
+  });
 
-    PhysicsGame.level = gltf.scene;
-    PhysicsGame.octree.fromGraphNode(gltf.scene);
+  PhysicsGame.level = gltf.scene;
+  PhysicsGame.octree.fromGraphNode(gltf.scene);
 
-    new RollbackWrapper(PhysicsGame).start();
-  }
-);
+  new RollbackWrapper(PhysicsGame).start();
+});
