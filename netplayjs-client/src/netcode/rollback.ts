@@ -1,3 +1,13 @@
+/**
+ * Rollback netcode is an effective netcode algorithm for two-player games which allows
+ * both players to have lag-free control of their own character, at the expense of
+ * artifacting for remote characters. This is the most common algorithm used in
+ * fighting games.
+ *
+ * Resources:
+ * - RetroArch Netplay Implementation: https://github.com/libretro/RetroArch/tree/v1.9.0/network/netplay
+ */
+
 import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
 import { get, shift, clone } from "../utils";
 
@@ -362,6 +372,7 @@ export class RollbackNetcode<
 
   start() {
     setInterval(() => {
+      // TODO: This is way to aggressive of a speed up.
       // If us and our peer are running at the same simulation clock,
       // we should expect inputs from our peer to arrive after we have
       // simulated that state. If inputs from our peer are arriving before

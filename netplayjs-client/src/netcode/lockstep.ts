@@ -1,3 +1,14 @@
+/**
+ * Lockstep networking is the simplest networking architecture for games. It's easy
+ * to retrofit into an existing game. It also tends to work well for low tick rate games
+ * like an RTS.
+ *
+ * Each player broadcasts their own local input while waiting for inputs from remote players.
+ * Once all remote player inputs have been received, the game can tick forward one step.
+ * This architecture is the easiest to implement into an existing game, since there is no
+ * rewinding or prediction required.
+ */
+
 import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
 
 import { DEV } from "../debugging";
@@ -6,11 +17,6 @@ import { DefaultInput } from "../defaultinput";
 import { get, shift } from "../utils";
 import { JSONValue } from "../json";
 
-/**
- * Lockstep networking is the simplest networking architecture for games. Each player
- * broadcasts their own local input while waiting for inputs from remote players.
- * Once all remote player imputs have been received, the game can tick forward one step.
- */
 export class LockstepNetcode<
   TState extends NetplayState<TInput>,
   TInput extends NetplayInput<TInput>
