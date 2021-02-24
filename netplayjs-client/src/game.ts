@@ -25,11 +25,10 @@ export type GameClass = {
   touchControls?: { [name: string]: TouchControl };
 
   /**
-   * How often should the state be synced. By default this happens
-   * every frame. Set to zero to indicate that the state is deterministic
-   * and doesn't need to be synced.
+   * Is the game deterministic? By default, we assume no. If this is true,
+   * certain netcode algorithms can perform more efficiently.
    */
-  stateSyncPeriod?: number;
+  deterministic?: boolean;
 };
 
 export abstract class Game extends NetplayState<DefaultInput> {

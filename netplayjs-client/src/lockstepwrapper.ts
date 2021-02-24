@@ -19,6 +19,11 @@ export class LockstepWrapper extends GameWrapper {
     super(gameClass);
   }
 
+  getStateSyncPeriod(): number {
+    if (this.gameClass.deterministic) return 0;
+    else return 1;
+  }
+
   startHost(players: Array<NetplayPlayer>, conn: Peer.DataConnection) {
     log.info("Starting a lockstep host.");
 
@@ -29,7 +34,7 @@ export class LockstepWrapper extends GameWrapper {
       this.game!,
       players,
       this.gameClass.timestep,
-      this.stateSyncPeriod,
+      this.getStateSyncPeriod(),
       () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });
@@ -73,7 +78,7 @@ export class LockstepWrapper extends GameWrapper {
       this.game!,
       players,
       this.gameClass.timestep,
-      this.stateSyncPeriod,
+      this.getStateSyncPeriod(),
       () => this.inputReader.getInput(),
       (frame, input) => {
         conn.send({ type: "input", frame: frame, input: input.serialize() });

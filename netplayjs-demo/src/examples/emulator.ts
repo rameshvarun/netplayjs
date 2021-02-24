@@ -15,8 +15,7 @@ const SCREEN_HEIGHT = 240;
 export class Emulator extends Game {
   static timestep = 1000 / 60;
   static canvasSize = { width: SCREEN_WIDTH, height: SCREEN_HEIGHT };
-
-  static stateSyncPeriod: number = 0;
+  static deterministic = true;
 
   nes: any;
   frameBuffer: any;
@@ -54,11 +53,10 @@ export class Emulator extends Game {
   }
 
   serialize(): JSONValue {
-    // throw new Error(`The game state cannot be serialized.`);
-    return null;
+    throw new Error(`The game state cannot be serialized.`);
   }
   deserialize(value: JSONValue) {
-    // throw new Error(`The game state cannot be deserialized.`);
+    throw new Error(`The game state cannot be deserialized.`);
   }
 
   tick(playerInputs: Map<NetplayPlayer, DefaultInput>): void {

@@ -24,8 +24,6 @@ export abstract class GameWrapper {
 
   inputReader: DefaultInputReader;
 
-  stateSyncPeriod: number;
-
   isChannelOrdered(channel: RTCDataChannel) {
     return channel.ordered;
   }
@@ -46,8 +44,6 @@ export abstract class GameWrapper {
 
   constructor(gameClass: GameClass) {
     this.gameClass = gameClass;
-
-    this.stateSyncPeriod = this.gameClass.stateSyncPeriod || 1;
 
     // Create canvas for game.
     this.canvas = document.createElement("canvas");

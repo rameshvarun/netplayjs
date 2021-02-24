@@ -7,23 +7,28 @@ const CopyPlugin = require("copy-webpack-plugin");
 const EXAMPLES = [
   {
     chunkName: "pong",
-    entry: "./src/pong.ts",
+    entry: "./src/examples/pong.ts",
     title: "NetplayJS Pong Example",
   },
   {
     chunkName: "fps",
-    entry: "./src/fps.ts",
+    entry: "./src/examples/fps.ts",
     title: "NetplayJS FPS Example",
   },
   {
     chunkName: "emulator",
-    entry: "./src/emulator.ts",
+    entry: "./src/examples/emulator.ts",
     title: "NetplayJS Emulator Example",
   },
   {
     chunkName: "simple",
-    entry: "./src/simple.ts",
+    entry: "./src/examples/simple.ts",
     title: "NetplayJS Simple Game Example",
+  },
+  {
+    chunkName: "physics",
+    entry: "./src/examples/physics.ts",
+    title: "NetplayJS Physics Game Example",
   },
 ];
 

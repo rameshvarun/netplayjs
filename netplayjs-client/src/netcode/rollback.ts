@@ -4,6 +4,13 @@
  * artifacting for remote characters. This is the most common algorithm used in
  * fighting games.
  *
+ * The algorithm works as follows:
+ * - All clients play on the same clock.
+ * - When a client simulates a frame F, it uses it's own local input, but makes a guess as to what
+ *   actions the remote players have taken. The client sends it's local input to all other players.
+ * - When a remote player's input for frame F arrives, we rewind the state of the game to F - 1,
+ *   and replay forward with the correct input from frame F.
+ *
  * Resources:
  * - RetroArch Netplay Implementation: https://github.com/libretro/RetroArch/tree/v1.9.0/network/netplay
  */

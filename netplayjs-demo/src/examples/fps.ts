@@ -5,6 +5,7 @@ import {
   RollbackWrapper,
   VirtualJoystick,
   LockstepWrapper,
+  TestWrapper
 } from "netplayjs";
 import * as THREE from "three";
 
