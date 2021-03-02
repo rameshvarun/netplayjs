@@ -1,7 +1,7 @@
 # (WIP) NetplayJS [![Build Status](https://travis-ci.org/rameshvarun/netplayjs.svg?branch=master)](https://travis-ci.org/rameshvarun/netplayjs)
 
 
-Make peer-to-peer WebRTC-based multiplayer games in Javascript, no server or network synchronization code required! Powered by PeerJS.
+Make peer-to-peer WebRTC-based multiplayer games in Javascript, no server hosting or network synchronization code required! Powered by PeerJS.
 
 <p align="center">
   <img src="./demo.gif">
