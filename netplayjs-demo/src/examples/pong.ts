@@ -193,4 +193,4 @@ export class Pong extends Game {
   }
 }
 
-new LockstepWrapper(Pong).start();
+new RollbackWrapper(Pong).start();
