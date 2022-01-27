@@ -6,7 +6,7 @@
     "jsnes": "^1.1.0",
     "netplayjs": "^0.3.1",
     "prando": "^5.1.2",
-    "three": "^0.125.2"
+    "three": "^0.137.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^7.0.0",
