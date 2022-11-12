@@ -1,3 +1,3 @@
 # NetplayJS Demos
 
-This folder contains demos built within the NetplayJS prototyping framework. Files are covered under various source licenses.
+This folder contains demos built within the NetplayJS prototyping framework. Some code and assets are taken / adapted from other open source projects.

@@ -116,3 +116,8 @@ If you want to integrate rollback into an existing game, or otherwise find the p
 let rollbackNetcode = new RollbackNetcode(...)
 rollbackNetcode.start();
 ```
+
+# Assets Used from Other Projects
+This repo contains code and assets from other open source projects.
+- https://github.com/mrdoob/three.js (MIT)
+- https://github.com/pinobatch/allpads-nes (zlib)
