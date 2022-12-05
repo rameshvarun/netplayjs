@@ -24,8 +24,9 @@ Let's make a quick game in the prototyping framework. Add this script tag to you
 <script src="https://unpkg.com/netplayjs@0.3.0/dist/netplay.js"></script>
 ```
 
-Add this javascript code.
-```javascript
+Now add this javascript code to the same HTML.
+```html
+<script>
 class SimpleGame extends netplayjs.Game {
   // In the constructor, we initialize the state of our game.
   constructor() {
@@ -89,6 +90,7 @@ SimpleGame.canvasSize = { width: 600, height: 300 };
 // Because our game can be easily rewound, we will use Rollback netcode
 // If your game cannot be rewound, you should use LockstepWrapper instead.
 new netplayjs.RollbackWrapper(SimpleGame).start();
+</script>
 ```
 
 And voila - a real-time networked game with rollback and client-side prediction.
