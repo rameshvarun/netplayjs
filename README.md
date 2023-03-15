@@ -123,3 +123,4 @@ rollbackNetcode.start();
 This repo contains code and assets from other open source projects.
 - https://github.com/mrdoob/three.js (MIT)
 - https://github.com/pinobatch/allpads-nes (zlib)
+- https://github.com/kripken/ammo.js (zlib)
