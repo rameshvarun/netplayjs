@@ -14,7 +14,8 @@
     "shelljs": "^0.8.5"
   },
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "build": "tsc ./src/*.ts",
+    "start": "ts-node src/index.js",
     "docker:build": "docker build -t netplayjs-server ."
   },
   "license": "ISC"
