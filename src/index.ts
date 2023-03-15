@@ -15,8 +15,12 @@ const ICE_SERVERS = (() => {
 })();
 
 const app = express();
-app.get('/iceServers', function (req, res) {
+app.get('/iceservers', function (req, res) {
   res.json(ICE_SERVERS);
+})
+
+app.get('/', function (req, res) {
+    res.send("NetplayJS");
 })
 
 app.listen(3000);
