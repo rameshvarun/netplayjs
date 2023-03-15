@@ -5,7 +5,7 @@
 Make peer-to-peer WebRTC-based multiplayer games in Javascript, no server hosting or network synchronization code required! Powered by PeerJS.
 
 <p align="center">
-  <img src="./demo.gif">
+  <a href="https://rameshvarun.github.io/netplayjs/"><img src="./demo.gif"></a>
 </p>
 <p align="center">
   <a href="https://rameshvarun.github.io/netplayjs/">CHECK THE DEMOS</a>
