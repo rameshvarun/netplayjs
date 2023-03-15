@@ -152,11 +152,34 @@ export abstract class GameWrapper {
 
   peer?: Peer;
 
-  start() {
+  async start() {
     log.info("Creating a PeerJS instance.");
     this.menu.innerHTML = "Connecting to PeerJS...";
 
-    this.peer = new Peer();
+    log.info("Fetching ICE servers...");
+    let iceServers = await fetch("https://netplayjs.herokuapp.com/iceservers")
+      .then((res) => res.json())
+      .catch(() => {
+        return [
+          { urls: "stun:stun.l.google.com:19302" },
+          {
+            urls: [
+              "turn:eu-0.turn.peerjs.com:3478",
+              "turn:us-0.turn.peerjs.com:3478",
+            ],
+            username: "peerjs",
+            credential: "peerjsp",
+          },
+        ];
+      });
+
+    this.peer = new Peer(undefined, {
+      config: {
+        // @ts-ignore
+        sdpSemantics: "unified-plan",
+        iceServers: iceServers,
+      }
+    });
     this.peer.on("error", (err) => console.error(err));
 
     this.peer!.on("open", (id) => {
