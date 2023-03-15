@@ -11,7 +11,7 @@ const ammoLoaded = new Promise<void>((resolve, reject) => {
     Ammo().then(() => resolve());
   });
 });
-script.src = "https://threejs.org/examples/js/libs/ammo.wasm.js";
+script.src = "../files/ammo.wasm.js";
 document.head.appendChild(script);
 
 const textureLoader = new THREE.TextureLoader();
