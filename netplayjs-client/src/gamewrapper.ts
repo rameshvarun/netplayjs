@@ -157,7 +157,7 @@ export abstract class GameWrapper {
     this.menu.innerHTML = "Connecting to PeerJS...";
 
     log.info("Fetching ICE servers...");
-    let iceServers = await fetch("https://netplayjs.herokuapp.com/iceservers")
+    let iceServers = await fetch("https://netplayjs.varunramesh.net/iceservers")
       .then((res) => res.json())
       .catch(() => {
         return [
