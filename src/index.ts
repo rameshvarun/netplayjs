@@ -1,6 +1,7 @@
 import * as express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as cors from 'cors';
 
 const ICE_SERVERS = (() => {
     if (process.env['ICE_SERVERS']) {
@@ -15,6 +16,8 @@ const ICE_SERVERS = (() => {
 })();
 
 const app = express();
+app.use(cors());
+
 app.get('/iceservers', function (req, res) {
   res.json(ICE_SERVERS);
 })
