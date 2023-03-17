@@ -18,6 +18,8 @@ NetplayJS consists of:
 
 ## Quick Start
 
+ <a href="https://glitch.com/edit/#!/remix/netplayjs-simple"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button-v2.svg" alt="Remix on Glitch" /></a>
+
 Let's make a quick game in the prototyping framework. Add this script tag to your HTML.
 
 ```html
