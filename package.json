@@ -22,7 +22,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "docker:build": "docker build -t netplayjs-server .",
-    "format": "prettier --write src/*.ts",
+    "format": "prettier --write src/*.ts test/*.ts *.js",
     "test": "jest --runInBand"
   },
   "license": "ISC"

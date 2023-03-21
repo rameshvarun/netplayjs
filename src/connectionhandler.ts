@@ -2,6 +2,7 @@ import log = require("loglevel");
 import { WebSocket, WebSocketServer } from "ws";
 import { ClientMessage, ServerMessage } from "./protocol";
 import * as crypto from "crypto";
+import { getICEServers } from "./iceservers";
 
 // This class is responsible for handling all WebSocket messages from clients.
 export class ConnectionHandler {
@@ -48,7 +49,7 @@ export class ConnectionHandler {
               this.send(this.registrations.get(msg.destinationID)!, {
                 kind: "peer-message",
                 type: msg.type,
-                sourceID: msg.destinationID,
+                sourceID: clientID,
                 payload: msg.payload,
               });
             } else {
@@ -59,14 +60,19 @@ export class ConnectionHandler {
                 reason: `No peer found with ID: ${msg.destinationID}.`,
               });
             }
-          } else {
-            throw new Error(`Unknown message type '${msg.kind}'`);
+          } else if (msg.kind == "request-ice-servers") {
+            getICEServers().then((servers) => {
+              this.send(conn, {
+                kind: "ice-servers",
+                servers: servers,
+              });
+            });
           }
         } catch (e) {
           // The server failed to process the message.
           this.send(conn, {
             kind: "server-error",
-            reason: e.message
+            reason: e.message,
           });
           conn.close();
         }

@@ -12,19 +12,6 @@ log.setLevel((process.env.LOGLEVEL as log.LogLevelNames) || "info");
 // The currently running version of the server.
 const SERVER_VERSION = require("../package.json").version;
 
-// Default ICE servers when none has been provided.
-const DEFAULT_ICE_SERVERS = [{ urls: "stun:stun.l.google.com:19302" }];
-
-function getICEServers() {
-  if (process.env["ICE_SERVERS"]) {
-    log.debug("Loading ICE servers from environment variable...");
-    return JSON.parse(process.env["ICE_SERVERS"]);
-  } else {
-    log.debug("Using default ICE servers list...");
-    return DEFAULT_ICE_SERVERS;
-  }
-}
-
 export class MatchmakingServer {
   server: http.Server;
   app: express.Express;
