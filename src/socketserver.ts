@@ -5,7 +5,7 @@ import * as crypto from "crypto";
 import { getICEServers } from "./iceservers";
 
 // This class is responsible for handling all WebSocket messages from clients.
-export class ConnectionHandler {
+export class SocketServer {
   wss: WebSocketServer;
 
   // Register an ID -> Connection mapping so that peers can connect to us.
