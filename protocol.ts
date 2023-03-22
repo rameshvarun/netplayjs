@@ -2,21 +2,36 @@
 // This number is incremented whenever a backwards-incompatible change is made.
 export const PROTOCOL_VERSION = 1;
 
-// The types of signaling messages one peer can send to another.
+/** The types of signaling messages one peer can send to another. */
 export type MessageType = "offer" | "answer" | "candidate";
 
-// A message sent from a client to the server.
+/** A message sent from a client to the server. */
 export type ClientMessage =
   | {
-      // Send a WebRTC signaling message to a peer.
+      /** Send a WebRTC signaling message to a peer. */
       kind: "send-message";
       destinationID: string;
       type: MessageType;
       payload: any;
     }
   | {
-      // Request a list of ICE servers and their credentials.
+      /** Request a list of ICE servers and their credentials. */
       kind: "request-ice-servers";
+    }
+  | {
+      kind: "match-request";
+
+      /**
+       * A unique ID representing the game. You will
+       * only be matched to players with the same gameID.
+       */
+      gameID: string;
+
+      /** The maximum number of players a match can hold. */
+      maxPlayers: number;
+
+      /** The minimum number of players required for a match to start. */
+      minPlayers: number;
     };
 
 // A message sent from the server to the client.
@@ -48,4 +63,19 @@ export type ServerMessage =
       // Return a list of ICE servers and their credentials.
       kind: "ice-servers";
       servers: any;
+    }
+  | {
+      /** Tell the client it should host the match. */
+      kind: "host-match";
+
+      /** The clients to expect connection requests from. */
+      clientIDs: Array<string>;
+    }
+  | {
+      kind: "join-match";
+      hostID: string;
+    }
+  | {
+      kind: "match-request-failure";
+      reason: string;
     };
