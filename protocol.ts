@@ -1,6 +1,8 @@
-// The version of the protocol. This number is incremented whenever a breaking change is made.
+// The version number of the matchmaking protocol.
+// This number is incremented whenever a backwards-incompatible change is made.
 export const PROTOCOL_VERSION = 1;
 
+// The types of signaling messages one peer can send to another.
 export type MessageType = "offer" | "answer" | "candidate";
 
 // A message sent from a client to the server.
@@ -10,7 +12,7 @@ export type ClientMessage =
       kind: "send-message";
       destinationID: string;
       type: MessageType;
-      payload: string;
+      payload: any;
     }
   | {
       // Request a list of ICE servers and their credentials.
@@ -40,7 +42,7 @@ export type ServerMessage =
       kind: "peer-message";
       sourceID: string;
       type: MessageType;
-      payload: string;
+      payload: any;
     }
   | {
       // Return a list of ICE servers and their credentials.
