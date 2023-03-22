@@ -1,26 +1,28 @@
-# (WIP) NetplayJS 
+# (Preview) NetplayJS 
 
 [![Build Status](https://travis-ci.org/rameshvarun/netplayjs.svg?branch=master)](https://travis-ci.org/rameshvarun/netplayjs) [![npm](https://img.shields.io/npm/v/netplayjs)](https://www.npmjs.com/package/netplayjs)
 
-Make peer-to-peer WebRTC-based multiplayer games in Javascript, no server hosting or network synchronization code required! Powered by PeerJS.
+Make peer-to-peer WebRTC-based multiplayer games in JavaScript, no server hosting or network synchronization code required!
 
 <p align="center">
   <a href="https://rameshvarun.github.io/netplayjs/"><img src="./demo.gif"></a>
 </p>
 <p align="center">
-  <a href="https://rameshvarun.github.io/netplayjs/">CHECK THE DEMOS</a>
+  <a href="https://rameshvarun.github.io/netplayjs/">[CHECK OUT THE DEMOS]</a>
 </p>
-
-NetplayJS consists of:
-- Implementations of Rollback netcode and Lockstep netcode in Javascript
-- A prototyping framework that lets you create a multiplayer game in a few lines of code
-- A collection of demos built in the prototyping framework
 
 ## Quick Start
 
  <a href="https://glitch.com/edit/#!/remix/netplayjs-simple"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button-v2.svg" alt="Remix on Glitch" /></a>
+ 
+ Here's how NetplayJS works:
 
-Let's make a quick game in the prototyping framework. Add this script tag to your HTML.
+- You create your game within a single static HTML file.
+- You can share this file anywhere ([GitHub Pages](https://pages.github.com/), [Itch.io](https://itch.io/), [Glitch](https://glitch.com/), and many more).
+
+NetplayJS handles most of the complicated aspects of multiplayer game development, letting you create games almost as if they were local multiplayer games. Synchronization and matchmaking is handled automatically under the hood.
+
+Let's make a very simple game. Create an HTML file and add the following script tag.
 
 ```html
 <script src="https://unpkg.com/netplayjs@0.3.0/dist/netplay.js"></script>
@@ -99,7 +101,10 @@ And voila - a real-time networked game with rollback and client-side prediction.
 
 ## Basic Usage
 
-NetplayJS is powered by an implementation of Rollback netcode (like GGPO) in Javascript. The library is written in TypeScript, and it is highly recommended that you use it with TypeScript as well.
+NetplayJS consists of:
+- Implementations of Rollback netcode and Lockstep netcode in TypeScript.
+- A prototyping framework that lets you create a multiplayer game in a few lines of code
+- A collection of demos built in the prototyping framework
 
 ### Installation
 ```bash
