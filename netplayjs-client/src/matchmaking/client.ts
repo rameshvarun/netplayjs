@@ -1,6 +1,7 @@
 import EventEmitter from "eventemitter3";
 import log from "loglevel";
-import { ClientMessage, MessageType, ServerMessage } from "./common/protocol";
+import { ClientMessage, MessageType, ServerMessage } from "../common/protocol";
+import * as msgpack from "msgpack-lite";
 
 export class MatchmakingClient extends EventEmitter {
   ws: WebSocket;
@@ -36,6 +37,7 @@ export class MatchmakingClient extends EventEmitter {
         const connection = new PeerConnection(this, msg.sourceID, false);
         this.connections.set(msg.sourceID, connection);
         connection.onSignalingMessage(msg.type, msg.payload);
+        this.emit("connection", connection);
       } else {
         this.connections
           .get(msg.sourceID)!
@@ -44,11 +46,15 @@ export class MatchmakingClient extends EventEmitter {
     }
   }
 
-  connectPeer(peerID: string) {
-    this.connections.set(peerID, new PeerConnection(this, peerID, true));
+  connectPeer(peerID: string): PeerConnection {
+    const connection = new PeerConnection(this, peerID, true);
+    this.connections.set(peerID, connection);
+    this.emit("connection", connection);
+    return connection;
   }
 }
 
+/** A reliable data connection to a single peer. */
 export class PeerConnection extends EventEmitter {
   client: MatchmakingClient;
   peerID: string;
@@ -110,12 +116,14 @@ export class PeerConnection extends EventEmitter {
   setDataChannel(dataChannel: RTCDataChannel) {
     this.dataChannel = dataChannel;
     this.dataChannel.onopen = (e) => {
-      this.client.emit("connection", this);
       this.emit("open");
     };
     this.dataChannel.onmessage = (e) => {
-      this.emit("data", JSON.parse(e.data));
+      this.emit("data", msgpack.decode(new Uint8Array(e.data as ArrayBuffer)));
     };
+    this.dataChannel.onclose = (e) => {
+      this.emit("close");
+    }
   }
 
   async onSignalingMessage(type: MessageType, payload: any) {
@@ -146,6 +154,6 @@ export class PeerConnection extends EventEmitter {
   }
 
   send(data: any) {
-    this.dataChannel!.send(JSON.stringify(data));
+    this.dataChannel!.send(msgpack.encode(data));
   }
 }

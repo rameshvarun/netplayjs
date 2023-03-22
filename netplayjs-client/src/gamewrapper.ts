@@ -10,7 +10,7 @@ import { doc } from "prettier";
 import * as QRCode from "qrcode";
 import { assert } from "chai";
 
-import { MatchmakingClient, PeerConnection } from "./matchmakingclient";
+import { MatchmakingClient, PeerConnection } from "./matchmaking/client";
 
 export abstract class GameWrapper {
   gameClass: GameClass;
@@ -179,10 +179,8 @@ export abstract class GameWrapper {
           new NetplayPlayer(0, false, true), // Player 0 is our peer, the host.
           new NetplayPlayer(1, true, false), // Player 1 is us, a client
         ];
-
-        matchmaker.on("connection", (conn) => {
-          this.startClient(players, conn);
-        });
+        
+        this.startClient(players, conn);
       } else {
         // We are host, so we need to show a join link.
         log.info("Showing join link.");

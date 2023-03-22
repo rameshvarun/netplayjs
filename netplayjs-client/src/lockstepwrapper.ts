@@ -7,7 +7,7 @@ import { NetplayPlayer, NetplayState } from "./types";
 import * as log from "loglevel";
 import { GameWrapper } from "./gamewrapper";
 import { Game, GameClass } from "./game";
-import { PeerConnection } from "./matchmakingclient";
+import { PeerConnection } from "./matchmaking/client";
 
 const PING_INTERVAL = 100;
 
