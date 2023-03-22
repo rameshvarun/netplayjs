@@ -4,7 +4,17 @@
 
 A basic matchmaking server. Game updates are sent peer-to-peer and thus don't go through this server.
 
+## Developing
 
 ```
-docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.2
+git clone --recursive https://github.com/rameshvarun/netplayjs-server.git
+cd netplayjs-server
+nvm use # (Optional) If you have NVM installed to manage multiple node versions.
+npm install
+npm start
+```
+
+## Running from Docker Hub
+```
+docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.3
 ```
