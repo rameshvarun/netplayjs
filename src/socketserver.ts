@@ -3,13 +3,16 @@ import { WebSocket, WebSocketServer } from "ws";
 import { ClientMessage, ServerMessage } from "./common/protocol";
 import * as crypto from "crypto";
 import { getICEServers } from "./iceservers";
+import { MatchmakingQueue } from "./queue";
 
-// This class is responsible for handling all WebSocket messages from clients.
+/** This class is responsible for handling all WebSocket messages from clients. */
 export class SocketServer {
   wss: WebSocketServer;
 
-  // Register an ID -> Connection mapping so that peers can connect to us.
+  /** Register an ID -> Connection mapping so that peers can connect to us. */
   registrations: Map<string, WebSocket> = new Map<string, WebSocket>();
+
+  queue: MatchmakingQueue = new MatchmakingQueue();
 
   // Type-safe message sending helper.
   send(conn: WebSocket, message: ServerMessage) {
@@ -41,33 +44,7 @@ export class SocketServer {
       conn.on("message", (data: string) => {
         try {
           let msg: ClientMessage = JSON.parse(data);
-
-          if (msg.kind == "send-message") {
-            // Check if we have the destination peer registered.
-            if (this.registrations.has(msg.destinationID)) {
-              // Forward signaling message on to peer.
-              this.send(this.registrations.get(msg.destinationID)!, {
-                kind: "peer-message",
-                type: msg.type,
-                sourceID: clientID,
-                payload: msg.payload,
-              });
-            } else {
-              // We don't have this peer registered, so report failure.
-              this.send(conn, {
-                kind: "send-message-failure",
-                destinationID: msg.destinationID,
-                reason: `No peer found with ID: ${msg.destinationID}.`,
-              });
-            }
-          } else if (msg.kind == "request-ice-servers") {
-            getICEServers().then((servers) => {
-              this.send(conn, {
-                kind: "ice-servers",
-                servers: servers,
-              });
-            });
-          }
+          this.processClientMessage(conn, clientID, msg);
         } catch (e) {
           // The server failed to process the message.
           this.send(conn, {
@@ -81,7 +58,53 @@ export class SocketServer {
       conn.on("close", () => {
         // Clear connection from registrations.
         this.registrations.delete(clientID);
+
+        // Remove connection from queue.
+        this.queue.tryRemoveRequest(clientID);
       });
     });
+  }
+
+  processClientMessage(conn: WebSocket, clientID: string, msg: ClientMessage) {
+    if (msg.kind == "send-message") {
+      // Check if we have the destination peer registered.
+      if (this.registrations.has(msg.destinationID)) {
+        // Forward signaling message on to peer.
+        this.send(this.registrations.get(msg.destinationID)!, {
+          kind: "peer-message",
+          type: msg.type,
+          sourceID: clientID,
+          payload: msg.payload,
+        });
+      } else {
+        // We don't have this peer registered, so report failure.
+        this.send(conn, {
+          kind: "send-message-failure",
+          destinationID: msg.destinationID,
+          reason: `No peer found with ID: ${msg.destinationID}.`,
+        });
+      }
+    } else if (msg.kind == "request-ice-servers") {
+      // Generate and return a list of ICE servers.
+      getICEServers().then((servers) => {
+        this.send(conn, {
+          kind: "ice-servers",
+          servers: servers,
+        });
+      });
+    } else if (msg.kind == "match-request") {
+      if (this.queue.hasClient(clientID)) {
+        // If our client is already in the queue, report failure
+        // since we can only have one pending match request
+        // at a time.
+        this.send(conn, {
+          kind: "match-request-failure",
+          reason: "Client already has ongoing match request.",
+        });
+      } else {
+        // Add this request to the matchmaking queue.
+        this.queue.addRequest(clientID, msg.gameID);
+      }
+    }
   }
 }
