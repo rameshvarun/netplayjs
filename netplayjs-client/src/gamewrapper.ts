@@ -10,6 +10,8 @@ import { doc } from "prettier";
 import * as QRCode from "qrcode";
 import { assert } from "chai";
 
+import { MatchmakingClient, PeerConnection } from "./matchmakingclient";
+
 export abstract class GameWrapper {
   gameClass: GameClass;
 
@@ -153,36 +155,10 @@ export abstract class GameWrapper {
   peer?: Peer;
 
   async start() {
-    log.info("Creating a PeerJS instance.");
-    this.menu.innerHTML = "Connecting to PeerJS...";
+    this.menu.innerHTML = "Connecting to NetplayJS server...";
 
-    log.info("Fetching ICE servers...");
-    let iceServers = await fetch("https://netplayjs.varunramesh.net/iceservers")
-      .then((res) => res.json())
-      .catch(() => {
-        return [
-          { urls: "stun:stun.l.google.com:19302" },
-          {
-            urls: [
-              "turn:eu-0.turn.peerjs.com:3478",
-              "turn:us-0.turn.peerjs.com:3478",
-            ],
-            username: "peerjs",
-            credential: "peerjsp",
-          },
-        ];
-      });
-
-    this.peer = new Peer(undefined, {
-      config: {
-        // @ts-ignore
-        sdpSemantics: "unified-plan",
-        iceServers: iceServers,
-      }
-    });
-    this.peer.on("error", (err) => console.error(err));
-
-    this.peer!.on("open", (id) => {
+    let matchmaker = new MatchmakingClient();
+    matchmaker.on("ready", () => {
       // Try to parse the room from the hash. If we find one,
       // we are a client.
       const parsedHash = query.parse(window.location.hash);
@@ -194,18 +170,9 @@ export abstract class GameWrapper {
 
         log.info(`Connecting to room ${parsedHash.room}.`);
 
-        const conn = this.peer!.connect(parsedHash.room as string, {
-          serialization: "json",
-          reliable: true,
-          // @ts-ignore
-          _payload: {
-            // This is a hack to get around a bug in PeerJS
-            originator: true,
-            reliable: true,
-          },
-        });
+        const conn = matchmaker.connectPeer(parsedHash.room as string);
 
-        conn.on("error", (err) => console.error(err));
+        // conn.on("error", (err) => console.error(err));
 
         // Construct the players array.
         const players = [
@@ -213,13 +180,15 @@ export abstract class GameWrapper {
           new NetplayPlayer(1, true, false), // Player 1 is us, a client
         ];
 
-        this.startClient(players, conn);
+        matchmaker.on("connection", (conn) => {
+          this.startClient(players, conn);
+        });
       } else {
         // We are host, so we need to show a join link.
         log.info("Showing join link.");
 
         // Show the join link.
-        let joinURL = `${window.location.href}#room=${id}`;
+        let joinURL = `${window.location.href}#room=${matchmaker.id}`;
         this.menu.innerHTML = `<div>Join URL (Open in a new window or send to a friend): <a href="${joinURL}">${joinURL}<div>`;
 
         // Add a QR code for joining.
@@ -234,9 +203,10 @@ export abstract class GameWrapper {
         ];
 
         // Wait for a connection from a client.
-        this.peer!.on("connection", (conn) => {
+        matchmaker.on("connection", (conn) => {
           // Make the menu disappear.
           this.menu.style.display = "none";
+
           conn.on("error", (err) => console.error(err));
 
           this.startHost(players, conn);
@@ -271,9 +241,6 @@ export abstract class GameWrapper {
     }, 1000);
   }
 
-  abstract startHost(players: Array<NetplayPlayer>, conn: Peer.DataConnection);
-  abstract startClient(
-    players: Array<NetplayPlayer>,
-    conn: Peer.DataConnection
-  );
+  abstract startHost(players: Array<NetplayPlayer>, conn: PeerConnection);
+  abstract startClient(players: Array<NetplayPlayer>, conn: PeerConnection);
 }

@@ -163,7 +163,7 @@ export class LockstepNetcode<
     if (
       this.isHost &&
       this.stateSyncPeriod > 0 &&
-      (this.frame % this.stateSyncPeriod) == 0
+      this.frame % this.stateSyncPeriod == 0
     ) {
       this.broadcastState!(this.frame, this.state.serialize());
       this.stateSyncsSent++;

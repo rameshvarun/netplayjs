@@ -1,0 +1,3 @@
+[submodule "netplayjs-client/src/common"]
+	path = netplayjs-client/src/common
+	url = https://github.com/rameshvarun/netplayjs-common.git

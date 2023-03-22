@@ -7,6 +7,7 @@ import { NetplayPlayer, NetplayState } from "./types";
 import * as log from "loglevel";
 import { GameWrapper } from "./gamewrapper";
 import { Game, GameClass } from "./game";
+import { PeerConnection } from "./matchmakingclient";
 
 const PING_INTERVAL = 100;
 
@@ -24,7 +25,7 @@ export class LockstepWrapper extends GameWrapper {
     else return 1;
   }
 
-  startHost(players: Array<NetplayPlayer>, conn: Peer.DataConnection) {
+  startHost(players: Array<NetplayPlayer>, conn: PeerConnection) {
     log.info("Starting a lockstep host.");
 
     this.game = new this.gameClass(this.canvas, players);
@@ -59,7 +60,7 @@ export class LockstepWrapper extends GameWrapper {
 
     conn.on("open", () => {
       console.log("Client has connected... Starting game...");
-      this.checkChannel(conn.dataChannel);
+      this.checkChannel(conn.dataChannel!);
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });
@@ -69,7 +70,7 @@ export class LockstepWrapper extends GameWrapper {
     });
   }
 
-  startClient(players: Array<NetplayPlayer>, conn: Peer.DataConnection) {
+  startClient(players: Array<NetplayPlayer>, conn: PeerConnection) {
     log.info("Starting a lockstep client.");
 
     this.game = new this.gameClass(this.canvas, players);
@@ -101,7 +102,7 @@ export class LockstepWrapper extends GameWrapper {
     });
     conn.on("open", () => {
       console.log("Successfully connected to server... Starting game...");
-      this.checkChannel(conn.dataChannel);
+      this.checkChannel(conn.dataChannel!);
 
       setInterval(() => {
         conn.send({ type: "ping-req", sent_time: Date.now() });

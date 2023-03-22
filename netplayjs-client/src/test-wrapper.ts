@@ -51,23 +51,23 @@ export class TestWrapper {
 
   start() {
     setInterval(() => {
-        let inputs = new Map();
-        for (let player of this.players) {
-            if (player.isLocalPlayer()) {
-                inputs.set(player, this.inputReader.getInput());
-            } else {
-                inputs.set(player, new DefaultInput());
-            }
+      let inputs = new Map();
+      for (let player of this.players) {
+        if (player.isLocalPlayer()) {
+          inputs.set(player, this.inputReader.getInput());
+        } else {
+          inputs.set(player, new DefaultInput());
         }
-        this.game.tick(inputs);
+      }
+      this.game.tick(inputs);
     }, this.gameClass.timestep);
 
     let animate = (timestamp) => {
-        // Draw state to canvas.
-        this.game!.draw(this.canvas);
+      // Draw state to canvas.
+      this.game!.draw(this.canvas);
 
-        requestAnimationFrame(animate);
-      };
       requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
   }
 }
