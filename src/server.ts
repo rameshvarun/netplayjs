@@ -2,6 +2,7 @@ import * as express from "express";
 import * as http from "http";
 import * as cors from "cors";
 import * as log from "loglevel";
+import * as util from "util";
 import { PROTOCOL_VERSION, ServerMessage } from "./common/protocol";
 import { AddressInfo, WebSocketServer, WebSocket } from "ws";
 import { SocketServer } from "./socketserver";
@@ -14,13 +15,14 @@ const SERVER_VERSION = require("../package.json").version;
 export class Server {
   server: http.Server;
   app: express.Express;
+  socketServer: SocketServer;
 
   constructor() {
     this.app = express();
     this.app.use(cors());
 
     const wss = new WebSocketServer({ noServer: true });
-    const socketServer = new SocketServer(wss);
+    this.socketServer = new SocketServer(wss);
 
     this.server = http.createServer(this.app);
 
@@ -49,7 +51,9 @@ export class Server {
     });
   }
 
-  close() {
-    this.server.close();
+  close(): Promise<void> {
+    this.socketServer.close();
+    const close = util.promisify(this.server.close.bind(this.server));
+    return close();
   }
 }

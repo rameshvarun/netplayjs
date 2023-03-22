@@ -4,7 +4,7 @@ type MatchRequest = {
   clientID: string;
 };
 
-type MatchEvent = {
+export type MatchEvent = {
   hostID: string;
   clientIDs: Array<string>;
 };
@@ -82,6 +82,7 @@ export class MatchmakingQueue extends EventEmitter {
   /** Try to form as many matches as possible. */
   tryMatch() {
     // TODO(rameshvarun): Support >2 player count.
+    // TODO(rameshvarun): Randomly shuffle queue.
     let entries = Array.from(this.requests.entries());
 
     for (let [gameID, queue] of entries) {

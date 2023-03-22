@@ -3,7 +3,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import { ClientMessage, ServerMessage } from "./common/protocol";
 import * as crypto from "crypto";
 import { getICEServers } from "./iceservers";
-import { MatchmakingQueue } from "./queue";
+import { MatchEvent, MatchmakingQueue } from "./queue";
 
 /** This class is responsible for handling all WebSocket messages from clients. */
 export class SocketServer {
@@ -42,6 +42,7 @@ export class SocketServer {
 
       // Listen for messages.
       conn.on("message", (data: string) => {
+        log.debug(`Received message: ${data}.`);
         try {
           let msg: ClientMessage = JSON.parse(data);
           this.processClientMessage(conn, clientID, msg);
@@ -63,6 +64,24 @@ export class SocketServer {
         this.queue.tryRemoveRequest(clientID);
       });
     });
+
+    // Listen for successful matches from our matchmaking queue.
+    this.queue.on("match", (match: MatchEvent) => {
+      // Inform the host.
+      this.send(this.registrations.get(match.hostID)!, {
+        kind: "host-match",
+        clientIDs: match.clientIDs,
+      });
+
+      // Inform the clients.
+      for (let clientID of match.clientIDs) {
+        this.send(this.registrations.get(clientID)!, {
+          kind: "join-match",
+          hostID: match.hostID,
+        });
+      }
+    });
+    this.queue.start();
   }
 
   processClientMessage(conn: WebSocket, clientID: string, msg: ClientMessage) {
@@ -106,5 +125,9 @@ export class SocketServer {
         this.queue.addRequest(clientID, msg.gameID);
       }
     }
+  }
+
+  close() {
+    this.queue.stop();
   }
 }

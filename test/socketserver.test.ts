@@ -13,7 +13,7 @@ beforeEach(() => {
   return server.start();
 });
 afterEach(() => {
-  server!.close();
+  return server!.close();
 });
 
 test("Create and teardown server.", () => {});
@@ -109,4 +109,43 @@ test("Send signaling message to client that doesn't exist.", (done) => {
       client.close();
     }
   });
+});
+
+test("Make a match between two clients.", async () => {
+  const clientA = new Promise((resolve) => {
+    let clientA = new TestClient();
+    clientA.onMessage((msg: ServerMessage) => {
+      if (msg.kind == "registration-success") {
+        clientA.sendMessage({
+          kind: "match-request",
+          gameID: "game-id",
+          maxPlayers: 2,
+          minPlayers: 2,
+        });
+      } else if (msg.kind == "join-match" || msg.kind == "host-match") {
+        clientA.close();
+        resolve(msg);
+      }
+    });
+  });
+
+  const clientB = new Promise((resolve) => {
+    let clientB = new TestClient();
+    clientB.onMessage((msg: ServerMessage) => {
+      if (msg.kind == "registration-success") {
+        clientB.sendMessage({
+          kind: "match-request",
+          gameID: "game-id",
+          maxPlayers: 2,
+          minPlayers: 2,
+        });
+      } else if (msg.kind == "join-match" || msg.kind == "host-match") {
+        clientB.close();
+        resolve(msg);
+      }
+    });
+  });
+
+  const aResult = await clientA;
+  const bResult = await clientB;
 });
