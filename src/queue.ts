@@ -1,4 +1,4 @@
-import EventEmitter from "eventemitter3";
+import { EventEmitter } from "eventemitter3";
 
 type MatchRequest = {
   clientID: string;
@@ -9,6 +9,9 @@ type MatchEvent = {
   clientIDs: Array<string>;
 };
 
+const MATCHMAKING_TICK_TIMER = 3 * 1000;
+
+/** The class handles all public matchmaking. */
 export class MatchmakingQueue extends EventEmitter {
   /** A map of gameID -> a list of match requests. */
   requests: Map<string, Array<MatchRequest>> = new Map();
@@ -21,6 +24,14 @@ export class MatchmakingQueue extends EventEmitter {
 
   constructor() {
     super();
+  }
+
+  numClients(): number {
+    return this.clients.size;
+  }
+
+  numGames(): number {
+    return this.requests.size;
   }
 
   /** Check if this client has an active match request. */
@@ -68,14 +79,23 @@ export class MatchmakingQueue extends EventEmitter {
     }
   }
 
+  /** Try to form as many matches as possible. */
   tryMatch() {
+    // TODO(rameshvarun): Support >2 player count.
     let entries = Array.from(this.requests.entries());
 
     for (let [gameID, queue] of entries) {
       while (queue.length > 1) {
+        // Pop two requests from the queue. One becomes the host
+        // and the other becomes a client.
         const host = queue.pop()!;
         const client = queue.pop()!;
 
+        // Delete these players from the list.
+        this.clients.delete(host.clientID);
+        this.clients.delete(client.clientID);
+
+        // Emit a successful match event.
         this.emit("match", {
           hostID: host.clientID,
           clientIDs: [client.clientID],
@@ -87,5 +107,16 @@ export class MatchmakingQueue extends EventEmitter {
         this.requests.delete(gameID);
       }
     }
+  }
+
+  interval?: NodeJS.Timer;
+  start() {
+    this.interval = setInterval(() => {
+      this.tryMatch();
+    }, MATCHMAKING_TICK_TIMER);
+  }
+
+  stop() {
+    clearInterval(this.interval);
   }
 }
