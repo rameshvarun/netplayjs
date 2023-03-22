@@ -1,16 +1,15 @@
-import { MatchmakingServer } from "../src/index";
-import { WebSocket } from "ws";
+import { Server } from "../src/server";
 import * as log from "loglevel";
-import { ClientMessage, ServerMessage } from "../src/protocol";
+import { ClientMessage, ServerMessage } from "../src/common/protocol";
 import { TestClient } from "./testclient";
 
 // Show debug messages while running tests.
 log.setLevel("debug");
 
 // Start / stop a new matchmaking server for each test.
-let server: MatchmakingServer | undefined;
+let server: Server | undefined;
 beforeEach(() => {
-  server = new MatchmakingServer();
+  server = new Server();
   return server.start();
 });
 afterEach(() => {

@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { ClientMessage, ServerMessage } from "../src/protocol";
+import { ClientMessage, ServerMessage } from "../src/common/protocol";
 
 export class TestClient extends WebSocket {
   constructor() {
