@@ -179,7 +179,7 @@ export abstract class GameWrapper {
           new NetplayPlayer(0, false, true), // Player 0 is our peer, the host.
           new NetplayPlayer(1, true, false), // Player 1 is us, a client
         ];
-        
+
         this.startClient(players, conn);
       } else {
         // We are host, so we need to show a join link.

@@ -1,4 +1,11 @@
-import { DefaultInput, Game, JSONValue, LockstepWrapper, NetplayPlayer, TestWrapper } from "netplayjs";
+import {
+  DefaultInput,
+  Game,
+  JSONValue,
+  LockstepWrapper,
+  NetplayPlayer,
+  TestWrapper,
+} from "netplayjs/src/index";
 import Prando from "prando";
 import * as THREE from "three";
 
@@ -393,16 +400,18 @@ class PhysicsGame extends Game {
     // The delta time in seconds.
     let dt = PhysicsGame.timestep / 1000;
 
-    for(let [player, input] of playerInputs.entries()) {
+    for (let [player, input] of playerInputs.entries()) {
       if (player.getID() === 0) {
-        let arm = (input.pressed.ArrowLeft ? -1 : 0) + (input.pressed.ArrowRight ? 1 : 0)
+        let arm =
+          (input.pressed.ArrowLeft ? -1 : 0) +
+          (input.pressed.ArrowRight ? 1 : 0);
         // Hinge control
-        this.hinge.enableAngularMotor( true, 1.5 * arm, 50 );
+        this.hinge.enableAngularMotor(true, 1.5 * arm, 50);
       }
     }
 
     // Step world
-    this.physicsWorld.stepSimulation(dt, 10 );
+    this.physicsWorld.stepSimulation(dt, 10);
   }
 
   draw() {
@@ -412,43 +421,39 @@ class PhysicsGame extends Game {
   }
 
   updateBodies() {
-
     const transformAux1 = new Ammo.btTransform();
 
     // Update rope
-			const softBody = this.rope!.userData.physicsBody;
-			const ropePositions = this.rope!.geometry.attributes.position.array as Array<number>;
-			const numVerts = ropePositions.length / 3;
-			const nodes = softBody.get_m_nodes();
-			let indexFloat = 0;
+    const softBody = this.rope!.userData.physicsBody;
+    const ropePositions = this.rope!.geometry.attributes.position
+      .array as Array<number>;
+    const numVerts = ropePositions.length / 3;
+    const nodes = softBody.get_m_nodes();
+    let indexFloat = 0;
 
-			for ( let i = 0; i < numVerts; i ++ ) {
+    for (let i = 0; i < numVerts; i++) {
+      const node = nodes.at(i);
+      const nodePos = node.get_m_x();
+      ropePositions[indexFloat++] = nodePos.x();
+      ropePositions[indexFloat++] = nodePos.y();
+      ropePositions[indexFloat++] = nodePos.z();
+    }
 
-				const node = nodes.at( i );
-				const nodePos = node.get_m_x();
-				ropePositions[ indexFloat ++ ] = nodePos.x();
-				ropePositions[ indexFloat ++ ] = nodePos.y();
-				ropePositions[ indexFloat ++ ] = nodePos.z();
+    this.rope!.geometry.attributes.position.needsUpdate = true;
 
-			}
-
-			this.rope!.geometry.attributes.position.needsUpdate = true;
-
-			// Update rigid bodies
-			for ( let i = 0, il = this.rigidBodies.length; i < il; i ++ ) {
-
-				const objThree = this.rigidBodies[ i ];
-				const objPhys = objThree.userData.physicsBody;
-				const ms = objPhys.getMotionState();
-				if ( ms ) {
-
-					ms.getWorldTransform(transformAux1);
-					const p = transformAux1.getOrigin();
-					const q = transformAux1.getRotation();
-					objThree.position.set( p.x(), p.y(), p.z() );
-					objThree.quaternion.set( q.x(), q.y(), q.z(), q.w() );
-				}
-		}
+    // Update rigid bodies
+    for (let i = 0, il = this.rigidBodies.length; i < il; i++) {
+      const objThree = this.rigidBodies[i];
+      const objPhys = objThree.userData.physicsBody;
+      const ms = objPhys.getMotionState();
+      if (ms) {
+        ms.getWorldTransform(transformAux1);
+        const p = transformAux1.getOrigin();
+        const q = transformAux1.getRotation();
+        objThree.position.set(p.x(), p.y(), p.z());
+        objThree.quaternion.set(q.x(), q.y(), q.z(), q.w());
+      }
+    }
   }
 
   serialize(): JSONValue {

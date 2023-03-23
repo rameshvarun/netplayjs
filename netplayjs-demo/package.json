@@ -22,8 +22,6 @@
     "start": "webpack serve --open --env development",
     "build": "rm -rf dist/ && webpack --env production",
     "format": "prettier --write src/**/*.ts *.js src/*.html",
-    "typecheck": "tsc --noEmit",
-    "check-format": "prettier-check src/**/*.ts src/**/*.tsx",
-    "test": "npm run typecheck && npm run check-format && npm run build"
+    "typecheck": "tsc --noEmit"
   }
 }

@@ -4,16 +4,14 @@ import {
   Game,
   RollbackWrapper,
   VirtualJoystick,
-  LockstepWrapper,
-  TestWrapper
-} from "netplayjs";
+  JSONObject,
+} from "netplayjs/src/index";
 import * as THREE from "three";
 
 import { GLTFLoader } from "THREE/examples/jsm/loaders/GLTFLoader.js";
 import { Octree } from "THREE/examples/jsm/math/Octree.js";
 import { Capsule } from "THREE/examples/jsm/math/Capsule.js";
 import { MathUtils, RectAreaLight, StaticReadUsage } from "three";
-import { JSONObject, JSONValue } from "netplayjs";
 
 export const GRAVITY = 30;
 

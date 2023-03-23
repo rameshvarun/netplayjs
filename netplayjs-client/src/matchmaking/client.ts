@@ -16,11 +16,11 @@ export class MatchmakingClient extends EventEmitter {
   getWebSocketURL(): string {
     const url = new URL(this.serverURL);
     if (url.protocol === "http:") {
-      return `ws://${url.hostname}/`
+      return `ws://${url.hostname}/`;
     } else if (url.protocol === "https:") {
-      return `wss://${url.hostname}/`
+      return `wss://${url.hostname}/`;
     } else {
-      throw new Error(`Unknown protocol: ${url.protocol}`)
+      throw new Error(`Unknown protocol: ${url.protocol}`);
     }
   }
 
@@ -140,7 +140,7 @@ export class PeerConnection extends EventEmitter {
     };
     this.dataChannel.onclose = (e) => {
       this.emit("close");
-    }
+    };
   }
 
   async onSignalingMessage(type: MessageType, payload: any) {

@@ -1,4 +1,11 @@
-import { NetplayPlayer, Game, DefaultInput, RollbackWrapper, TestWrapper, LockstepWrapper } from "netplayjs";
+import {
+  NetplayPlayer,
+  Game,
+  DefaultInput,
+  RollbackWrapper,
+  TestWrapper,
+  LockstepWrapper,
+} from "netplayjs/src/index";
 
 const [PONG_WIDTH, PONG_HEIGHT] = [600, 300];
 const [PADDLE_WIDTH, PADDLE_HEIGHT] = [10, 100];

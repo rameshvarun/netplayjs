@@ -4,7 +4,7 @@ import {
   Game,
   LockstepWrapper,
   JSONValue,
-} from "netplayjs";
+} from "netplayjs/src/index";
 const jsnes = require("jsnes");
 
 let ROM: string | null = null;
