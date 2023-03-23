@@ -1,0 +1,10 @@
+{
+    "name": "netplayjs-workspace",
+    "workspaces": [
+        "netplayjs-client",
+        "netplayjs-demo"
+    ],
+    "scripts": {
+        "test": "npm run test --workspaces"
+    }
+}
