@@ -1,24 +1,21 @@
 import { NetplayPlayer, Game, DefaultInput, RollbackWrapper, TestWrapper, LockstepWrapper } from "netplayjs";
 
-const PONG_WIDTH = 600;
-const PONG_HEIGHT = 300;
-
-const PADDLE_WIDTH = 10;
-const PADDLE_HEIGHT = 100;
+const [PONG_WIDTH, PONG_HEIGHT] = [600, 300];
+const [PADDLE_WIDTH, PADDLE_HEIGHT] = [10, 100];
+const [BALL_WIDTH, BALL_HEIGHT] = [10, 10];
 
 const LEFT_PADDLE_X = 0 + 100;
 const RIGHT_PADDLE_X = PONG_WIDTH - 100 - PADDLE_WIDTH;
 
-const BALL_WIDTH = 10;
-const BALL_HEIGHT = 10;
-
 const PADDLE_MOVE_SPEED = 300;
 const BALL_MOVE_SPEED = 300;
 
+/** Clamps a value between min and max. */
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+/** Check if two rectangles A and B overlap. */
 function rectOverlap(
   aLeft: number,
   aRight: number,

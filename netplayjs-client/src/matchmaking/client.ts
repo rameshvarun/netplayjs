@@ -3,16 +3,33 @@ import log from "loglevel";
 import { ClientMessage, MessageType, ServerMessage } from "../common/protocol";
 import * as msgpack from "msgpack-lite";
 
+export const NETPLAYJS_SERVER_URL = "https://netplayjs.varunramesh.net";
+
 export class MatchmakingClient extends EventEmitter {
+  serverURL: string;
+
   ws: WebSocket;
   id: string | undefined;
   connections: Map<string, PeerConnection> = new Map();
   iceServers: any;
 
-  constructor() {
+  getWebSocketURL(): string {
+    const url = new URL(this.serverURL);
+    if (url.protocol === "http:") {
+      return `ws://${url.hostname}/`
+    } else if (url.protocol === "https:") {
+      return `wss://${url.hostname}/`
+    } else {
+      throw new Error(`Unknown protocol: ${url.protocol}`)
+    }
+  }
+
+  constructor(serverURL: string = NETPLAYJS_SERVER_URL) {
     super();
 
-    this.ws = new WebSocket("ws://localhost");
+    this.serverURL = serverURL;
+
+    this.ws = new WebSocket(this.getWebSocketURL());
     this.ws.onmessage = (message) => {
       log.debug(`Server -> Client: ${message.data}`);
       this.onServerMessage(JSON.parse(message.data));
