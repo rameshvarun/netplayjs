@@ -13,6 +13,8 @@ export const MessageType = z.union([
   z.literal("candidate"),
 ]);
 
+export type MessageType = z.output<typeof MessageType>;
+
 /** A message sent from a client to the server. */
 export const ClientMessage = z.union([
   /** Send a WebRTC signaling message to a peer. */
