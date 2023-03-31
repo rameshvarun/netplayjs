@@ -5,12 +5,17 @@ import * as crypto from "crypto";
 import { getICEServers } from "./iceservers";
 import { MatchEvent, MatchmakingQueue } from "./queue";
 
+export const HEARTBEAT_INTERVAL = 30 * 1000;
+
 /** This class is responsible for handling all WebSocket messages from clients. */
 export class SocketServer {
   wss: WebSocketServer;
 
   /** Register an ID -> Connection mapping so that peers can connect to us. */
   registrations: Map<string, WebSocket> = new Map<string, WebSocket>();
+
+  aliveConnections: WeakSet<WebSocket> = new WeakSet();
+  heartbeatInterval: NodeJS.Timer;
 
   queue: MatchmakingQueue = new MatchmakingQueue();
 
@@ -30,6 +35,11 @@ export class SocketServer {
     this.wss = wss;
 
     this.wss.on("connection", (conn) => {
+      this.aliveConnections.add(conn);
+      conn.on('pong', () => {
+        this.aliveConnections.add(conn);
+      });
+
       // Generate an ID and register the client.
       const clientID = crypto.randomUUID();
       this.registrations.set(clientID, conn);
@@ -60,6 +70,9 @@ export class SocketServer {
         // Clear connection from registrations.
         this.registrations.delete(clientID);
 
+        // Clear connection from isAlive map.
+        this.aliveConnections.delete(conn);
+
         // Remove connection from queue.
         this.queue.tryRemoveRequest(clientID);
       });
@@ -81,7 +94,27 @@ export class SocketServer {
         });
       }
     });
+  }
+
+  start() {
     this.queue.start();
+
+    // Heartbeat checker for detecting broken connections.
+    this.heartbeatInterval = setInterval(() => {
+      this.wss.clients.forEach((client) => {
+        if (!this.aliveConnections.has(client)) {
+          client.terminate();
+        } else {
+          this.aliveConnections.delete(client);
+          client.ping();
+        }
+      });
+    }, HEARTBEAT_INTERVAL);
+  }
+
+  close() {
+    this.queue.stop();
+    clearInterval(this.heartbeatInterval);
   }
 
   processClientMessage(conn: WebSocket, clientID: string, msg: ClientMessage) {
@@ -127,7 +160,5 @@ export class SocketServer {
     }
   }
 
-  close() {
-    this.queue.stop();
-  }
+
 }

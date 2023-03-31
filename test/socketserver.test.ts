@@ -1,4 +1,5 @@
 import { Server } from "../src/server";
+import * as socketserver from "../src/socketserver";
 import * as log from "loglevel";
 import { ClientMessage, ServerMessage } from "../src/common/protocol";
 import { TestClient } from "./testclient";
@@ -8,12 +9,14 @@ log.setLevel("debug");
 
 // Start / stop a new matchmaking server for each test.
 let server: Server | undefined;
-beforeEach(() => {
+beforeEach(async () => {
+  jest.replaceProperty(socketserver, 'HEARTBEAT_INTERVAL', 100);
   server = new Server();
-  return server.start();
+  await server.start();
 });
-afterEach(() => {
-  return server!.close();
+afterEach(async () => {
+  await server!.close();
+  jest.restoreAllMocks();
 });
 
 test("Create and teardown server.", () => {});
@@ -148,4 +151,19 @@ test("Make a match between two clients.", async () => {
 
   const aResult = await clientA;
   const bResult = await clientB;
+});
+
+test("Old connection cleanup", (done) => {
+  let client = new TestClient();
+  client.on("open", () => {
+    let interval = setInterval(() => {
+      if (server?.socketServer.numRegisteredConnections() == 0) {
+        clearInterval(interval);
+        done();
+      }
+    }, 100);
+
+    // @ts-ignore
+    client._socket.removeAllListeners("data");
+  });
 });

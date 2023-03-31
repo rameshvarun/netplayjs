@@ -42,6 +42,8 @@ export class Server {
   }
 
   start(): Promise<void> {
+    this.socketServer.start();
+    
     return new Promise((resolve, reject) => {
       this.server.listen(process.env.PORT || 3000, () => {
         const port = (this.server.address() as AddressInfo).port;
