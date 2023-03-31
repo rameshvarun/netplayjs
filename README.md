@@ -1,4 +1,4 @@
-# (Preview) NetplayJS 
+# NetplayJS 
 [![npm](https://img.shields.io/npm/v/netplayjs)](https://www.npmjs.com/package/netplayjs)
 
 Make peer-to-peer WebRTC-based multiplayer games in JavaScript, no server hosting or network synchronization code required!
