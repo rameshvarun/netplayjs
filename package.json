@@ -1,5 +1,5 @@
 {
-  "version": "0.0.4",
+  "version": "0.0.5",
   "dependencies": {
     "@types/express": "^4.17.17",
     "@types/ws": "^8.5.4",
