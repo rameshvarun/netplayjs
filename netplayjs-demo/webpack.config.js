@@ -30,6 +30,11 @@ const EXAMPLES = [
     entry: "./src/examples/physics.ts",
     title: "NetplayJS Physics Game Example",
   },
+  {
+    chunkName: "local",
+    entry: "./src/examples/testwrapper.ts",
+    title: "NetplayJS Local Testing Example"
+  }
 ];
 
 const ENTRIES = {};

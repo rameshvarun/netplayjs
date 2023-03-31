@@ -1,8 +1,8 @@
-import { DefaultInput, DefaultInputReader } from "./defaultinput";
-import { NetplayPlayer, NetplayState } from "./types";
+import { DefaultInput, DefaultInputReader } from "../defaultinput";
+import { NetplayPlayer, NetplayState } from "../types";
 
 import * as log from "loglevel";
-import { GameClass } from "./game";
+import { GameClass } from "../game";
 import Peer from "peerjs";
 
 import * as query from "query-string";
@@ -10,10 +10,10 @@ import { doc } from "prettier";
 import * as QRCode from "qrcode";
 import { assert } from "chai";
 
-import { MatchmakingClient } from "./matchmaking/client";
-import { PeerConnection } from "./matchmaking/peerconnection";
+import { MatchmakingClient } from "../matchmaking/client";
+import { PeerConnection } from "../matchmaking/peerconnection";
 
-import * as utils from "./utils";
+import * as utils from "../utils";
 
 export abstract class GameWrapper {
   gameClass: GameClass;
@@ -101,6 +101,7 @@ export abstract class GameWrapper {
     }
 
     this.inputReader = new DefaultInputReader(
+      document.body,
       this.canvas,
       this.gameClass.pointerLock || false,
       this.gameClass.touchControls || {}

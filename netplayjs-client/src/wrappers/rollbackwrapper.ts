@@ -1,15 +1,15 @@
 import Peer from "peerjs";
-import { DefaultInput, DefaultInputReader } from "./defaultinput";
-import EWMASD from "./ewmasd";
-import { LockstepNetcode } from "./netcode/lockstep";
-import { NetplayPlayer, NetplayState } from "./types";
+import { DefaultInput, DefaultInputReader } from "../defaultinput";
+import EWMASD from "../ewmasd";
+import { LockstepNetcode } from "../netcode/lockstep";
+import { NetplayPlayer, NetplayState } from "../types";
 
 import * as log from "loglevel";
 import { GameWrapper } from "./gamewrapper";
-import { Game, GameClass } from "./game";
-import { RollbackNetcode } from "./netcode/rollback";
+import { Game, GameClass } from "../game";
+import { RollbackNetcode } from "../netcode/rollback";
 import { assert } from "chai";
-import { PeerConnection } from "./matchmaking/peerconnection";
+import { PeerConnection } from "../matchmaking/peerconnection";
 
 const PING_INTERVAL = 100;
 

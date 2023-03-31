@@ -66,14 +66,15 @@ export class DefaultInputReader {
   }
 
   constructor(
+    root: HTMLElement = document.body,
     canvas: HTMLCanvasElement,
     pointerLock: boolean,
-    touchControls: { [name: string]: TouchControl }
+    touchControls: { [name: string]: TouchControl },
   ) {
     this.canvas = canvas;
     this.touchControls = touchControls;
 
-    document.addEventListener(
+    root.addEventListener(
       "keydown",
       (event) => {
         this.keysHeld[event.key] = true;
@@ -81,7 +82,7 @@ export class DefaultInputReader {
       },
       false
     );
-    document.addEventListener(
+    root.addEventListener(
       "keyup",
       (event) => {
         this.keysHeld[event.key] = false;
