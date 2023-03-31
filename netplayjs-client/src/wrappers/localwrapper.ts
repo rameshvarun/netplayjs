@@ -8,7 +8,7 @@ type GameInstance = {
   game: Game;
   inputReader: DefaultInputReader;
   players: Array<NetplayPlayer>;
-}
+};
 
 export class LocalWrapper {
   gameClass: GameClass;
@@ -61,18 +61,19 @@ export class LocalWrapper {
         canvas,
         inputReader,
         game,
-        players
-      })
+        players,
+      });
     }
   }
 
   start() {
     let lastTimestamp = performance.now();
     let animate = (timestamp) => {
-
       if (timestamp >= lastTimestamp + this.gameClass.timestep) {
         // Query each of our input readers.
-        let instanceInputs = this.instances.map(inst => inst.inputReader.getInput());
+        let instanceInputs = this.instances.map((inst) =>
+          inst.inputReader.getInput()
+        );
 
         for (let instance of this.instances) {
           let inputs = new Map();

@@ -10,7 +10,7 @@ import { doc } from "prettier";
 import * as QRCode from "qrcode";
 import { assert } from "chai";
 
-import { MatchmakingClient } from "../matchmaking/client";
+import { DEFAULT_SERVER_URL, MatchmakingClient } from "../matchmaking/client";
 import { PeerConnection } from "../matchmaking/peerconnection";
 
 import * as utils from "../utils";
@@ -158,14 +158,35 @@ export abstract class GameWrapper {
 
   peer?: Peer;
 
+  /**
+   * Try to get a server override from local storage.
+   * Return NULL if we error (for example in incognito mode).
+   */
+  getLocalStorageServerOverride(): string | null {
+    try {
+      return window.localStorage.getItem("NETPLAYJS_SERVER_OVERRIDE");
+    } catch (e) {
+      return null;
+    }
+  }
+
   async start() {
     this.menu.innerHTML = "Connecting to NetplayJS server...";
 
-    let matchmaker = new MatchmakingClient();
+    const parsedHash = query.parse(window.location.hash);
+
+    // Determine the server URL to connect to.
+    const serverURL: string =
+      (parsedHash.server as string) ||
+      this.getLocalStorageServerOverride() ||
+      DEFAULT_SERVER_URL;
+
+    // Create a matchmaking client and connect to the server.
+    let matchmaker = new MatchmakingClient(serverURL);
+
     matchmaker.on("ready", () => {
       // Try to parse the room from the hash. If we find one,
       // we are a client.
-      const parsedHash = query.parse(window.location.hash);
       const isClient = !!parsedHash.room;
 
       if (isClient) {
@@ -190,7 +211,13 @@ export abstract class GameWrapper {
         log.info("Showing join link.");
 
         // Show the join link.
-        let joinURL = `${window.location.href}#room=${matchmaker.id}`;
+        let gameURL = window.location.href.split("#")[0];
+        let hashParams: any = { room: matchmaker.id };
+        if (serverURL !== DEFAULT_SERVER_URL) {
+          hashParams.server = serverURL;
+        }
+        let joinURL = `${gameURL}#${query.stringify(hashParams)}`;
+
         this.menu.innerHTML = `<div>Join URL (Open in a new window or send to a friend): <a href="${joinURL}">${joinURL}<div>`;
 
         // Add a QR code for joining.

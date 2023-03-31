@@ -3,7 +3,7 @@ import log from "loglevel";
 import { ClientMessage, MessageType, ServerMessage } from "../common/protocol";
 import { PeerConnection } from "./peerconnection";
 
-export const DEFAULT_NETPLAYJS_SERVER_URL = "https://netplayjs.varunramesh.net";
+export const DEFAULT_SERVER_URL = "https://netplayjs.varunramesh.net";
 
 export class MatchmakingClient extends EventEmitter {
   serverURL: string;
@@ -24,7 +24,7 @@ export class MatchmakingClient extends EventEmitter {
     }
   }
 
-  constructor(serverURL: string = DEFAULT_NETPLAYJS_SERVER_URL) {
+  constructor(serverURL: string = DEFAULT_SERVER_URL) {
     super();
 
     this.serverURL = serverURL;
@@ -70,4 +70,3 @@ export class MatchmakingClient extends EventEmitter {
     return connection;
   }
 }
-

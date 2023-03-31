@@ -69,7 +69,7 @@ export class DefaultInputReader {
     root: HTMLElement = document.body,
     canvas: HTMLCanvasElement,
     pointerLock: boolean,
-    touchControls: { [name: string]: TouchControl },
+    touchControls: { [name: string]: TouchControl }
   ) {
     this.canvas = canvas;
     this.touchControls = touchControls;

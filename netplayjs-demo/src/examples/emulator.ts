@@ -3,7 +3,7 @@ import {
   DefaultInput,
   Game,
   LockstepWrapper,
-  JsonValue
+  JsonValue,
 } from "netplayjs/src/index";
 const jsnes = require("jsnes");
 

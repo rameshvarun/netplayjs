@@ -19,7 +19,7 @@ export function shift<V>(array: Array<V>): V {
 }
 
 export function html(source: string): Node {
-  const container = document.createElement('div');
+  const container = document.createElement("div");
   container.innerHTML = source;
   return container.firstChild!;
 }

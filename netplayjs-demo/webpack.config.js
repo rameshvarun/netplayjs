@@ -33,8 +33,8 @@ const EXAMPLES = [
   {
     chunkName: "local",
     entry: "./src/examples/local.ts",
-    title: "NetplayJS Local Testing Example"
-  }
+    title: "NetplayJS Local Testing Example",
+  },
 ];
 
 const ENTRIES = {};
