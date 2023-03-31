@@ -19,5 +19,5 @@ npm start
 
 ## Running from Docker Hub
 ```bash
-docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.3
+docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.6
 ```
