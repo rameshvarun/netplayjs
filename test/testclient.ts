@@ -16,7 +16,7 @@ export class TestClient extends WebSocket {
 
   onMessage(handler: (ServerMessage) => void) {
     this.on("message", (msg: string) => {
-      handler(JSON.parse(msg));
+      handler(ServerMessage.parse(JSON.parse(msg)));
     });
   }
 

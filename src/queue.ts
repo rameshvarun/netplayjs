@@ -159,7 +159,7 @@ export class MatchmakingQueue extends EventEmitter {
   }
 
   interval?: NodeJS.Timer;
-  
+
   start() {
     this.interval = setInterval(() => {
       this.tryMatch();

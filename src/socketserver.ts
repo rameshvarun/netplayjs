@@ -56,7 +56,7 @@ export class SocketServer {
       conn.on("message", (data: string) => {
         log.debug(`Received message: ${data}.`);
         try {
-          let msg: ClientMessage = JSON.parse(data);
+          let msg: ClientMessage = ClientMessage.parse(JSON.parse(data));
           this.processClientMessage(conn, clientID, msg);
         } catch (e) {
           // The server failed to process the message.
