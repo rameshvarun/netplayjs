@@ -14,6 +14,7 @@ export class DefaultInput extends NetplayInput<DefaultInput> {
 
   touchControls?: { [name: string]: any };
 
+  /** Helper function to return arrow keys as a Vec2. */
   arrowKeys(): Vec2 {
     return new Vec2(
       (this.keysHeld.ArrowLeft ? -1 : 0) + (this.keysHeld.ArrowRight ? 1 : 0),
@@ -21,6 +22,7 @@ export class DefaultInput extends NetplayInput<DefaultInput> {
     );
   }
 
+  /** Helper function to return WASD keys as a Vec2. */
   wasd(): Vec2 {
     return new Vec2(
       (this.keysHeld.a ? -1 : 0) + (this.keysHeld.d ? 1 : 0),

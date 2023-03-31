@@ -9,7 +9,7 @@ import { GameWrapper } from "./gamewrapper";
 import { Game, GameClass } from "./game";
 import { RollbackNetcode } from "./netcode/rollback";
 import { assert } from "chai";
-import { PeerConnection } from "./matchmaking/client";
+import { PeerConnection } from "./matchmaking/peerconnection";
 
 const PING_INTERVAL = 100;
 

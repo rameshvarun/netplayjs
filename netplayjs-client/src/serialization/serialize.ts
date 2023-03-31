@@ -81,7 +81,7 @@ export function deserialize(data: JsonValue): any {
       // Try decoding using custom types.
       for (let customType of CUSTOM_TYPES) {
         if (data.__type === customType.typeName) {
-          return customType.deserializer(data);
+          return customType.deserializer(data.data);
         }
       }
     } else {

@@ -10,7 +10,10 @@ import { doc } from "prettier";
 import * as QRCode from "qrcode";
 import { assert } from "chai";
 
-import { MatchmakingClient, PeerConnection } from "./matchmaking/client";
+import { MatchmakingClient } from "./matchmaking/client";
+import { PeerConnection } from "./matchmaking/peerconnection";
+
+import * as utils from "./utils";
 
 export abstract class GameWrapper {
   gameClass: GameClass;

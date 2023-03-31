@@ -1,5 +1,10 @@
 import * as serialize from "./serialization/serialize";
 
+/**
+ * A helper class representing a Vec2. Most games are going
+ * to be using the Vector class provided by their game framework,
+ * so this is mostly for internal use + demos.
+ */
 export class Vec2 {
   x: number;
   y: number;
