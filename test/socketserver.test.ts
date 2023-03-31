@@ -10,7 +10,7 @@ log.setLevel("debug");
 // Start / stop a new matchmaking server for each test.
 let server: Server | undefined;
 beforeEach(async () => {
-  jest.replaceProperty(socketserver, 'HEARTBEAT_INTERVAL', 100);
+  jest.replaceProperty(socketserver, "HEARTBEAT_INTERVAL", 100);
   server = new Server();
   await server.start();
 });

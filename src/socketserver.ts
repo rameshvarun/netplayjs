@@ -5,6 +5,9 @@ import * as crypto from "crypto";
 import { getICEServers } from "./iceservers";
 import { MatchEvent, MatchmakingQueue } from "./queue";
 
+/**
+ * Sockets that don't return a PONG within 30 seconds from
+ * a PONG are considered broken and can be closed. */
 export const HEARTBEAT_INTERVAL = 30 * 1000;
 
 /** This class is responsible for handling all WebSocket messages from clients. */
@@ -14,8 +17,7 @@ export class SocketServer {
   /** Register an ID -> Connection mapping so that peers can connect to us. */
   registrations: Map<string, WebSocket> = new Map<string, WebSocket>();
 
-  aliveConnections: WeakSet<WebSocket> = new WeakSet();
-  heartbeatInterval: NodeJS.Timer;
+  aliveConnections: Set<WebSocket> = new Set();
 
   queue: MatchmakingQueue = new MatchmakingQueue();
 
@@ -36,7 +38,7 @@ export class SocketServer {
 
     this.wss.on("connection", (conn) => {
       this.aliveConnections.add(conn);
-      conn.on('pong', () => {
+      conn.on("pong", () => {
         this.aliveConnections.add(conn);
       });
 
@@ -95,6 +97,8 @@ export class SocketServer {
       }
     });
   }
+
+  heartbeatInterval: NodeJS.Timer;
 
   start() {
     this.queue.start();
@@ -155,10 +159,13 @@ export class SocketServer {
         });
       } else {
         // Add this request to the matchmaking queue.
-        this.queue.addRequest(clientID, msg.gameID);
+        this.queue.addRequest(
+          clientID,
+          msg.gameID,
+          msg.minPlayers,
+          msg.maxPlayers
+        );
       }
     }
   }
-
-
 }
