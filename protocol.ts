@@ -1,7 +1,9 @@
 import { z } from "zod";
 
-// The version number of the matchmaking protocol.
-// This number is incremented whenever a backwards-incompatible change is made.
+/**
+ * The version number of the matchmaking protocol.
+ * This number is incremented whenever a backwards-incompatible change is made.
+ */
 export const PROTOCOL_VERSION = 1;
 
 /** The types of signaling messages one peer can send to another. */
@@ -37,7 +39,11 @@ export const ClientMessage = z.union([
 
 export type ClientMessage = z.output<typeof ClientMessage>;
 
-/** A message sent from the server to the client. */
+/**
+ * A message sent from the server to the client.
+ * Server messages don't really need to be validated
+ * but this could be useful for debugging / unit testing.
+ */
 export const ServerMessage = z.union([
   /** Sent as soon as a client connects in order to inform client of their ID. */
   z.object({
