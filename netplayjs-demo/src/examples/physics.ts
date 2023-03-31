@@ -1,7 +1,7 @@
 import {
   DefaultInput,
   Game,
-  JSONValue,
+  JsonValue,
   LockstepWrapper,
   NetplayPlayer,
   TestWrapper,
@@ -403,8 +403,8 @@ class PhysicsGame extends Game {
     for (let [player, input] of playerInputs.entries()) {
       if (player.getID() === 0) {
         let arm =
-          (input.pressed.ArrowLeft ? -1 : 0) +
-          (input.pressed.ArrowRight ? 1 : 0);
+          (input.keysHeld.ArrowLeft ? -1 : 0) +
+          (input.keysHeld.ArrowRight ? 1 : 0);
         // Hinge control
         this.hinge.enableAngularMotor(true, 1.5 * arm, 50);
       }
@@ -456,7 +456,7 @@ class PhysicsGame extends Game {
     }
   }
 
-  serialize(): JSONValue {
+  serialize(): JsonValue {
     throw new Error("This game state cannot be serialized.");
   }
 

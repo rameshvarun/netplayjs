@@ -15,7 +15,7 @@ import { DEV } from "../debugging";
 import { assert } from "chai";
 import { DefaultInput } from "../defaultinput";
 import { get, shift } from "../utils";
-import { JSONValue } from "../json";
+import { JsonValue } from "type-fest";
 
 export class LockstepNetcode<
   TState extends NetplayState<TInput>,
@@ -56,7 +56,7 @@ export class LockstepNetcode<
    * state syncs are required.
    */
   stateSyncPeriod: number;
-  broadcastState?: (frame: number, state: JSONValue) => void;
+  broadcastState?: (frame: number, state: JsonValue) => void;
 
   constructor(
     isHost: boolean,
@@ -66,7 +66,7 @@ export class LockstepNetcode<
     stateSyncPeriod: number,
     pollInput: () => TInput,
     broadcastInput: (frame: number, input: TInput) => void,
-    broadcastState?: (frame: number, state: JSONValue) => void
+    broadcastState?: (frame: number, state: JsonValue) => void
   ) {
     this.isHost = isHost;
     this.state = initialState;
@@ -152,7 +152,7 @@ export class LockstepNetcode<
   }
 
   stateSyncsReceived: number = 0;
-  onStateSync(frame: number, serializedState: JSONValue) {
+  onStateSync(frame: number, serializedState: JsonValue) {
     DEV && assert.equal(frame, this.frame, "Unexpected state sync frame.");
     this.state.deserialize(serializedState);
     this.stateSyncsReceived++;

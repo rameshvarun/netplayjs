@@ -3,7 +3,7 @@ import {
   DefaultInput,
   Game,
   LockstepWrapper,
-  JSONValue,
+  JsonValue
 } from "netplayjs/src/index";
 const jsnes = require("jsnes");
 
@@ -52,10 +52,10 @@ export class Emulator extends Game {
     this.nes.loadROM(ROM);
   }
 
-  serialize(): JSONValue {
+  serialize(): JsonValue {
     throw new Error(`The game state cannot be serialized.`);
   }
-  deserialize(value: JSONValue) {
+  deserialize(value: JsonValue) {
     throw new Error(`The game state cannot be deserialized.`);
   }
 
@@ -63,49 +63,49 @@ export class Emulator extends Game {
     this.nes.frame();
 
     for (let [player, input] of playerInputs) {
-      if (input.pressed.z) {
+      if (input.keysHeld.z) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_A);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_A);
       }
 
-      if (input.pressed.x) {
+      if (input.keysHeld.x) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_B);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_B);
       }
 
-      if (input.pressed.ArrowUp) {
+      if (input.keysHeld.ArrowUp) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_UP);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_UP);
       }
 
-      if (input.pressed.ArrowDown) {
+      if (input.keysHeld.ArrowDown) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_DOWN);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_DOWN);
       }
 
-      if (input.pressed.ArrowLeft) {
+      if (input.keysHeld.ArrowLeft) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_LEFT);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_LEFT);
       }
 
-      if (input.pressed.ArrowRight) {
+      if (input.keysHeld.ArrowRight) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_RIGHT);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_RIGHT);
       }
 
-      if (input.pressed.Enter) {
+      if (input.keysHeld.Enter) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_START);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_START);
       }
 
-      if (input.pressed.Shift) {
+      if (input.keysHeld.Shift) {
         this.nes.buttonDown(player.getID() + 1, jsnes.Controller.BUTTON_SELECT);
       } else {
         this.nes.buttonUp(player.getID() + 1, jsnes.Controller.BUTTON_SELECT);

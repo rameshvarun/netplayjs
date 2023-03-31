@@ -59,8 +59,8 @@ export class Pong extends Game {
     // Move paddles up and down.
     for (const [player, input] of playerInputs.entries()) {
       const direction =
-        (input.pressed["ArrowDown"] ? 1 : 0) +
-        (input.pressed["ArrowUp"] ? -1 : 0);
+        (input.keysHeld["ArrowDown"] ? 1 : 0) +
+        (input.keysHeld["ArrowUp"] ? -1 : 0);
 
       let paddlePos: number | null = null;
       if (input.touches.length > 0) {

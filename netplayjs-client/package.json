@@ -12,7 +12,8 @@
     "msgpack-lite": "^0.1.26",
     "peerjs": "^1.3.2",
     "qrcode": "^1.5.1",
-    "query-string": "^6.14.0"
+    "query-string": "^6.14.0",
+    "type-fest": "^0.8.1"
   },
   "scripts": {
     "build": "rm -rf dist/ && npm run typegen && webpack --env production && webpack --env development",

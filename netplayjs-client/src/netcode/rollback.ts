@@ -22,7 +22,7 @@ import * as log from "loglevel";
 
 import { DEV } from "../debugging";
 import { assert } from "chai";
-import { JSONValue } from "../json";
+import { JsonValue } from "type-fest";
 
 class RollbackHistory<TInput extends NetplayInput<TInput>> {
   /**
@@ -33,7 +33,7 @@ class RollbackHistory<TInput extends NetplayInput<TInput>> {
   /**
    * The serialized state of the game at this frame.
    */
-  state: JSONValue;
+  state: JsonValue;
 
   /**
    * These inputs represent the set of inputs that produced this state
@@ -44,7 +44,7 @@ class RollbackHistory<TInput extends NetplayInput<TInput>> {
 
   constructor(
     frame: number,
-    state: JSONValue,
+    state: JsonValue,
     inputs: Map<NetplayPlayer, { input: TInput; isPrediction: boolean }>
   ) {
     this.frame = frame;
@@ -96,7 +96,7 @@ export class RollbackNetcode<
    */
   isHost: boolean;
 
-  onStateSync(frame: number, state: JSONValue) {
+  onStateSync(frame: number, state: JsonValue) {
     DEV && assert.isFalse(this.isHost, "Only clients recieve state syncs.");
 
     // Cleanup states that we don't need anymore because we have the definitive
@@ -227,7 +227,7 @@ export class RollbackNetcode<
   }
 
   broadcastInput: (frame: number, input: TInput) => void;
-  broadcastState?: (frame: number, state: JSONValue) => void;
+  broadcastState?: (frame: number, state: JsonValue) => void;
 
   pingMeasure: any;
   timestep: number;
@@ -247,7 +247,7 @@ export class RollbackNetcode<
     timestep: number,
     pollInput: () => TInput,
     broadcastInput: (frame: number, input: TInput) => void,
-    broadcastState?: (frame: number, state: JSONValue) => void
+    broadcastState?: (frame: number, state: JsonValue) => void
   ) {
     this.isHost = isHost;
     this.state = initialState;

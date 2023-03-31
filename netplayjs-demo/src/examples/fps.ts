@@ -4,7 +4,7 @@ import {
   Game,
   RollbackWrapper,
   VirtualJoystick,
-  JSONObject,
+  JsonObject,
 } from "netplayjs/src/index";
 import * as THREE from "three";
 
@@ -150,14 +150,14 @@ export class PhysicsGame extends Game {
     this.renderer.shadowMap.type = THREE.VSMShadowMap;
   }
 
-  serialize(): Array<JSONObject> {
+  serialize(): Array<JsonObject> {
     return this.players.map((p) => {
       // @ts-ignore
       return this.playerStates.get(p)! as JSONObject;
     });
   }
 
-  deserialize(value: Array<JSONObject>) {
+  deserialize(value: Array<JsonObject>) {
     this.players.forEach((player, i) => {
       let serialized = value[i];
       let state = this.playerStates.get(player)!;
@@ -205,10 +205,7 @@ export class PhysicsGame extends Game {
     for (let [player, input] of playerInputs) {
       let state = this.playerStates.get(player)!;
 
-      let movement = {
-        x: (input.pressed["d"] ? 1 : 0) + (input.pressed["a"] ? -1 : 0),
-        y: (input.pressed["w"] ? 1 : 0) + (input.pressed["s"] ? -1 : 0),
-      };
+      let movement = input.wasd();
 
       if (movement.x === 0 && movement.y === 0 && input.touchControls) {
         movement = input.touchControls.leftStick;

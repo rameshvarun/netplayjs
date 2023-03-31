@@ -1,21 +1,40 @@
 import { NetplayInput } from "./types";
 import * as utils from "./utils";
 import { TouchControl } from "./touchcontrols";
+import { Vec2 } from "./vec2";
 
 export class DefaultInput extends NetplayInput<DefaultInput> {
-  pressed: { [key: string]: boolean } = {};
+  keysPressed: { [key: string]: boolean } = {};
+  keysHeld: { [key: string]: boolean } = {};
+  keysReleased: { [key: string]: boolean } = {};
 
   mousePosition?: { x: number; y: number };
 
   touches: Array<{ x: number; y: number }> = [];
 
   touchControls?: { [name: string]: any };
+
+  arrowKeys(): Vec2 {
+    return new Vec2(
+      (this.keysHeld.ArrowLeft ? -1 : 0) + (this.keysHeld.ArrowRight ? 1 : 0),
+      (this.keysHeld.ArrowDown ? -1 : 0) + (this.keysHeld.ArrowUp ? 1 : 0)
+    );
+  }
+
+  wasd(): Vec2 {
+    return new Vec2(
+      (this.keysHeld.a ? -1 : 0) + (this.keysHeld.d ? 1 : 0),
+      (this.keysHeld.s ? -1 : 0) + (this.keysHeld.w ? 1 : 0)
+    );
+  }
 }
 
 export class DefaultInputReader {
   canvas: HTMLCanvasElement;
 
-  PRESSED_KEYS = {};
+  keysPressed: { [key: string]: boolean } = {};
+  keysHeld: { [key: string]: boolean } = {};
+  keysReleased: { [key: string]: boolean } = {};
 
   mousePosition: { x: number; y: number } | null = null;
   mouseDelta: { x: number; y: number } | null = null;
@@ -55,14 +74,16 @@ export class DefaultInputReader {
     document.addEventListener(
       "keydown",
       (event) => {
-        this.PRESSED_KEYS[event.key] = true;
+        this.keysHeld[event.key] = true;
+        this.keysPressed[event.key] = true;
       },
       false
     );
     document.addEventListener(
       "keyup",
       (event) => {
-        this.PRESSED_KEYS[event.key] = false;
+        this.keysHeld[event.key] = false;
+        this.keysReleased[event.key] = true;
       },
       false
     );
@@ -134,9 +155,23 @@ export class DefaultInputReader {
   getInput(): DefaultInput {
     let input = new DefaultInput();
 
-    for (let key in this.PRESSED_KEYS) {
-      if (this.PRESSED_KEYS[key]) input.pressed[key] = true;
+    for (let key in this.keysPressed) {
+      if (this.keysPressed[key]) {
+        input.keysPressed[key] = true;
+
+        // A pressed key is also a held key.
+        // This helps with the edge case where a
+        // key is pressed and released between the frames.
+        input.keysHeld[key] = true;
+      }
     }
+    for (let key in this.keysHeld) {
+      if (this.keysHeld[key]) input.keysHeld[key] = true;
+    }
+    for (let key in this.keysReleased) {
+      if (this.keysReleased[key]) input.keysReleased[key] = true;
+    }
+
     if (this.mousePosition)
       input.mousePosition = utils.clone(this.mousePosition);
     input.touches = utils.clone(this.touches);
@@ -145,6 +180,10 @@ export class DefaultInputReader {
       input.touchControls = input.touchControls || {};
       input.touchControls[name] = utils.clone(control.getValue());
     }
+
+    // Clear the pressed and released keys.
+    this.keysPressed = {};
+    this.keysReleased = {};
 
     return input;
   }

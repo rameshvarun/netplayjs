@@ -6,6 +6,7 @@ export * from "./lockstepwrapper";
 export * from "./rollbackwrapper";
 export * from "./game";
 export * from "./touchcontrols";
-export * from "./json";
+export { JsonValue, JsonObject, JsonArray } from "type-fest";
 
 export * from "./test-wrapper";
+export * from "./vec2";
