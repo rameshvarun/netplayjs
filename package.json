@@ -5,7 +5,7 @@
         "netplayjs-demo"
     ],
     "scripts": {
-        "test": "npm run test --workspaces",
-        "format": "npm run format --workspaces"
+        "test": "npm run test --workspaces --if-present",
+        "format": "npm run format --workspaces --if-present"
     }
 }
