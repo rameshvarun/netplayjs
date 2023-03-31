@@ -4,7 +4,6 @@ import {
   JsonValue,
   LockstepWrapper,
   NetplayPlayer,
-  TestWrapper,
 } from "netplayjs/src/index";
 import Prando from "prando";
 import * as THREE from "three";

@@ -10,7 +10,7 @@ type GameInstance = {
   players: Array<NetplayPlayer>;
 }
 
-export class TestWrapper {
+export class LocalWrapper {
   gameClass: GameClass;
 
   instances: Array<GameInstance> = [];

@@ -8,5 +8,5 @@ export * from "./game";
 export * from "./touchcontrols";
 export { JsonValue, JsonObject, JsonArray } from "type-fest";
 
-export * from "./wrappers/testwrapper";
+export * from "./wrappers/localwrapper";
 export * from "./vec2";

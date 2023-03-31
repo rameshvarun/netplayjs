@@ -32,7 +32,7 @@ const EXAMPLES = [
   },
   {
     chunkName: "local",
-    entry: "./src/examples/testwrapper.ts",
+    entry: "./src/examples/local.ts",
     title: "NetplayJS Local Testing Example"
   }
 ];

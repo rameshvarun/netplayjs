@@ -3,8 +3,6 @@ import {
   Game,
   DefaultInput,
   RollbackWrapper,
-  TestWrapper,
-  LockstepWrapper,
 } from "netplayjs/src/index";
 
 const [PONG_WIDTH, PONG_HEIGHT] = [600, 300];

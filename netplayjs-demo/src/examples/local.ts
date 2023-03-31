@@ -1,5 +1,5 @@
 import {
-    TestWrapper,
+    LocalWrapper,
     Vec2,
     Game,
     NetplayPlayer,
@@ -42,4 +42,4 @@ export class SimpleGame extends Game {
   }
   
 
-new TestWrapper(SimpleGame).start();
+new LocalWrapper(SimpleGame).start();
