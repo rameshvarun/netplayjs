@@ -11,6 +11,8 @@ import { RollbackNetcode } from "../netcode/rollback";
 import { assert } from "chai";
 import { PeerConnection } from "../matchmaking/peerconnection";
 
+import * as lit from "lit-html";
+
 const PING_INTERVAL = 100;
 
 export class RollbackWrapper extends GameWrapper {
@@ -134,7 +136,7 @@ export class RollbackWrapper extends GameWrapper {
       this.game!.draw(this.canvas);
 
       // Update stats
-      this.stats.innerHTML = `
+      const statsHTML = lit.html`
         <div>Netcode Algorithm: Rollback</div>
         <div>Ping: ${this.pingMeasure
           .average()
@@ -144,7 +146,9 @@ export class RollbackWrapper extends GameWrapper {
         <div>Largest Future Size: ${this.rollbackNetcode!.largestFutureSize()}</div>
         <div>Predicted Frames: ${this.rollbackNetcode!.predictedFrames()}</div>
         <div title="If true, then the other player is running slow, so we wait for them.">Stalling: ${this.rollbackNetcode!.shouldStall()}</div>
-        `;
+        ${this.rtcStats}`;
+
+      lit.render(statsHTML, this.stats);
 
       // Request another frame.
       requestAnimationFrame(animate);

@@ -7,5 +7,8 @@
     "scripts": {
         "test": "npm run test --workspaces --if-present",
         "format": "npm run format --workspaces --if-present"
+    },
+    "dependencies": {
+        "lit-html": "^2.7.0"
     }
 }

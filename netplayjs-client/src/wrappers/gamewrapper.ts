@@ -14,6 +14,7 @@ import { DEFAULT_SERVER_URL, MatchmakingClient } from "../matchmaking/client";
 import { PeerConnection } from "../matchmaking/peerconnection";
 
 import * as utils from "../utils";
+import * as lit from "lit-html";
 
 export abstract class GameWrapper {
   gameClass: GameClass;
@@ -59,6 +60,7 @@ export abstract class GameWrapper {
     this.canvas.style.position = "absolute";
     this.canvas.style.zIndex = "0";
     this.canvas.style.boxShadow = "0px 0px 10px black";
+    this.canvas.style.imageRendering = "pixelated";
 
     this.resize();
     window.addEventListener("resize", () => this.resize());
@@ -182,7 +184,7 @@ export abstract class GameWrapper {
       DEFAULT_SERVER_URL;
 
     // Create a matchmaking client and connect to the server.
-    let matchmaker = new MatchmakingClient(serverURL);
+    const matchmaker = new MatchmakingClient(serverURL);
 
     matchmaker.on("ready", () => {
       // Try to parse the room from the hash. If we find one,
@@ -205,6 +207,7 @@ export abstract class GameWrapper {
           new NetplayPlayer(1, true, false), // Player 1 is us, a client
         ];
 
+        this.watchRTCStats(conn.peerConnection);
         this.startClient(players, conn);
       } else {
         // We are host, so we need to show a join link.
@@ -238,35 +241,41 @@ export abstract class GameWrapper {
 
           conn.on("error", (err) => console.error(err));
 
+          this.watchRTCStats(conn.peerConnection);
           this.startHost(players, conn);
         });
       }
     });
   }
 
-  formatRTCStats(stats: RTCStatsReport): string {
-    let output = "";
-    stats.forEach((report) => {
-      output += `<details>`;
-      output += `<summary>${report.type}</summary>`;
-
-      Object.keys(report).forEach((key) => {
-        if (key !== "type") {
-          output += `<div>${key}: ${report[key]}</div> `;
-        }
-      });
-
-      output += `</details>`;
-    });
-    return output;
+  renderRTCStats(stats: RTCStatsReport): lit.TemplateResult {
+    return lit.html`
+      <details>
+        <summary>WebRTC Stats</summary>
+        ${[...stats.values()].map(
+          (report) =>
+            lit.html`<div style="margin-left: 10px;">
+            <details>
+              <summary>${report.type}</summary>
+              ${Object.entries(report).map(([key, value]) => {
+                if (key !== "type") {
+                  return lit.html`<div style="margin-left: 10px;">${key}: ${report[key]}</div>`;
+                }
+              })}
+            </details>
+          </div>`
+        )}
+      </details>
+    `;
   }
 
-  rtcStats: string = "";
-  watchRTCStats(connection: RTCPeerConnection) {
-    setInterval(() => {
-      connection
-        .getStats()
-        .then((stats) => (this.rtcStats = this.formatRTCStats(stats)));
+  rtcStats?: lit.TemplateResult;
+  async watchRTCStats(connection: RTCPeerConnection) {
+    const stats = await connection.getStats();
+    this.rtcStats = this.renderRTCStats(stats);
+
+    setTimeout(async () => {
+      await this.watchRTCStats(connection);
     }, 1000);
   }
 
