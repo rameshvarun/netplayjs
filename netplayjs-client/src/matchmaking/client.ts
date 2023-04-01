@@ -6,6 +6,11 @@ import { PeerConnection } from "./peerconnection";
 
 export const DEFAULT_SERVER_URL = "https://netplayjs.varunramesh.net";
 
+/**
+ * Server URLs are provided using either http:// or https://. We use
+ * this URL to connect to any REST endpoints. We can also derive the
+ * WebSocket endpoint by changing the protocol to ws:// or wss:// respectively.
+ */
 function getWebSocketURL(serverURL: string): string {
   const url = new URL(serverURL);
   if (url.protocol === "http:") {

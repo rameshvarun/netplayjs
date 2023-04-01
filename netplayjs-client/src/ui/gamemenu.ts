@@ -3,7 +3,7 @@ import { DEFAULT_SERVER_URL, MatchmakingClient } from "../matchmaking/client";
 import * as query from "query-string";
 import * as QRCode from "qrcode";
 import EventEmitter from "eventemitter3";
-import { TypedEvent } from "../common/typedevent";
+import { Disposable, TypedEvent } from "../common/typedevent";
 import { PeerConnection } from "../matchmaking/peerconnection";
 
 type GameMenuState =
@@ -69,8 +69,11 @@ export class GameMenu {
     // Create a matchmaking client and connect to the server.
     this.matchmaker = new MatchmakingClient(serverURL);
 
-    this.matchmaker.onRegistered.on(() => {
+    // Wait for the client to be registered.
+    this.matchmaker.onRegistered.once(() => {
       if (parsedHash.room) {
+        // If a hostID was provided in the URL hash,
+        // directly connect to that ID.
         const hostID = parsedHash.room as string;
         this.connectToHost(hostID);
       } else {
@@ -87,16 +90,47 @@ export class GameMenu {
           qrCanvas,
         });
 
-        this.matchmaker.onConnection.on((conn) => {
-          conn.on("open", () => {
-            this.onHostStart.emit(conn);
-            this.root.style.display = "none";
-          });
-        });
+        this.startHostListening();
       }
     });
 
     this.render();
+  }
+
+  hostListeningHandle?: Disposable;
+  startHostListening() {
+    this.hostListeningHandle = this.matchmaker.onConnection.on((conn) => {
+      conn.on("open", () => {
+        this.onHostStart.emit(conn);
+        this.root.style.display = "none";
+      });
+    });
+  }
+  stopHostListening() {
+    this.hostListeningHandle!.dispose();
+  }
+
+  startMatchmaking() {
+    // Stop listening for connections.
+    this.stopHostListening();
+
+    // Send the match request and update UI to put
+    // as in the matchmaking state.
+    this.matchmaker.sendMatchRequest(this.gameURL, 2, 2);
+    this.updateState({
+      kind: "searching-for-matches",
+    });
+
+    this.matchmaker.onHostMatch.once((e) => {
+      this.updateState({
+        kind: "hosting-public-match",
+      });
+      this.startHostListening();
+    });
+
+    this.matchmaker.onJoinMatch.once((e) => {
+      this.connectToHost(e.hostID);
+    });
   }
 
   updateState(newState: GameMenuState) {
@@ -179,25 +213,6 @@ export class GameMenu {
         <div>You are the host. Waiting for client to connect...</div>
       </div>`;
     }
-  }
-
-  startMatchmaking() {
-    // Send the match request and update UI to put
-    // as in the matchmaking state.
-    this.matchmaker.sendMatchRequest(this.gameURL, 2, 2);
-    this.updateState({
-      kind: "searching-for-matches",
-    });
-
-    this.matchmaker.onHostMatch.once((e) => {
-      this.updateState({
-        kind: "hosting-public-match",
-      });
-    });
-
-    this.matchmaker.onJoinMatch.once((e) => {
-      this.connectToHost(e.hostID);
-    });
   }
 
   render() {
