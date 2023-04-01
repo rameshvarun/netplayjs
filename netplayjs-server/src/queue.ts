@@ -18,7 +18,7 @@ export type MatchEvent = {
 };
 
 /** Every 3 seconds, we run our matchmaking algorithm. */
-const MATCHMAKING_TICK_TIMER = 3 * 1000;
+export const MATCHMAKING_TICK_TIMER = 3 * 1000;
 
 /**
  * Players can only match with others with the same QueueID.

@@ -1,5 +1,6 @@
 import { Server } from "../src/server";
 import * as socketserver from "../src/socketserver";
+import * as queue from "../src/queue";
 import * as log from "loglevel";
 import { ClientMessage, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
 import { TestClient } from "./testclient";
@@ -11,6 +12,7 @@ log.setLevel("debug");
 let server: Server | undefined;
 beforeEach(async () => {
   jest.replaceProperty(socketserver, "HEARTBEAT_INTERVAL", 100);
+  jest.replaceProperty(queue, "MATCHMAKING_TICK_TIMER", 100);
   server = new Server();
   await server.start();
 });
