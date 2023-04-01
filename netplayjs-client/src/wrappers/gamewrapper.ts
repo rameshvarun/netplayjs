@@ -15,6 +15,7 @@ import { PeerConnection } from "../matchmaking/peerconnection";
 
 import * as utils from "../utils";
 import * as lit from "lit-html";
+import { GameMenu } from "../ui/gamemenu";
 
 export abstract class GameWrapper {
   gameClass: GameClass;
@@ -24,9 +25,6 @@ export abstract class GameWrapper {
 
   /** The network stats UI. */
   stats: HTMLDivElement;
-
-  /** The floating menu used to select a match. */
-  menu: HTMLDivElement;
 
   inputReader: DefaultInputReader;
 
@@ -76,27 +74,6 @@ export abstract class GameWrapper {
     this.stats.style.display = "none";
 
     document.body.appendChild(this.stats);
-
-    // Create menu UI
-    this.menu = document.createElement("div");
-    this.menu.style.zIndex = "1";
-    this.menu.style.position = "absolute";
-    this.menu.style.backgroundColor = "white";
-    this.menu.style.padding = "5px";
-    this.menu.style.left = "50%";
-    this.menu.style.top = "50%";
-    this.menu.style.boxShadow = "0px 0px 10px black";
-    this.menu.style.transform = "translate(-50%, -50%)";
-
-    this.menu.style.width = "500px";
-    this.menu.style.height = "300px";
-    this.menu.style.boxSizing = "border-box";
-    this.menu.style.borderRadius = "5px";
-
-    this.menu.style.maxWidth = "95%";
-    this.menu.style.maxHeight = "95%";
-
-    document.body.appendChild(this.menu);
 
     if (
       this.gameClass.touchControls &&
@@ -167,91 +144,28 @@ export abstract class GameWrapper {
 
   peer?: Peer;
 
-  /**
-   * Try to get a server override from local storage.
-   * Return NULL if we error (for example in incognito mode).
-   */
-  getLocalStorageServerOverride(): string | null {
-    try {
-      return window.localStorage.getItem("NETPLAYJS_SERVER_OVERRIDE");
-    } catch (e) {
-      return null;
-    }
-  }
-
   async start() {
-    this.menu.innerHTML = "Connecting to NetplayJS server...";
+    const gameMenu = new GameMenu();
 
-    const parsedHash = query.parse(window.location.hash);
+    gameMenu.onClientStart.on((conn) => {
+      const players = [
+        new NetplayPlayer(0, false, true), // Player 0 is our peer, the host.
+        new NetplayPlayer(1, true, false), // Player 1 is us, a client
+      ];
 
-    // Determine the server URL to connect to.
-    const serverURL: string =
-      (parsedHash.server as string) ||
-      this.getLocalStorageServerOverride() ||
-      DEFAULT_SERVER_URL;
+      this.watchRTCStats(conn.peerConnection);
+      this.startClient(players, conn);
+    });
 
-    // Create a matchmaking client and connect to the server.
-    const matchmaker = new MatchmakingClient(serverURL);
+    gameMenu.onHostStart.on((conn) => {
+      // Construct the players array.
+      const players: Array<NetplayPlayer> = [
+        new NetplayPlayer(0, true, true), // Player 0 is us, acting as a host.
+        new NetplayPlayer(1, false, false), // Player 1 is our peer, acting as a client.
+      ];
 
-    matchmaker.on("ready", () => {
-      // Try to parse the room from the hash. If we find one,
-      // we are a client.
-      const isClient = !!parsedHash.room;
-
-      if (isClient) {
-        // We are a client, so connect to the room from the hash.
-        this.menu.style.display = "none";
-
-        log.info(`Connecting to room ${parsedHash.room}.`);
-
-        const conn = matchmaker.connectPeer(parsedHash.room as string);
-
-        // conn.on("error", (err) => console.error(err));
-
-        // Construct the players array.
-        const players = [
-          new NetplayPlayer(0, false, true), // Player 0 is our peer, the host.
-          new NetplayPlayer(1, true, false), // Player 1 is us, a client
-        ];
-
-        this.watchRTCStats(conn.peerConnection);
-        this.startClient(players, conn);
-      } else {
-        // We are host, so we need to show a join link.
-        log.info("Showing join link.");
-
-        // Show the join link.
-        let gameURL = window.location.href.split("#")[0];
-        let hashParams: any = { room: matchmaker.id };
-        if (serverURL !== DEFAULT_SERVER_URL) {
-          hashParams.server = serverURL;
-        }
-        let joinURL = `${gameURL}#${query.stringify(hashParams)}`;
-
-        this.menu.innerHTML = `<div>Join URL (Open in a new window or send to a friend): <a href="${joinURL}">${joinURL}<div>`;
-
-        // Add a QR code for joining.
-        const qrCanvas = document.createElement("canvas");
-        this.menu.appendChild(qrCanvas);
-        QRCode.toCanvas(qrCanvas, joinURL);
-
-        // Construct the players array.
-        const players: Array<NetplayPlayer> = [
-          new NetplayPlayer(0, true, true), // Player 0 is us, acting as a host.
-          new NetplayPlayer(1, false, false), // Player 1 is our peer, acting as a client.
-        ];
-
-        // Wait for a connection from a client.
-        matchmaker.on("connection", (conn) => {
-          // Make the menu disappear.
-          this.menu.style.display = "none";
-
-          conn.on("error", (err) => console.error(err));
-
-          this.watchRTCStats(conn.peerConnection);
-          this.startHost(players, conn);
-        });
-      }
+      this.watchRTCStats(conn.peerConnection);
+      this.startHost(players, conn);
     });
   }
 

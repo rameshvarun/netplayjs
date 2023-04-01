@@ -37,6 +37,11 @@ export class RollbackWrapper extends GameWrapper {
   }
 
   startHost(players: Array<NetplayPlayer>, conn: PeerConnection) {
+    assert(
+      conn.dataChannel?.readyState === "open",
+      "DataChannel must be open."
+    );
+
     log.info("Starting a lcokstep host.");
 
     this.game = new this.gameClass(this.canvas, players);
@@ -70,19 +75,22 @@ export class RollbackWrapper extends GameWrapper {
       }
     });
 
-    conn.on("open", () => {
-      console.log("Client has connected... Starting game...");
-      this.checkChannel(conn.dataChannel!);
+    console.log("Client has connected... Starting game...");
+    this.checkChannel(conn.dataChannel!);
 
-      setInterval(() => {
-        conn.send({ type: "ping-req", sent_time: Date.now() });
-      }, PING_INTERVAL);
+    setInterval(() => {
+      conn.send({ type: "ping-req", sent_time: Date.now() });
+    }, PING_INTERVAL);
 
-      this.startGameLoop();
-    });
+    this.startGameLoop();
   }
 
   startClient(players: Array<NetplayPlayer>, conn: PeerConnection) {
+    assert(
+      conn.dataChannel?.readyState === "open",
+      "DataChannel must be open."
+    );
+
     log.info("Starting a lockstep client.");
 
     this.game = new this.gameClass(this.canvas, players);
@@ -113,16 +121,15 @@ export class RollbackWrapper extends GameWrapper {
         this.pingMeasure.update(Date.now() - data.sent_time);
       }
     });
-    conn.on("open", () => {
-      console.log("Successfully connected to server... Starting game...");
-      this.checkChannel(conn.dataChannel!);
 
-      setInterval(() => {
-        conn.send({ type: "ping-req", sent_time: Date.now() });
-      }, PING_INTERVAL);
+    console.log("Successfully connected to server... Starting game...");
+    this.checkChannel(conn.dataChannel!);
 
-      this.startGameLoop();
-    });
+    setInterval(() => {
+      conn.send({ type: "ping-req", sent_time: Date.now() });
+    }, PING_INTERVAL);
+
+    this.startGameLoop();
   }
 
   startGameLoop() {
