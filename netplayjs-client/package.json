@@ -9,6 +9,7 @@
     "@vramesh/netplayjs-common": "^0.0.1",
     "chai": "^4.3.0",
     "eventemitter3": "^5.0.0",
+    "lit-html": "^2.7.0",
     "loglevel": "^1.7.1",
     "msgpack-lite": "^0.1.26",
     "qrcode": "^1.5.1",

@@ -2,7 +2,8 @@
     "name": "netplayjs-workspace",
     "workspaces": [
         "netplayjs-client",
-        "netplayjs-demo"
+        "netplayjs-demo",
+        "netplayjs-common"
     ],
     "scripts": {
         "test": "npm run test --workspaces --if-present",
