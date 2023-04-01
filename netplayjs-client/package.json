@@ -16,8 +16,7 @@
     "query-string": "^6.14.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "type-fest": "^0.8.1",
-    "zod": "^3.21.4"
+    "type-fest": "^0.8.1"
   },
   "scripts": {
     "build": "rm -rf dist/ && npm run typegen && webpack --env production && webpack --env development",
@@ -39,7 +38,7 @@
     "prettier-check": "^2.0.0",
     "ts-jest": "^26.5.1",
     "ts-loader": "^8.0.17",
-    "typescript": "^4.1.5",
+    "typescript": "^4.5.5",
     "watch": "^1.0.2",
     "webpack": "^5.22.0",
     "webpack-cli": "^4.5.0",

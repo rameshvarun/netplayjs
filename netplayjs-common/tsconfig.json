@@ -6,6 +6,6 @@
         "jsx": "react",
         "sourceMap": true,
         "allowJs": true,
-        "moduleResolution": "node",
-    }
+        "moduleResolution": "node"
+    },
 }
