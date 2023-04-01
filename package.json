@@ -1,0 +1,17 @@
+{
+  "name": "@vramesh/netplayjs-common",
+  "version": "0.0.1",
+  "description": "Common code shared between the NetplayJS client and server.",
+  "author": "Varun Ramesh",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^3.21.4"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.3"
+  }
+}
