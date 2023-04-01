@@ -60,7 +60,6 @@ export abstract class GameWrapper {
     this.canvas.style.position = "absolute";
     this.canvas.style.zIndex = "0";
     this.canvas.style.boxShadow = "0px 0px 10px black";
-    this.canvas.style.imageRendering = "pixelated";
 
     this.resize();
     window.addEventListener("resize", () => this.resize());

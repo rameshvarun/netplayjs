@@ -65,6 +65,7 @@ export class PeerConnection extends EventEmitter {
 
   setDataChannel(dataChannel: RTCDataChannel) {
     this.dataChannel = dataChannel;
+    this.dataChannel.binaryType = "arraybuffer";
     this.dataChannel.onopen = (e) => {
       this.emit("open");
     };
