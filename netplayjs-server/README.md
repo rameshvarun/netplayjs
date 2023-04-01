@@ -1,4 +1,6 @@
 # netplayjs-server
+[![npm](https://img.shields.io/npm/v/netplayjs-server)](https://www.npmjs.com/package/netplayjs-server)
+[![Docker Pulls](https://img.shields.io/docker/pulls/varunramesh/netplayjs-server)](https://hub.docker.com/r/varunramesh/netplayjs-server)
 
 This package contains the server-side code for NetplayJS. The server has two responsibilities.
 - Boostrap a P2P data channel between two browsers by forwarding WebRTC signaling messages.
