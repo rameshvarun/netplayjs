@@ -1,4 +1,4 @@
-import { EventEmitter } from "eventemitter3";
+import { TypedEvent } from "@vramesh/netplayjs-common/typedevent";
 import { Opaque } from "type-fest";
 import * as utils from "./utils";
 
@@ -41,7 +41,7 @@ function getQueueID(
 }
 
 /** The class handles all public matchmaking. */
-export class MatchmakingQueue extends EventEmitter {
+export class MatchmakingQueue {
   /** A map of queueID -> a list of match requests. */
   requests: Map<QueueID, Array<MatchRequest>> = new Map();
 
@@ -51,8 +51,9 @@ export class MatchmakingQueue extends EventEmitter {
    */
   clients: Map<string, QueueID> = new Map();
 
+  onMatch: TypedEvent<MatchEvent> = new TypedEvent();
+
   constructor() {
-    super();
   }
 
   numClients(): number {
@@ -145,7 +146,7 @@ export class MatchmakingQueue extends EventEmitter {
         const host = players.shift()!;
 
         // Emit a match event.
-        this.emit("match", {
+        this.onMatch.emit({
           hostID: host.clientID,
           clientIDs: players.map((p) => p.clientID),
         });

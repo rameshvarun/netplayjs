@@ -84,7 +84,7 @@ export class SocketServer {
     });
 
     // Listen for successful matches from our matchmaking queue.
-    this.queue.on("match", (match: MatchEvent) => {
+    this.queue.onMatch.on((match: MatchEvent) => {
       // Inform the host.
       this.send(this.registrations.get(match.hostID)!, {
         kind: "host-match",

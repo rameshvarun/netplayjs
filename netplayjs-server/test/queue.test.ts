@@ -39,7 +39,7 @@ test("Create a two player match.", () => {
   queue.addRequest("CLIENTB", "GAMEID", 2, 2);
 
   const matches = jest.fn();
-  queue.on("match", matches);
+  queue.onMatch.on(matches);
 
   expect(queue.numClients()).toBe(2);
   queue.tryMatch();
