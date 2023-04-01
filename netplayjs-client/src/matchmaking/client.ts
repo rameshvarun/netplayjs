@@ -1,7 +1,7 @@
 import EventEmitter from "eventemitter3";
 import log from "loglevel";
-import { ClientMessage, MessageType, ServerMessage } from "../common/protocol";
-import { TypedEvent } from "../common/typedevent";
+import { ClientMessage, MessageType, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
+import { TypedEvent } from "@vramesh/netplayjs-common/typedevent";
 import { PeerConnection } from "./peerconnection";
 
 export const DEFAULT_SERVER_URL = "https://netplayjs.varunramesh.net";

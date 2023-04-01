@@ -3,7 +3,7 @@ import { DEFAULT_SERVER_URL, MatchmakingClient } from "../matchmaking/client";
 import * as query from "query-string";
 import * as QRCode from "qrcode";
 import EventEmitter from "eventemitter3";
-import { Disposable, TypedEvent } from "../common/typedevent";
+import { Disposable, TypedEvent } from "@vramesh/netplayjs-common/typedevent";
 import { PeerConnection } from "../matchmaking/peerconnection";
 
 type GameMenuState =

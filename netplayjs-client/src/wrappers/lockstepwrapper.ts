@@ -1,4 +1,3 @@
-import Peer from "peerjs";
 import { DefaultInput, DefaultInputReader } from "../defaultinput";
 import EWMASD from "../ewmasd";
 import { LockstepNetcode } from "../netcode/lockstep";

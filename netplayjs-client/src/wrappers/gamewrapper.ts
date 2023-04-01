@@ -3,11 +3,7 @@ import { NetplayPlayer, NetplayState } from "../types";
 
 import * as log from "loglevel";
 import { GameClass } from "../game";
-import Peer from "peerjs";
 
-import * as query from "query-string";
-import { doc } from "prettier";
-import * as QRCode from "qrcode";
 import { assert } from "chai";
 
 import { DEFAULT_SERVER_URL, MatchmakingClient } from "../matchmaking/client";
@@ -141,8 +137,6 @@ export abstract class GameWrapper {
     this.canvas.style.top = `${layout.top}px`;
     this.canvas.style.left = `${layout.left}px`;
   }
-
-  peer?: Peer;
 
   async start() {
     const gameMenu = new GameMenu();

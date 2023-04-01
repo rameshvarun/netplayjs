@@ -6,6 +6,7 @@
   "description": "A framework for making P2P multiplayer games in Javascript.",
   "dependencies": {
     "@types/msgpack-lite": "^0.1.8",
+    "@vramesh/netplayjs-common": "^0.0.1",
     "chai": "^4.3.0",
     "eventemitter3": "^5.0.0",
     "loglevel": "^1.7.1",
