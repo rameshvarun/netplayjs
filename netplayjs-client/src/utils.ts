@@ -18,7 +18,7 @@ export function shift<V>(array: Array<V>): V {
   throw new Error(`Shift returned undefined from Array ${array.toString()}`);
 }
 
-export function html(source: string): Node {
+export function createElementFromHTML(source: string): Node {
   const container = document.createElement("div");
   container.innerHTML = source;
   return container.firstChild!;

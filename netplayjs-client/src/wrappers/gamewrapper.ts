@@ -147,7 +147,7 @@ export abstract class GameWrapper {
   async start() {
     const gameMenu = new GameMenu();
 
-    gameMenu.onClientStart.on((conn) => {
+    gameMenu.onClientStart.once((conn) => {
       const players = [
         new NetplayPlayer(0, false, true), // Player 0 is our peer, the host.
         new NetplayPlayer(1, true, false), // Player 1 is us, a client
@@ -157,7 +157,7 @@ export abstract class GameWrapper {
       this.startClient(players, conn);
     });
 
-    gameMenu.onHostStart.on((conn) => {
+    gameMenu.onHostStart.once((conn) => {
       // Construct the players array.
       const players: Array<NetplayPlayer> = [
         new NetplayPlayer(0, true, true), // Player 0 is us, acting as a host.

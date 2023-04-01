@@ -18,6 +18,12 @@ type GameMenuState =
     }
   | {
       kind: "connecting-to-host";
+    }
+  | {
+      kind: "searching-for-matches";
+    }
+  | {
+      kind: "hosting-public-match";
     };
 
 export class GameMenu {
@@ -31,6 +37,18 @@ export class GameMenu {
 
   onClientStart: TypedEvent<PeerConnection> = new TypedEvent();
   onHostStart: TypedEvent<PeerConnection> = new TypedEvent();
+
+  connectToHost(hostID: string) {
+    this.updateState({
+      kind: "connecting-to-host",
+    });
+
+    const conn = this.matchmaker.connectPeer(hostID);
+    conn.on("open", () => {
+      this.onClientStart.emit(conn);
+      this.root.style.display = "none";
+    });
+  }
 
   constructor() {
     // Set the root DIV element.
@@ -51,20 +69,12 @@ export class GameMenu {
     // Create a matchmaking client and connect to the server.
     this.matchmaker = new MatchmakingClient(serverURL);
 
-    this.matchmaker.on("ready", () => {
+    this.matchmaker.onRegistered.on(() => {
       if (parsedHash.room) {
         const hostID = parsedHash.room as string;
-        this.updateState({
-          kind: "connecting-to-host",
-        });
-
-        const conn = this.matchmaker.connectPeer(hostID);
-        conn.on("open", () => {
-          this.onClientStart.emit(conn);
-          this.root.style.display = "none";
-        });
+        this.connectToHost(hostID);
       } else {
-        const room = this.matchmaker.id!;
+        const room = this.matchmaker.clientID!;
         const joinURL = this.getJoinURL(room);
 
         const qrCanvas = document.createElement("canvas");
@@ -77,7 +87,7 @@ export class GameMenu {
           qrCanvas,
         });
 
-        this.matchmaker.on("connection", (conn) => {
+        this.matchmaker.onConnection.on((conn) => {
           conn.on("open", () => {
             this.onHostStart.emit(conn);
             this.root.style.display = "none";
@@ -123,12 +133,27 @@ export class GameMenu {
       </div>`;
     } else if (this.state.kind === "registered") {
       return html` <div
-        style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
+        style="display: grid; width: 100%; height: 100%; grid-template-columns: 1fr 1px 1fr; grid-column-gap: 10px;"
       >
-        <div>
+        <div style="">
+          <h1>Public Match</h1>
+          <button @click=${() => this.startMatchmaking()}>
+            Start Matchmaking
+          </button>
+        </div>
+        <div
+          style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
+        >
+          <div style="background-color: black; width: 1px; height: 75%;"></div>
+        </div>
+
+        <div style="">
+          <h1>Private Match</h1>
           Join URL (Open in a new window or send to a friend):
-          <a href="${this.state.joinURL}"
-            >${this.state.joinURL}
+
+          <a href="${this.state.joinURL}">
+            ${this.state.joinURL}
+
             <div>
               <div>${this.state.qrCanvas}</div>
             </div></a
@@ -141,7 +166,38 @@ export class GameMenu {
       >
         Connecting to host...
       </div>`;
+    } else if (this.state.kind === "searching-for-matches") {
+      return html`<div
+        style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
+      >
+        <div>Searching for matches...</div>
+      </div>`;
+    } else if (this.state.kind === "hosting-public-match") {
+      return html`<div
+        style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
+      >
+        <div>You are the host. Waiting for client to connect...</div>
+      </div>`;
     }
+  }
+
+  startMatchmaking() {
+    // Send the match request and update UI to put
+    // as in the matchmaking state.
+    this.matchmaker.sendMatchRequest(this.gameURL, 2, 2);
+    this.updateState({
+      kind: "searching-for-matches",
+    });
+
+    this.matchmaker.onHostMatch.once((e) => {
+      this.updateState({
+        kind: "hosting-public-match",
+      });
+    });
+
+    this.matchmaker.onJoinMatch.once((e) => {
+      this.connectToHost(e.hostID);
+    });
   }
 
   render() {
@@ -154,19 +210,21 @@ export class GameMenu {
     menu.style.zIndex = "1";
     menu.style.position = "absolute";
     menu.style.backgroundColor = "white";
-    menu.style.padding = "5px";
+    menu.style.padding = "10px";
     menu.style.left = "50%";
     menu.style.top = "50%";
     menu.style.boxShadow = "0px 0px 10px black";
     menu.style.transform = "translate(-50%, -50%)";
 
-    menu.style.width = "500px";
-    menu.style.height = "300px";
     menu.style.boxSizing = "border-box";
     menu.style.borderRadius = "5px";
 
+    menu.style.minWidth = "500px";
+    menu.style.minHeight = "300px";
+
     menu.style.maxWidth = "95%";
     menu.style.maxHeight = "95%";
+    menu.style.fontFamily = "sans-serif";
 
     document.body.appendChild(menu);
 
