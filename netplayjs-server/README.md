@@ -21,13 +21,4 @@ npm install -g netplayjs-server
 netplayjs-server
 ```
 
-## Developing
-
-```bash
-git clone --recursive https://github.com/rameshvarun/netplayjs-server.git
-cd netplayjs-server
-npm install
-npm start
-```
-
 
