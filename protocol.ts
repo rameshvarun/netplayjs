@@ -24,10 +24,6 @@ export const ClientMessage = z.union([
     type: MessageType,
     payload: z.any(),
   }),
-  /** Request a list of ICE servers and their credentials. */
-  z.object({
-    kind: z.literal("request-ice-servers"),
-  }),
   /** Matchmaking request. */
   z
     .object({
@@ -51,6 +47,7 @@ export const ServerMessage = z.union([
   z.object({
     kind: z.literal("registration-success"),
     clientID: z.string().uuid(),
+    iceServers: z.any(),
   }),
   /** An unexpected error occurred on the server side. The connection will be terminated. */
   z.object({
@@ -69,11 +66,6 @@ export const ServerMessage = z.union([
     sourceID: z.string().uuid(),
     type: MessageType,
     payload: z.any(),
-  }),
-  /** Return a list of ICE servers and their credentials. */
-  z.object({
-    kind: z.literal("ice-servers"),
-    servers: z.any(),
   }),
   /** Tell the client it should host the match. */
   z.object({
