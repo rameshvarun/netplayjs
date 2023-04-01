@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { ClientMessage, ServerMessage } from "../src/common/protocol";
+import { ClientMessage, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
 
 export class TestClient extends WebSocket {
   constructor() {

@@ -1,6 +1,6 @@
 import log = require("loglevel");
 import { WebSocket, WebSocketServer } from "ws";
-import { ClientMessage, ServerMessage } from "./common/protocol";
+import { ClientMessage, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
 import * as crypto from "crypto";
 import { getICEServers } from "./iceservers";
 import { MatchEvent, MatchmakingQueue } from "./queue";

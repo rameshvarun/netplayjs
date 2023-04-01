@@ -1,7 +1,7 @@
 import { Server } from "../src/server";
 import * as socketserver from "../src/socketserver";
 import * as log from "loglevel";
-import { ClientMessage, ServerMessage } from "../src/common/protocol";
+import { ClientMessage, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
 import { TestClient } from "./testclient";
 
 // Show debug messages while running tests.

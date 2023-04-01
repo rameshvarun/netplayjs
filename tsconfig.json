@@ -7,5 +7,8 @@
         "sourceMap": true,
         "allowJs": true,
         "moduleResolution": "node",
+    },
+    "ts-node": {
+        "ignore": [ "/node_modules/(?!@vramesh)" ]
     }
 }
