@@ -1,10 +1,23 @@
 # netplayjs-server
 
-This repo contains the server-side code for NetplayJS. The server has two responsibilities.
+This package contains the server-side code for NetplayJS. The server has two responsibilities.
 - Boostrap a P2P data channel between two browsers by forwarding WebRTC signaling messages.
 - Start matches between strangers online who are playing the same game.
 
-The server is designed to be as generic as possible - you can point any NetplayJS game at any `netplayjs-server` instance, and that server will automatically be used for connection bootstrapping and signaling.
+The server is designed to be completely generic and game-agnostic - you can point any NetplayJS game at any `netplayjs-server` instance. The protocol used to communicate with the server is defined in [matchmaking-protocol.ts](https://github.com/rameshvarun/netplayjs/blob/master/netplayjs-common/matchmaking-protocol.ts).
+
+I host a shared instance of the server that NetplayJS games use by default. If you are hosting a high-traffic game or if the shared server goes down, you should host your own. Old NetplayJS games can easily be pointed to the new server by simply adding `#server=https://your-server-url.com` to the URL of the game. For example, `https://rameshvarun.github.io/netplayjs/pong/#server=https://your-server-url.com`.
+
+## Run from Docker Hub
+```bash
+docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.7
+```
+
+## Run from NPM
+```bash
+npm install -g netplayjs-server
+netplayjs-server
+```
 
 ## Developing
 
@@ -15,7 +28,4 @@ npm install
 npm start
 ```
 
-## Running from Docker Hub
-```bash
-docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.6
-```
+
