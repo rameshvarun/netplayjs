@@ -88,6 +88,14 @@ export abstract class GameWrapper {
     this.menu.style.boxShadow = "0px 0px 10px black";
     this.menu.style.transform = "translate(-50%, -50%)";
 
+    this.menu.style.width = "500px";
+    this.menu.style.height = "300px";
+    this.menu.style.boxSizing = "border-box";
+    this.menu.style.borderRadius = "5px";
+
+    this.menu.style.maxWidth = "95%";
+    this.menu.style.maxHeight = "95%";
+
     document.body.appendChild(this.menu);
 
     if (
