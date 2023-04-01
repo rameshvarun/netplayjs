@@ -46,10 +46,13 @@ export class SocketServer {
       const clientID = crypto.randomUUID();
       this.registrations.set(clientID, conn);
 
-      // Inform client of successful registration.
-      this.send(conn, {
-        kind: "registration-success",
-        clientID: clientID,
+      // Generate ICE servers and send registration success.
+      getICEServers().then((iceServers) => {
+        this.send(conn, {
+          kind: "registration-success",
+          clientID: clientID,
+          iceServers: iceServers
+        });
       });
 
       // Listen for messages.
@@ -140,14 +143,6 @@ export class SocketServer {
           reason: `No peer found with ID: ${msg.destinationID}.`,
         });
       }
-    } else if (msg.kind == "request-ice-servers") {
-      // Generate and return a list of ICE servers.
-      getICEServers().then((servers) => {
-        this.send(conn, {
-          kind: "ice-servers",
-          servers: servers,
-        });
-      });
     } else if (msg.kind == "match-request") {
       if (this.queue.hasClient(clientID)) {
         // If our client is already in the queue, report failure

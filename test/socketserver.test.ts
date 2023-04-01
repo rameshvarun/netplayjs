@@ -26,6 +26,7 @@ test("Register one client.", (done) => {
   client.onMessage((msg: ServerMessage) => {
     expect(msg.kind).toBe("registration-success");
     expect(msg).toHaveProperty("clientID");
+    expect(msg).toHaveProperty("iceServers");
 
     client.close();
     done();
@@ -39,22 +40,6 @@ test("Send non-JSON message", (done) => {
   });
   client.on("close", () => {
     done();
-  });
-});
-
-test("Get ICE servers", (done) => {
-  let client = new TestClient();
-
-  client.onMessage((msg: ServerMessage) => {
-    if (msg.kind == "registration-success") {
-      client.sendMessage({
-        kind: "request-ice-servers",
-      });
-    } else if (msg.kind == "ice-servers") {
-      expect(msg).toHaveProperty("servers");
-      client.close();
-      done();
-    }
   });
 });
 
