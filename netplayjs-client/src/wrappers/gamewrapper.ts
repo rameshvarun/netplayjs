@@ -87,7 +87,10 @@ export abstract class GameWrapper {
 
       div.style.boxSizing = "border-box";
       div.style.fontFamily = "sans-serif";
-      div.innerHTML = "The other player has backgrounded their tab.";
+      div.innerHTML = `
+      <p align="center" style="margin: 3px">The other player has minimized or hidden their tab.</p>
+      <p align="center" style="margin: 3px">The game may run slowly until they return.</p>
+      `;
       div.style.display = "none";
 
       document.body.appendChild(div);

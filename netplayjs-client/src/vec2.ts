@@ -17,6 +17,14 @@ export class Vec2 {
   multiplyScalar(scalar: number): Vec2 {
     return new Vec2(this.x * scalar, this.y * scalar);
   }
+
+  add(other: Vec2): Vec2 {
+    return new Vec2(this.x + other.x, this.y + other.y);
+  }
+
+  subtract(other: Vec2): Vec2 {
+    return new Vec2(this.x - other.x, this.y - other.y);
+  }
 }
 
 // Register Vec2 class with serializer.
