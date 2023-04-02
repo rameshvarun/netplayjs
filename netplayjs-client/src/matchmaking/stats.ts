@@ -43,6 +43,6 @@ export class ConnectionStats {
   }
 
   formatStats() {
-    return `${this.getPacketsPerSecond().toFixed(2)} msgs/sec, ${this.getAveragePacketSize().toFixed(2)} bytes/msg`;
+    return `${this.getPacketsPerSecond().toFixed(2)} msgs/sec, ${this.getAveragePacketSize().toFixed(2)} bytes/msg, ${this.getBytesPerSecond()} bytes/sec`;
   }
 }
