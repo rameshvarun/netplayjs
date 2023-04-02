@@ -1,10 +1,9 @@
 import EventEmitter from "eventemitter3";
 import { MatchmakingClient } from "./client";
 import log from "loglevel";
-import {
-  MessageType,
-} from "@vramesh/netplayjs-common/matchmaking-protocol";
+import { MessageType } from "@vramesh/netplayjs-common/matchmaking-protocol";
 import * as msgpack from "msgpack-lite";
+import { ConnectionStats } from "./stats";
 
 /** A reliable data connection to a single peer. */
 export class PeerConnection extends EventEmitter {
@@ -12,6 +11,9 @@ export class PeerConnection extends EventEmitter {
   peerID: string;
   peerConnection: RTCPeerConnection;
   dataChannel?: RTCDataChannel;
+
+  sendStats: ConnectionStats = new ConnectionStats();
+  receiveStats: ConnectionStats = new ConnectionStats();
 
   constructor(client: MatchmakingClient, peerID: string, initiator: boolean) {
     super();
@@ -72,6 +74,7 @@ export class PeerConnection extends EventEmitter {
       this.emit("open");
     };
     this.dataChannel.onmessage = (e) => {
+      this.receiveStats.onMessage(e.data.byteLength);
       this.emit("data", msgpack.decode(new Uint8Array(e.data as ArrayBuffer)));
     };
     this.dataChannel.onclose = (e) => {
@@ -107,6 +110,8 @@ export class PeerConnection extends EventEmitter {
   }
 
   send(data: any) {
-    this.dataChannel!.send(msgpack.encode(data));
+    let encoded = msgpack.encode(data);
+    this.sendStats.onMessage(encoded.byteLength);
+    this.dataChannel!.send(encoded);
   }
 }

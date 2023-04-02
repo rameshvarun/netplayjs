@@ -35,7 +35,10 @@ export class RollbackWrapper extends GameWrapper {
     return initialInputs;
   }
 
+  connection?: PeerConnection;
+
   startHost(players: Array<NetplayPlayer>, conn: PeerConnection) {
+    this.connection = conn;
     assert(
       conn.dataChannel?.readyState === "open",
       "DataChannel must be open."
@@ -84,6 +87,8 @@ export class RollbackWrapper extends GameWrapper {
   }
 
   startClient(players: Array<NetplayPlayer>, conn: PeerConnection) {
+    this.connection = conn;
+
     assert(
       conn.dataChannel?.readyState === "open",
       "DataChannel must be open."
@@ -149,6 +154,9 @@ export class RollbackWrapper extends GameWrapper {
         <div>Frame Number: ${this.rollbackNetcode!.currentFrame()}</div>
         <div>Largest Future Size: ${this.rollbackNetcode!.largestFutureSize()}</div>
         <div>Predicted Frames: ${this.rollbackNetcode!.predictedFrames()}</div>
+        <div>
+          Send Stats: ${this.connection!.sendStats.formatStats()}
+        </div>
         <div title="If true, then the other player is running slow, so we wait for them.">Stalling: ${this.rollbackNetcode!.shouldStall()}</div>
         ${this.rtcStats}`;
 
