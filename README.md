@@ -4,7 +4,7 @@
 Make peer-to-peer WebRTC-based multiplayer games in JavaScript, no server hosting or network synchronization code required!
 
 <p align="center">
-  <a href="https://rameshvarun.github.io/netplayjs/"><img src="./demo.gif"></a>
+  <a href="https://rameshvarun.github.io/netplayjs/"><img src="./media/pong.gif"></a>
 </p>
 <p align="center">
   <a href="https://rameshvarun.github.io/netplayjs/">[CHECK OUT THE DEMOS]</a>
@@ -98,6 +98,10 @@ new netplayjs.RollbackWrapper(SimpleGame).start();
 ```
 
 And voila - a real-time networked game with rollback and client-side prediction.
+
+<p align="center">
+  <img src="./media/simple.gif">
+</p>
 
 ## Basic Usage
 
