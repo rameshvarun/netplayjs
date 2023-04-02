@@ -110,7 +110,7 @@ NetplayJS is a framework designed to make the process of creating multiplayer br
 
 For simple usage, you can include NetplayJS directly from a script tag in an HTML file.
 ```html
-<script src="https://unpkg.com/netplayjs@0.3.0/dist/netplay.js"></script>
+<script src="https://unpkg.com/netplayjs@0.4.1/dist/netplay.js"></script>
 ```
 
 For larger projects, you should install NetplayJS from npm and bundle it with your application using Webpack or a similar module bundler.
@@ -123,7 +123,7 @@ I also highly recommend that you use it with TypeScript, though this is not requ
 ## Usage
 
 To create a game using NetplayJS, you create a new class that extends `netplayjs.Game`.
-- This class should implement functions for initailizing, updating, and drawing the game.
+- This class should implement functions for initializing, updating, and drawing the game.
 - It should implement functions for serializing / deserializing the state (more info in the next section).
 - It should contain static properties used to configure the netcode ([see here](https://github.com/rameshvarun/netplayjs/blob/master/netplayjs-client/src/game.ts)).
 
@@ -153,7 +153,7 @@ class MyGame extends netplayjs.Game {
 ```
 
 You can now start the game by passing your game class to one of several wrappers.
-- (WIP) `new LocalWrapper(MyGame).start();` - Runs mutiple instances of the game in the same browser page. Use for local testing and rapid iteration.
+- `new LocalWrapper(MyGame).start();` - Runs mutiple instances of the game in the same browser page. Use for local testing and rapid iteration.
 - `new RollbackWrapper(MyGame).start();` - Runs the game using rollback netcode. Use for game states that can be rewound and replayed.
 - `new LockstepWrapper(MyGame).start();` - Runs the game using lockstep netcode. Use for game states that can't be rewound.
 
