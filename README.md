@@ -12,7 +12,7 @@ Make peer-to-peer WebRTC-based multiplayer games in JavaScript, no server hostin
 
 ## Quick Start
 
- <a href="https://glitch.com/edit/#!/remix/netplayjs-simple"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button-v2.svg" alt="Remix on Glitch" /></a>
+ <a href="https://glitch.com/edit/#!/remix/netplayjs-simple-v2"><img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button-v2.svg" alt="Remix on Glitch" /></a>
  
  Here's how NetplayJS works:
 
@@ -25,7 +25,7 @@ NetplayJS handles most of the complicated aspects of multiplayer game developmen
 Let's make a very simple game. Create an HTML file and add the following script tag.
 
 ```html
-<script src="https://unpkg.com/netplayjs@0.3.0/dist/netplay.js"></script>
+<script src="https://unpkg.com/netplayjs@0.4.1/dist/netplay.js"></script>
 ```
 
 Now add this javascript code to the same HTML.
@@ -46,14 +46,7 @@ class SimpleGame extends netplayjs.Game {
   tick(playerInputs) {
     for (const [player, input] of playerInputs.entries()) {
       // Generate player velocity from input keys.
-      const vel = {
-        x:
-          (input.pressed.ArrowLeft ? -1 : 0) +
-          (input.pressed.ArrowRight ? 1 : 0),
-        y:
-          (input.pressed.ArrowDown ? -1 : 0) +
-          (input.pressed.ArrowUp ? 1 : 0),
-      };
+      const vel = input.arrowKeys();
 
       // Apply the velocity to the appropriate player.
       if (player.getID() == 0) {
