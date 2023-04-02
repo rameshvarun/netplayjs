@@ -4,6 +4,7 @@ import log from "loglevel";
 import { MessageType } from "@vramesh/netplayjs-common/matchmaking-protocol";
 import * as msgpack from "msgpack-lite";
 import { ConnectionStats } from "./stats";
+import { TypedEvent } from "@vramesh/netplayjs-common/typedevent";
 
 /** A reliable data connection to a single peer. */
 export class PeerConnection extends EventEmitter {
@@ -14,6 +15,8 @@ export class PeerConnection extends EventEmitter {
 
   sendStats: ConnectionStats = new ConnectionStats();
   receiveStats: ConnectionStats = new ConnectionStats();
+
+  onClose: TypedEvent<void> = new TypedEvent();
 
   constructor(client: MatchmakingClient, peerID: string, initiator: boolean) {
     super();
@@ -35,6 +38,15 @@ export class PeerConnection extends EventEmitter {
           destinationID: peerID,
           payload: event.candidate,
         });
+      }
+    };
+
+    this.peerConnection.onconnectionstatechange = (event) => {
+      log.debug(
+        `ConnectionStateChange: ${this.peerConnection.connectionState}`
+      );
+      if (this.peerConnection.connectionState === "disconnected") {
+        this.close();
       }
     };
 
@@ -67,6 +79,16 @@ export class PeerConnection extends EventEmitter {
     }
   }
 
+  closed: boolean = false;
+  close() {
+    if (!closed) {
+      this.closed = true;
+      this.peerConnection.close();
+      this.dataChannel?.close();
+      this.onClose.emit();
+    }
+  }
+
   setDataChannel(dataChannel: RTCDataChannel) {
     this.dataChannel = dataChannel;
     this.dataChannel.binaryType = "arraybuffer";
@@ -78,7 +100,8 @@ export class PeerConnection extends EventEmitter {
       this.emit("data", msgpack.decode(new Uint8Array(e.data as ArrayBuffer)));
     };
     this.dataChannel.onclose = (e) => {
-      this.emit("close");
+      log.debug("Data channel closed...");
+      this.close();
     };
   }
 
@@ -110,6 +133,7 @@ export class PeerConnection extends EventEmitter {
   }
 
   send(data: any) {
+    if (this.dataChannel?.readyState !== "open") return;
     let encoded = msgpack.encode(data);
     this.sendStats.onMessage(encoded.byteLength);
     this.dataChannel!.send(encoded);

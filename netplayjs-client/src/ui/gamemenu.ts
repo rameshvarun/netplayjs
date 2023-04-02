@@ -24,6 +24,12 @@ type GameMenuState =
     }
   | {
       kind: "hosting-public-match";
+    }
+  | {
+      kind: "game-in-progress";
+    }
+  | {
+      kind: "connection-closed";
     };
 
 export class GameMenu {
@@ -46,7 +52,14 @@ export class GameMenu {
     const conn = this.matchmaker.connectPeer(hostID);
     conn.on("open", () => {
       this.onClientStart.emit(conn);
-      this.root.style.display = "none";
+      this.updateState({
+        kind: "game-in-progress",
+      });
+      conn.onClose.on(() => {
+        this.updateState({
+          kind: "connection-closed",
+        });
+      });
     });
   }
 
@@ -102,7 +115,14 @@ export class GameMenu {
     this.hostListeningHandle = this.matchmaker.onConnection.on((conn) => {
       conn.on("open", () => {
         this.onHostStart.emit(conn);
-        this.root.style.display = "none";
+        this.updateState({
+          kind: "game-in-progress",
+        });
+        conn.onClose.on(() => {
+          this.updateState({
+            kind: "connection-closed",
+          });
+        });
       });
     });
   }
@@ -158,13 +178,17 @@ export class GameMenu {
     return `${this.gameURL}#${query.stringify(hashParams)}`;
   }
 
+  centeredText(text) {
+    return html`<div
+      style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
+    >
+      <div style="font-size: 1.5em;">${text}</div>
+    </div>`;
+  }
+
   menuContent() {
     if (this.state.kind === "connecting-to-server") {
-      return html`<div
-        style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
-      >
-        <div>Connecting to NetplayJS server...</div>
-      </div>`;
+      return this.centeredText("Connecting to NetplayJS server...");
     } else if (this.state.kind === "registered") {
       return html` <div
         style="display: grid; width: 100%; height: 100%; grid-template-columns: 1fr 1px 1fr; grid-column-gap: 10px;"
@@ -199,23 +223,15 @@ export class GameMenu {
         </div>
       </div>`;
     } else if (this.state.kind === "connecting-to-host") {
-      return html`<div
-        style="display: flex; flex-direction: column; width: 100%; height: 100%; align-items: center; justify-content: center;"
-      >
-        Connecting to host...
-      </div>`;
+      return this.centeredText("Connecting to host...");
     } else if (this.state.kind === "searching-for-matches") {
-      return html`<div
-        style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
-      >
-        <div>Searching for matches...</div>
-      </div>`;
+      return this.centeredText("Searching for matches...");
     } else if (this.state.kind === "hosting-public-match") {
-      return html`<div
-        style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center;"
-      >
-        <div>You are the host. Waiting for client to connect...</div>
-      </div>`;
+      return this.centeredText(
+        "You are the host. Waiting for client to connect..."
+      );
+    } else if (this.state.kind === "connection-closed") {
+      return this.centeredText("The connection was closed...");
     }
   }
 
@@ -229,6 +245,12 @@ export class GameMenu {
       `,
       this.root
     );
+
+    if (this.state.kind === "game-in-progress") {
+      this.root.style.display = "none";
+    } else {
+      this.root.style.display = "inherit";
+    }
   }
 
   createRootElement(): HTMLDivElement {

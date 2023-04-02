@@ -27,7 +27,7 @@ export class ConnectionStats {
 
   getPacketsPerSecond(): number {
     this.updateWindow();
-    return 1000 * this.window.length / this.windowDuration;
+    return (1000 * this.window.length) / this.windowDuration;
   }
 
   getAveragePacketSize() {
@@ -39,10 +39,14 @@ export class ConnectionStats {
   getBytesPerSecond() {
     this.updateWindow();
     const bytes = this.window.reduce((a, b) => a + b.bytes, 0);
-    return 1000 * bytes / this.windowDuration;
+    return (1000 * bytes) / this.windowDuration;
   }
 
   formatStats() {
-    return `${this.getPacketsPerSecond().toFixed(2)} msgs/sec, ${this.getAveragePacketSize().toFixed(2)} bytes/msg, ${this.getBytesPerSecond()} bytes/sec`;
+    return `${this.getPacketsPerSecond().toFixed(
+      2
+    )} msgs/sec, ${this.getAveragePacketSize().toFixed(
+      2
+    )} bytes/msg, ${this.getBytesPerSecond()} bytes/sec`;
   }
 }
