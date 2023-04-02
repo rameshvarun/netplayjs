@@ -1,8 +1,6 @@
-import EventEmitter from "eventemitter3";
 import log from "loglevel";
 import {
   ClientMessage,
-  MessageType,
   ServerMessage,
 } from "@vramesh/netplayjs-common/matchmaking-protocol";
 import { TypedEvent } from "@vramesh/netplayjs-common/typedevent";
@@ -120,6 +118,7 @@ export class MatchmakingClient {
     }
   }
 
+  /** Start opening a connection to a peer. */
   connectPeer(peerID: string): PeerConnection {
     const connection = new PeerConnection(this, peerID, true);
     this.connections.set(peerID, connection);
@@ -127,6 +126,7 @@ export class MatchmakingClient {
     return connection;
   }
 
+  /** Start matchmaking. */
   sendMatchRequest(gameID: string, minPlayers: number, maxPlayers: number) {
     this.send({
       kind: "match-request",

@@ -6,7 +6,6 @@ import EventEmitter from "eventemitter3";
 import { Disposable, TypedEvent } from "@vramesh/netplayjs-common/typedevent";
 import { PeerConnection } from "../matchmaking/peerconnection";
 
-
 type GameMenuState =
   | {
       kind: "connecting-to-server";
@@ -221,10 +220,15 @@ export class GameMenu {
   }
 
   render() {
-    render(html`
-      ${this.menuContent()}
-      <div style="position: absolute; right: 10px; bottom: 10px;">NetplayJS v${require("../../package.json").version}</div>
-    `, this.root);
+    render(
+      html`
+        ${this.menuContent()}
+        <div style="position: absolute; right: 10px; bottom: 10px;">
+          NetplayJS v${require("../../package.json").version}
+        </div>
+      `,
+      this.root
+    );
   }
 
   createRootElement(): HTMLDivElement {
