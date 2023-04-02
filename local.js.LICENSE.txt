@@ -543,12 +543,6 @@
  */
 
 /**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-/**
  * event-lite.js - Light-weight EventEmitter (less than 1KB when gzipped)
  *
  * @copyright Yusuke Kawasaki
