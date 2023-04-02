@@ -108,34 +108,35 @@ And voila - a real-time networked game with rollback and client-side prediction.
 NetplayJS is a framework designed to make the process of creating multiplayer browser games simple and fun. It consists of several different components.
 
 - [`netplayjs-server`](https://github.com/rameshvarun/netplayjs/tree/master/netplayjs-server) - The matchmaking and signaling server. You can host your own or use the public instance.
-- `netplayjs-netcode` - Implementations of rollback netcode and lockstep netcode.
+- (WIP) `netplayjs-netcode` - Implementations of rollback netcode and lockstep netcode.
+- (WIP) `netplayjs-connection` - The client side code that communicates with the matchmaking server to establish connections.
 - `netplayjs` - A prototyping framework that lets you rapidly create multiplayer games.
 - `netplayjs-demos` - A collection of demos built in the prototyping framework to show off how to use it.
 
-### Installation
+## Installation
 
 For simple usage, you can include NetplayJS directly from a script tag in an HTML file.
 ```html
 <script src="https://unpkg.com/netplayjs@0.3.0/dist/netplay.js"></script>
 ```
 
-For larger projects, you should install NetplayJS from npm and bundle it with your application using Webpack or a similar module.
+For larger projects, you should install NetplayJS from npm and bundle it with your application using Webpack or a similar module bundler.
 ```bash
 npm install --save netplayjs
 ```
 
 I also highly recommend that you use it with TypeScript, though this is not required. The examples following will be in TypeScript.
 
-### Usage
+## Usage
 
 To create a game using NetplayJS, you create a new class that extends `netplayjs.Game`.
-- This class should implement functions for initailizing, updating, and drawing the state.
+- This class should implement functions for initailizing, updating, and drawing the game.
 - It should implement functions for serializing / deserializing the state (more info in the next section).
-- Finally, it should also contain static properties used to configuring the netcode ([see here](https://github.com/rameshvarun/netplayjs/blob/master/netplayjs-client/src/game.ts)).
+- It should contain static properties used to configure the netcode ([see here](https://github.com/rameshvarun/netplayjs/blob/master/netplayjs-client/src/game.ts)).
 
 ```typescript
 class MyGame extends netplayjs.Game {
-  // NetplayJS games use a fixed timestamp.
+  // NetplayJS games use a fixed timestep.
   static timestep = 1000 / 60;
 
   // NetplayJS games use a fixed canvas size.
@@ -158,7 +159,7 @@ class MyGame extends netplayjs.Game {
 }
 ```
 
-You then start the game by passing your game class to one of several wrappers.
+You can now start the game by passing your game class to one of several wrappers.
 - (WIP) `new LocalWrapper(MyGame).start();` - Runs mutiple instances of the game in the same browser page. Use for local testing and rapid iteration.
 - `new RollbackWrapper(MyGame).start();` - Runs the game using rollback netcode. Use for game states that can be rewound and replayed.
 - `new LockstepWrapper(MyGame).start();` - Runs the game using lockstep netcode. Use for game states that can't be rewound.
@@ -167,6 +168,13 @@ You then start the game by passing your game class to one of several wrappers.
 The client-side prediction and rewind capabilities of `netplayjs` are based off of the ability to serialize and deserialize the state of the game. In the quickstart example above, we let the autoserializer take care of this. For most games, however, you will need to implement your own logic. You can do this by overriding `Game.serialize` and `Game.deserialize` in your subclass.
 
 If you cannot serialize the game state, you can still use NetplayJS, but you will need to use Lockstep netcode, rather than predictive netcodes like Rollback.
+
+### `NetplayPlayer`
+
+A `NetplayPlayer` represents one player in a game. `NetplayPlayer.getID()` returns an ID that is stable across each network replication of the game.
+
+### `DefaultInput`
+NetplayJS games are synchronized by sending inputs across a network. `DefaultInput` automatically captures and replicates keyboard events, mouse events, and touch events.
 
 ## Assets Used from Other Projects
 This repo contains code and assets from other open source projects.
