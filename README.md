@@ -103,34 +103,72 @@ And voila - a real-time networked game with rollback and client-side prediction.
   <img src="./media/simple.gif">
 </p>
 
-## Basic Usage
+## Overview
 
-NetplayJS consists of:
-- Implementations of Rollback netcode and Lockstep netcode in TypeScript.
-- A prototyping framework that lets you create a multiplayer game in a few lines of code
-- A collection of demos built in the prototyping framework
+NetplayJS is a framework designed to make the process of creating multiplayer browser games simple and fun. It consists of several different components.
+
+- [`netplayjs-server`](https://github.com/rameshvarun/netplayjs/tree/master/netplayjs-server) - The matchmaking and signaling server. You can host your own or use the public instance.
+- `netplayjs-netcode` - Implementations of rollback netcode and lockstep netcode.
+- `netplayjs` - A prototyping framework that lets you rapidly create multiplayer games.
+- `netplayjs-demos` - A collection of demos built in the prototyping framework to show off how to use it.
 
 ### Installation
+
+For simple usage, you can include NetplayJS directly from a script tag in an HTML file.
+```html
+<script src="https://unpkg.com/netplayjs@0.3.0/dist/netplay.js"></script>
+```
+
+For larger projects, you should install NetplayJS from npm and bundle it with your application using Webpack or a similar module.
 ```bash
 npm install --save netplayjs
 ```
 
+I also highly recommend that you use it with TypeScript, though this is not required. The examples following will be in TypeScript.
+
+### Usage
+
+To create a game using NetplayJS, you create a new class that extends `netplayjs.Game`.
+- This class should implement functions for initailizing, updating, and drawing the state.
+- It should implement functions for serializing / deserializing the state (more info in the next section).
+- Finally, it should also contain static properties used to configuring the netcode ([see here](https://github.com/rameshvarun/netplayjs/blob/master/netplayjs-client/src/game.ts)).
+
 ```typescript
-import { NetplayPlayer, DefaultInput, Game, RollbackWrapper } from "netplayjs";
+class MyGame extends netplayjs.Game {
+  // NetplayJS games use a fixed timestamp.
+  static timestep = 1000 / 60;
+
+  // NetplayJS games use a fixed canvas size.
+  static canvasSize = { width: 600, height: 300 };
+
+  // Initialize the game state.
+  constructor(canvas: HTMLCanvasElement, players: Array<NetplayPlayer>) {}
+
+  // Tick the game state forward given the inputs for each player.
+  tick(playerInputs: Map<NetplayPlayer, DefaultInput>): void {}
+
+  // Draw the current state of the game to a canvas.
+  draw(canvas: HTMLCanvasElement) {}
+
+  // Serialize the state of a game to JSON-compatible value.
+  serialize(): JsonValue {}
+
+  // Load the state of a game from a serialized JSON value.
+  deserialize(value: JsonValue) {}
+}
 ```
+
+You then start the game by passing your game class to one of several wrappers.
+- (WIP) `new LocalWrapper(MyGame).start();` - Runs mutiple instances of the game in the same browser page. Use for local testing and rapid iteration.
+- `new RollbackWrapper(MyGame).start();` - Runs the game using rollback netcode. Use for game states that can be rewound and replayed.
+- `new LockstepWrapper(MyGame).start();` - Runs the game using lockstep netcode. Use for game states that can't be rewound.
 
 ### Game State Serialization
-The client-side prediction and rewind capabilities of `netplayjs` are based off of the ability to serialize and deserialize the state of the game. In the simple example above, the autoserializer can take care of rewinding our states and sending them over a network. For most games, however, you will need to implement your own logic. You can do this by overriding `Game.serialize` and `Game.deserialize` in your subclass.
+The client-side prediction and rewind capabilities of `netplayjs` are based off of the ability to serialize and deserialize the state of the game. In the quickstart example above, we let the autoserializer take care of this. For most games, however, you will need to implement your own logic. You can do this by overriding `Game.serialize` and `Game.deserialize` in your subclass.
 
-## Advanced Usage
-If you want to integrate rollback into an existing game, or otherwise find the prototyping framework too restrictive, you can use the core netcode implementations. These implementations are abstract enough to be used in any project.
+If you cannot serialize the game state, you can still use NetplayJS, but you will need to use Lockstep netcode, rather than predictive netcodes like Rollback.
 
-```
-let rollbackNetcode = new RollbackNetcode(...)
-rollbackNetcode.start();
-```
-
-# Assets Used from Other Projects
+## Assets Used from Other Projects
 This repo contains code and assets from other open source projects.
 - https://github.com/mrdoob/three.js (MIT)
 - https://github.com/pinobatch/allpads-nes (zlib)
