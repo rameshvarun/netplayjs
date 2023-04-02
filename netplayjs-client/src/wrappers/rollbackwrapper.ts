@@ -75,7 +75,6 @@ export class RollbackWrapper extends GameWrapper {
     });
 
     console.log("Client has connected... Starting game...");
-    this.checkChannel(conn.dataChannel!);
 
     setInterval(() => {
       conn.send({ type: "ping-req", sent_time: Date.now() });
@@ -122,7 +121,6 @@ export class RollbackWrapper extends GameWrapper {
     });
 
     console.log("Successfully connected to server... Starting game...");
-    this.checkChannel(conn.dataChannel!);
 
     setInterval(() => {
       conn.send({ type: "ping-req", sent_time: Date.now() });

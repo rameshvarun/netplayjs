@@ -98,6 +98,7 @@ const development = {
 
 const production = {
   mode: "production",
+  devtool: "source-map",
 };
 
 module.exports = (env) => {
