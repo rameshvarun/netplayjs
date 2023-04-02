@@ -8,9 +8,9 @@ import {
 } from "netplayjs/src/index";
 import * as THREE from "three";
 
-import { GLTFLoader } from "THREE/examples/jsm/loaders/GLTFLoader.js";
-import { Octree } from "THREE/examples/jsm/math/Octree.js";
-import { Capsule } from "THREE/examples/jsm/math/Capsule.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { Octree } from "three/examples/jsm/math/Octree.js";
+import { Capsule } from "three/examples/jsm/math/Capsule.js";
 import { MathUtils, RectAreaLight, StaticReadUsage } from "three";
 
 export const GRAVITY = 30;

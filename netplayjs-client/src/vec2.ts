@@ -19,6 +19,7 @@ export class Vec2 {
   }
 }
 
+// Register Vec2 class with serializer.
 serialize.registerCustomType(
   Vec2,
   "netplayjs.Vec2",
