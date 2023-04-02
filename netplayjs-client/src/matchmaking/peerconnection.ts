@@ -1,7 +1,11 @@
 import EventEmitter from "eventemitter3";
 import { MatchmakingClient } from "./client";
 import log from "loglevel";
-import { ClientMessage, MessageType, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
+import {
+  ClientMessage,
+  MessageType,
+  ServerMessage,
+} from "@vramesh/netplayjs-common/matchmaking-protocol";
 import * as msgpack from "msgpack-lite";
 
 /** A reliable data connection to a single peer. */

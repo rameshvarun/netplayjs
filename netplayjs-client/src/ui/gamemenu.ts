@@ -169,9 +169,15 @@ export class GameMenu {
       return html` <div
         style="display: grid; width: 100%; height: 100%; grid-template-columns: 1fr 1px 1fr; grid-column-gap: 10px;"
       >
-        <div style="">
-          <h1>Public Match</h1>
-          <button @click=${() => this.startMatchmaking()}>
+        <div
+          style="display: flex; flex-direction: column; align-items: center;"
+        >
+          <h1 style="margin: 5px;">Public Match</h1>
+          <p>Play with random strangers on the internet.</p>
+          <button
+            style="font-size: 1.5em; background-color: #4CAF50; color: white; padding: 0.5em; border: none; cursor: pointer;"
+            @click=${() => this.startMatchmaking()}
+          >
             Start Matchmaking
           </button>
         </div>
@@ -181,17 +187,15 @@ export class GameMenu {
           <div style="background-color: black; width: 1px; height: 75%;"></div>
         </div>
 
-        <div style="">
-          <h1>Private Match</h1>
+        <div
+          style="display: flex; flex-direction: column; align-items: center;"
+        >
+          <h1 style="margin: 5px;">Private Match</h1>
+          <p>Invite players to a game via a link or QR code.</p>
           Join URL (Open in a new window or send to a friend):
 
-          <a href="${this.state.joinURL}">
-            ${this.state.joinURL}
-
-            <div>
-              <div>${this.state.qrCanvas}</div>
-            </div></a
-          >
+          <a href="${this.state.joinURL}"> ${this.state.joinURL} </a>
+          <div>${this.state.qrCanvas}</div>
         </div>
       </div>`;
     } else if (this.state.kind === "connecting-to-host") {
@@ -234,8 +238,8 @@ export class GameMenu {
     menu.style.boxSizing = "border-box";
     menu.style.borderRadius = "5px";
 
-    menu.style.minWidth = "500px";
-    menu.style.minHeight = "300px";
+    menu.style.width = "960px";
+    menu.style.height = "400px";
 
     menu.style.maxWidth = "95%";
     menu.style.maxHeight = "95%";

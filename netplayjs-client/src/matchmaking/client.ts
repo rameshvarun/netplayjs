@@ -1,6 +1,10 @@
 import EventEmitter from "eventemitter3";
 import log from "loglevel";
-import { ClientMessage, MessageType, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
+import {
+  ClientMessage,
+  MessageType,
+  ServerMessage,
+} from "@vramesh/netplayjs-common/matchmaking-protocol";
 import { TypedEvent } from "@vramesh/netplayjs-common/typedevent";
 import { PeerConnection } from "./peerconnection";
 

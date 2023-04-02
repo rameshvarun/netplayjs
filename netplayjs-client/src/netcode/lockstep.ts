@@ -45,10 +45,8 @@ export class LockstepNetcode<
    * A queue of inputs for each player. When every player has at least one
    * input in their queue, the game state can tick forward.
    */
-  inputs: Map<
-    NetplayPlayer,
-    Array<{ frame: number; input: TInput }>
-  > = new Map();
+  inputs: Map<NetplayPlayer, Array<{ frame: number; input: TInput }>> =
+    new Map();
 
   /**
    * How often the host should send out an authoritative state sync.

@@ -3,7 +3,10 @@ import * as http from "http";
 import * as cors from "cors";
 import * as log from "loglevel";
 import * as util from "util";
-import { PROTOCOL_VERSION, ServerMessage } from "@vramesh/netplayjs-common/matchmaking-protocol";
+import {
+  PROTOCOL_VERSION,
+  ServerMessage,
+} from "@vramesh/netplayjs-common/matchmaking-protocol";
 import { AddressInfo, WebSocketServer, WebSocket } from "ws";
 import { SocketServer } from "./socketserver";
 

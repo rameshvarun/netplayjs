@@ -96,7 +96,8 @@ class PhysicsGame extends Game {
   }
 
   initPhysics() {
-    this.collisionConfiguration = new Ammo.btSoftBodyRigidBodyCollisionConfiguration();
+    this.collisionConfiguration =
+      new Ammo.btSoftBodyRigidBodyCollisionConfiguration();
     this.dispatcher = new Ammo.btCollisionDispatcher(
       this.collisionConfiguration
     );

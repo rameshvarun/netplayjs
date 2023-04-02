@@ -53,8 +53,7 @@ export class MatchmakingQueue {
 
   onMatch: TypedEvent<MatchEvent> = new TypedEvent();
 
-  constructor() {
-  }
+  constructor() {}
 
   numClients(): number {
     return this.clients.size;
