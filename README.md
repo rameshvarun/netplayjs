@@ -167,7 +167,12 @@ You can now start the game by passing your game class to one of several wrappers
 ### Game State Serialization
 The client-side prediction and rewind capabilities of `netplayjs` are based off of the ability to serialize and deserialize the state of the game. In the quickstart example above, we let the autoserializer take care of this. For most games, however, you will need to implement your own logic. You can do this by overriding `Game.serialize` and `Game.deserialize` in your subclass.
 
-If you cannot serialize the game state, you can still use NetplayJS, but you will need to use Lockstep netcode, rather than predictive netcodes like Rollback.
+If you cannot serialize the game state, you can still use NetplayJS, but you will need to use Lockstep netcode, rather than predictive netcodes like Rollback, and you need to mark your game as deterministic.
+
+### Determinism
+By default NetplayJS does not assume determinsim. It corrects for drift by having one player (the host) send authoritative state updates to the others. If you mark your game as deterministic, NetplayJS will skip sending these updates.
+
+Whether or not JavaScript operations are cross-platform deterministic is a difficult question. We can safely assume integer arithmatic is deterministic. I can also confirm that floating point operations with WASM are generally cross platform deterministic (required by WASM spec). Anything else is potentially up in the air.
 
 ### `NetplayPlayer`
 
