@@ -4,6 +4,19 @@
   "main": "dist/netplay.js",
   "types": "./dist/types/index.d.ts",
   "description": "A framework for making P2P multiplayer games in Javascript.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rameshvarun/netplayjs.git"
+  },
+  "keywords": [
+    "multiplayer",
+    "webrtc",
+    "typescript",
+    "p2p",
+    "javascript",
+    "rtc"
+  ],
+  "homepage": "https://rameshvarun.github.io/netplayjs/",
   "dependencies": {
     "@types/msgpack-lite": "^0.1.8",
     "@vramesh/netplayjs-common": "^0.0.1",
@@ -26,7 +39,7 @@
     "check-format": "prettier-check src/**/*.ts",
     "test": "jest",
     "typegen": "tsc --declaration --emitDeclarationOnly",
-    "prepublish": "cp ../README.md . && cp ../demo.gif ."
+    "prepublish": "cp ../README.md . && cp -r ../media ."
   },
   "license": "ISC",
   "devDependencies": {
