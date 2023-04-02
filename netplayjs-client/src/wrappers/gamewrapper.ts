@@ -42,6 +42,8 @@ export abstract class GameWrapper {
     assert.isTrue(this.isChannelReliable(channel), "Channel must be reliable.");
   }
 
+  playerPausedIndicator: HTMLDivElement;
+
   constructor(gameClass: GameClass) {
     this.gameClass = gameClass;
 
@@ -70,6 +72,27 @@ export abstract class GameWrapper {
     this.stats.style.display = "none";
 
     document.body.appendChild(this.stats);
+
+    // Create browser background info,
+    this.playerPausedIndicator = (() => {
+      const div = document.createElement("div");
+      div.style.zIndex = "1";
+      div.style.position = "absolute";
+      div.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+      div.style.color = "white";
+      div.style.padding = "10px";
+      div.style.left = "50%";
+      div.style.top = "50%";
+      div.style.transform = "translate(-50%, -50%)";
+
+      div.style.boxSizing = "border-box";
+      div.style.fontFamily = "sans-serif";
+      div.innerHTML = "The other player has backgrounded their tab.";
+      div.style.display = "none";
+
+      document.body.appendChild(div);
+      return div;
+    })();
 
     if (
       this.gameClass.touchControls &&
@@ -149,6 +172,8 @@ export abstract class GameWrapper {
 
       this.watchRTCStats(conn.peerConnection);
       this.startClient(players, conn);
+
+      this.startVisibilityWatcher(conn);
     });
 
     gameMenu.onHostStart.once((conn) => {
@@ -160,6 +185,30 @@ export abstract class GameWrapper {
 
       this.watchRTCStats(conn.peerConnection);
       this.startHost(players, conn);
+
+      this.startVisibilityWatcher(conn);
+    });
+  }
+
+  startVisibilityWatcher(conn: PeerConnection) {
+    // Send the current tab visibility to the other player.
+    conn.send({ type: "visibility-state", value: document.visibilityState });
+
+    // Update the other player on our tab visibility.
+    document.addEventListener("visibilitychange", () => {
+      log.debug(`My visibility state changed to: ${document.visibilityState}.`);
+      conn.send({ type: "visibility-state", value: document.visibilityState });
+    });
+
+    // Show an indicator if the other player's tab is invisible.
+    conn.on("data", (data) => {
+      if (data.type === "visibility-state") {
+        if (data.value === "hidden") {
+          this.playerPausedIndicator.style.display = "inherit";
+        } else {
+          this.playerPausedIndicator.style.display = "none";
+        }
+      }
     });
   }
 

@@ -29,6 +29,12 @@ export class PeerConnection extends EventEmitter {
       iceServers: client.iceServers,
     });
 
+    // Close the connection if the browser page is closed.
+    window.addEventListener("beforeunload", (e) => {
+      this.peerConnection.close();
+      this.dataChannel?.close();
+    });
+
     // Send out candidate messages as we generate ICE candidates.
     this.peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
