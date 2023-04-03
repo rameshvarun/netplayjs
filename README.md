@@ -173,19 +173,21 @@ NetplayJS games are synchronized by sending inputs across a network. `DefaultInp
 
 ### Does NetplayJS require game code to be deterministic?
 
-By default NetplayJS does not assume determinsim. It instead corrects for drift by having one player (the host) send authoritative state updates to the others. NetplayJS will skip these updates if and only if you explicitly mark your game as being deterministic.
+By default NetplayJS does not assume determinsim. Instead it corrects for drift by having one player (the host) send authoritative state updates to the others. NetplayJS will skip these updates if you explicitly mark your game as being deterministic.
 
 Whether or not JavaScript operations are cross-platform deterministic is a difficult question. Here's what I've seen so far:
 - You can safely assume integer arithmatic is deterministic.
-- According to the WASM spec, floating point operations are cross-platform deterministic (with the exception being the bit pattern of NaN values).
-  - This means that WASM physics engines like Ammo.js can be assumed to be deterministic.
+- WASM physics engines like Ammo.js can be assumed to be deterministic.
+  - According to the WASM spec, floating point operations must cross-platform deterministic, except for the bit pattern of NaN values.
 - Anything else is potentially up in the air.
 
 ### Can NetplayJS be used with Unity, Godot, PlayCanvas, etc?
 
-NetplayJS works best with lightweight game frameworks. The reason is that it's usually easy to find all of the associated state.
+NetplayJS works best with lightweight game frameworks. The reason is we need game state to be kept in one place, so that it's easy to replicate across the network
 
-More complcated engines have their own scene structure / entity framework with state all over the place.
+Other engines tend to have complicated entity systems with their own state management, and wont fit nicely into the NetplayJS state model.
+
+One way to get around this is to essentially create an invisible NetplayJS game that runs in the background and describes the actual game logic. Then, on `draw()`, instead of drawing directly, use the current game state to update the entities in your game engine's scene.
 
 ## Assets Used from Other Projects
 This repo contains code and assets from other open source projects.
