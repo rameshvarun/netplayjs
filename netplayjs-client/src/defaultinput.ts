@@ -77,6 +77,7 @@ export class DefaultInputReader {
     root.addEventListener(
       "keydown",
       (event) => {
+        if (event.repeat) return;
         this.keysHeld[event.key] = true;
         this.keysPressed[event.key] = true;
       },
