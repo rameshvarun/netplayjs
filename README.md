@@ -162,17 +162,30 @@ The client-side prediction and rewind capabilities of `netplayjs` are based off 
 
 If you cannot serialize the game state, you can still use NetplayJS, but you will need to use Lockstep netcode, rather than predictive netcodes like Rollback, and you need to mark your game as deterministic.
 
-### Determinism
-By default NetplayJS does not assume determinsim. It corrects for drift by having one player (the host) send authoritative state updates to the others. If you mark your game as deterministic, NetplayJS will skip sending these updates.
-
-Whether or not JavaScript operations are cross-platform deterministic is a difficult question. We can safely assume integer arithmatic is deterministic. I can also confirm that floating point operations with WASM are generally cross platform deterministic (required by WASM spec). Anything else is potentially up in the air.
-
 ### `NetplayPlayer`
 
 A `NetplayPlayer` represents one player in a game. `NetplayPlayer.getID()` returns an ID that is stable across each network replication of the game.
 
 ### `DefaultInput`
 NetplayJS games are synchronized by sending inputs across a network. `DefaultInput` automatically captures and replicates keyboard events, mouse events, and touch events.
+
+## FAQ
+
+### Does NetplayJS require game code to be deterministic?
+
+By default NetplayJS does not assume determinsim. It instead corrects for drift by having one player (the host) send authoritative state updates to the others. NetplayJS will skip these updates if and only if you explicitly mark your game as being deterministic.
+
+Whether or not JavaScript operations are cross-platform deterministic is a difficult question. Here's what I've seen so far:
+- You can safely assume integer arithmatic is deterministic.
+- According to the WASM spec, floating point operations are cross-platform deterministic (with the exception being the bit pattern of NaN values).
+  - This means that WASM physics engines like Ammo.js can be assumed to be deterministic.
+- Anything else is potentially up in the air.
+
+### Can NetplayJS be used with Unity, Godot, PlayCanvas, etc?
+
+NetplayJS works best with lightweight game frameworks. The reason is that it's usually easy to find all of the associated state.
+
+More complcated engines have their own scene structure / entity framework with state all over the place.
 
 ## Assets Used from Other Projects
 This repo contains code and assets from other open source projects.
