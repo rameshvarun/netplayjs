@@ -9,10 +9,7 @@ import { Game, GameClass } from "../game";
 import { PeerConnection } from "../matchmaking/peerconnection";
 import { assert } from "chai";
 
-const PING_INTERVAL = 100;
-
 export class LockstepWrapper extends GameWrapper {
-  pingMeasure: EWMASD = new EWMASD(0.2);
   game?: Game;
   lockstepNetcode?: LockstepNetcode<Game, DefaultInput>;
 
@@ -56,18 +53,10 @@ export class LockstepWrapper extends GameWrapper {
         input.deserialize(data.input);
 
         this.lockstepNetcode!.onRemoteInput(data.frame, players![1], input);
-      } else if (data.type == "ping-req") {
-        conn.send({ type: "ping-resp", sent_time: data.sent_time });
-      } else if (data.type == "ping-resp") {
-        this.pingMeasure.update(Date.now() - data.sent_time);
       }
     });
 
     console.log("Client has connected... Starting game...");
-
-    setInterval(() => {
-      conn.send({ type: "ping-req", sent_time: Date.now() });
-    }, PING_INTERVAL);
 
     this.startGameLoop();
   }
@@ -101,19 +90,10 @@ export class LockstepWrapper extends GameWrapper {
         this.lockstepNetcode!.onRemoteInput(data.frame, players![0], input);
       } else if (data.type === "state") {
         this.lockstepNetcode!.onStateSync(data.frame, data.state);
-      } else if (data.type == "ping-req") {
-        conn.send({ type: "ping-resp", sent_time: data.sent_time });
-      } else if (data.type == "ping-resp") {
-        this.pingMeasure.update(Date.now() - data.sent_time);
       }
     });
 
     console.log("Successfully connected to server... Starting game...");
-
-    setInterval(() => {
-      conn.send({ type: "ping-req", sent_time: Date.now() });
-    }, PING_INTERVAL);
-
     this.startGameLoop();
   }
 

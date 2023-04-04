@@ -12,6 +12,9 @@ import { PeerConnection } from "../matchmaking/peerconnection";
 import * as utils from "../utils";
 import * as lit from "lit-html";
 import { GameMenu } from "../ui/gamemenu";
+import EWMASD from "../ewmasd";
+
+const PING_INTERVAL = 100;
 
 export abstract class GameWrapper {
   gameClass: GameClass;
@@ -174,9 +177,10 @@ export abstract class GameWrapper {
       ];
 
       this.watchRTCStats(conn.peerConnection);
-      this.startClient(players, conn);
-
+      this.startPing(conn);
       this.startVisibilityWatcher(conn);
+
+      this.startClient(players, conn);
     });
 
     gameMenu.onHostStart.once((conn) => {
@@ -187,9 +191,10 @@ export abstract class GameWrapper {
       ];
 
       this.watchRTCStats(conn.peerConnection);
-      this.startHost(players, conn);
-
+      this.startPing(conn);
       this.startVisibilityWatcher(conn);
+
+      this.startHost(players, conn);
     });
   }
 
@@ -211,6 +216,21 @@ export abstract class GameWrapper {
         } else {
           this.playerPausedIndicator.style.display = "none";
         }
+      }
+    });
+  }
+
+  pingMeasure: EWMASD = new EWMASD(0.2);
+  startPing(conn: PeerConnection) {
+    setInterval(() => {
+      conn.send({ type: "ping-req", sent_time: performance.now() });
+    }, PING_INTERVAL);
+
+    conn.on("data", (data) => {
+      if (data.type == "ping-req") {
+        conn.send({ type: "ping-resp", sent_time: data.sent_time });
+      } else if (data.type == "ping-resp") {
+        this.pingMeasure.update(performance.now() - data.sent_time);
       }
     });
   }

@@ -12,11 +12,7 @@ import { PeerConnection } from "../matchmaking/peerconnection";
 
 import * as lit from "lit-html";
 
-const PING_INTERVAL = 100;
-
 export class RollbackWrapper extends GameWrapper {
-  pingMeasure: EWMASD = new EWMASD(0.2);
-
   game?: Game;
 
   rollbackNetcode?: RollbackNetcode<Game, DefaultInput>;
@@ -67,19 +63,10 @@ export class RollbackWrapper extends GameWrapper {
         let input = new DefaultInput();
         input.deserialize(data.input);
         this.rollbackNetcode!.onRemoteInput(data.frame, players![1], input);
-      } else if (data.type == "ping-req") {
-        conn.send({ type: "ping-resp", sent_time: data.sent_time });
-      } else if (data.type == "ping-resp") {
-        this.pingMeasure.update(Date.now() - data.sent_time);
       }
     });
 
     console.log("Client has connected... Starting game...");
-
-    setInterval(() => {
-      conn.send({ type: "ping-req", sent_time: Date.now() });
-    }, PING_INTERVAL);
-
     this.startGameLoop();
   }
 
@@ -113,19 +100,10 @@ export class RollbackWrapper extends GameWrapper {
         this.rollbackNetcode!.onRemoteInput(data.frame, players![0], input);
       } else if (data.type === "state") {
         this.rollbackNetcode!.onStateSync(data.frame, data.state);
-      } else if (data.type == "ping-req") {
-        conn.send({ type: "ping-resp", sent_time: data.sent_time });
-      } else if (data.type == "ping-resp") {
-        this.pingMeasure.update(Date.now() - data.sent_time);
       }
     });
 
     console.log("Successfully connected to server... Starting game...");
-
-    setInterval(() => {
-      conn.send({ type: "ping-req", sent_time: Date.now() });
-    }, PING_INTERVAL);
-
     this.startGameLoop();
   }
 
