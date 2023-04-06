@@ -4,6 +4,10 @@ import { TouchControl } from "./touchcontrols";
 
 export type GameClass = {
   new (canvas: HTMLCanvasElement, players: Array<NetplayPlayer>): Game;
+
+  /**
+   * The length of a single timestep in milliseconds.
+   */
   timestep: number;
 
   /**
