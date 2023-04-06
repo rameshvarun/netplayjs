@@ -19,7 +19,7 @@ import { JsonValue } from "type-fest";
 
 export class LockstepNetcode<
   TState extends NetplayState<TInput>,
-  TInput extends NetplayInput<TInput>
+  TInput extends NetplayInput
 > {
   /**
    * Whether or not we are the host of this match. The host is responsible for

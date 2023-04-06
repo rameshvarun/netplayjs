@@ -7,7 +7,7 @@ import * as autoserialize from "../serialization/autoserialize";
  * netcode how to simulate the game forward and how to
  * save / restore the game for rewinds.
  */
-export abstract class NetplayState<TInput extends NetplayInput<TInput>> {
+export abstract class NetplayState<TInput extends NetplayInput> {
   /**
    * This function describes how a state ticks forward given
    * the player inputs. It's used by netcodes to simulate the
@@ -33,17 +33,18 @@ export abstract class NetplayState<TInput extends NetplayInput<TInput>> {
 
 /**
  * NetplayJS games are synchronized by sending inputs across the network.
- * The NetplayInput class describes, abstractly, what each netcode implementation
+ * The NetplayInput class represents a single input for a single frame. It can
+ * be keyboard keys, mouse positions, etc. Basically any thing that exists outside
+ * of the simulation of the game.
  */
-export abstract class NetplayInput<TInput extends NetplayInput<TInput>> {
+export abstract class NetplayInput {
   /**
    * For predictive netcodes like rollback, we need to be able
    * to speculatively predict the next input from the current
    * input. By default, though, the prediction is just the same value as
    * the previous frame.
    */
-  predictNext(): TInput {
-    // @ts-ignore
+  predictNext(): this {
     return this;
   }
 

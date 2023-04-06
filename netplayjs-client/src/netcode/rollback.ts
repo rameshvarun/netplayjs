@@ -24,7 +24,7 @@ import { DEV } from "../debugging";
 import { assert } from "chai";
 import { JsonValue } from "type-fest";
 
-class RollbackHistory<TInput extends NetplayInput<TInput>> {
+class RollbackHistory<TInput extends NetplayInput> {
   /**
    * The frame number that this history entry represents.
    */
@@ -70,7 +70,7 @@ class RollbackHistory<TInput extends NetplayInput<TInput>> {
 
 export class RollbackNetcode<
   TState extends NetplayState<TInput>,
-  TInput extends NetplayInput<TInput>
+  TInput extends NetplayInput
 > {
   /**
    * The rollback history buffer.

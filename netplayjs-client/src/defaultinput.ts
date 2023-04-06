@@ -3,7 +3,7 @@ import * as utils from "./utils";
 import { TouchControl } from "./touchcontrols";
 import { Vec2 } from "./vec2";
 
-export class DefaultInput extends NetplayInput<DefaultInput> {
+export class DefaultInput extends NetplayInput {
   keysPressed: { [key: string]: boolean } = {};
   keysHeld: { [key: string]: boolean } = {};
   keysReleased: { [key: string]: boolean } = {};
