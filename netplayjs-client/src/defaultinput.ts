@@ -1,4 +1,4 @@
-import { NetplayInput } from "./types";
+import { NetplayInput } from "./netcode/types";
 import * as utils from "./utils";
 import { TouchControl } from "./touchcontrols";
 import { Vec2 } from "./vec2";

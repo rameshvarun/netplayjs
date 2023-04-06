@@ -1,5 +1,5 @@
 import { DefaultInput, DefaultInputReader } from "../defaultinput";
-import { NetplayPlayer, NetplayState } from "../types";
+import { NetplayPlayer, NetplayState } from "../netcode/types";
 
 import * as log from "loglevel";
 import { GameClass } from "../game";

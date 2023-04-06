@@ -1,5 +1,5 @@
 import { DefaultInput } from "./defaultinput";
-import { NetplayPlayer, NetplayState } from "./types";
+import { NetplayPlayer, NetplayState } from "./netcode/types";
 import { TouchControl } from "./touchcontrols";
 
 export type GameClass = {

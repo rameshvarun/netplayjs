@@ -15,7 +15,7 @@
  * - RetroArch Netplay Implementation: https://github.com/libretro/RetroArch/tree/v1.9.0/network/netplay
  */
 
-import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
+import { NetplayInput, NetplayPlayer, NetplayState } from "./types";
 import { get, shift, clone } from "../utils";
 
 import * as log from "loglevel";

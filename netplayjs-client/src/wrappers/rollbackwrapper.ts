@@ -1,7 +1,7 @@
 import { DefaultInput, DefaultInputReader } from "../defaultinput";
 import EWMASD from "../ewmasd";
 import { LockstepNetcode } from "../netcode/lockstep";
-import { NetplayPlayer, NetplayState } from "../types";
+import { NetplayPlayer, NetplayState } from "../netcode/types";
 
 import * as log from "loglevel";
 import { GameWrapper } from "./gamewrapper";

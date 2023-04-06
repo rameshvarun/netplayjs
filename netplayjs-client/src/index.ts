@@ -1,4 +1,4 @@
-export * from "./types";
+export * from "./netcode/types";
 export * from "./defaultinput";
 
 export * from "./wrappers/gamewrapper";

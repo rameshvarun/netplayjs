@@ -1,5 +1,5 @@
 import { JsonObject, JsonValue } from "type-fest";
-import * as autoserialize from "./serialization/autoserialize";
+import * as autoserialize from "../serialization/autoserialize";
 
 export abstract class NetplayState<TInput extends NetplayInput<TInput>> {
   abstract tick(playerInputs: Map<NetplayPlayer, TInput>): void;

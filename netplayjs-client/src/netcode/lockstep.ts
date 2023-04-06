@@ -9,7 +9,7 @@
  * rewinding or prediction required.
  */
 
-import { NetplayInput, NetplayPlayer, NetplayState } from "../types";
+import { NetplayInput, NetplayPlayer, NetplayState } from "./types";
 
 import { DEV } from "../debugging";
 import { assert } from "chai";
