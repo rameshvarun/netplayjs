@@ -2,6 +2,8 @@ import { NetplayInput } from "./netcode/types";
 import * as utils from "./utils";
 import { TouchControl } from "./touchcontrols";
 import { Vec2 } from "./vec2";
+import { JsonObject, JsonValue } from "type-fest";
+import * as autoserialize from "./serialization/autoserialize";
 
 export class DefaultInput extends NetplayInput {
   keysPressed: { [key: string]: boolean } = {};
@@ -28,6 +30,20 @@ export class DefaultInput extends NetplayInput {
       (this.keysHeld.a ? -1 : 0) + (this.keysHeld.d ? 1 : 0),
       (this.keysHeld.s ? -1 : 0) + (this.keysHeld.w ? 1 : 0)
     );
+  }
+
+  /**
+   * By default, use the auto serializer.
+   */
+  serialize(): JsonValue {
+    return autoserialize.serialize(this);
+  }
+
+  /**
+   * By default, use the auto deserializer.
+   */
+  deserialize(value: JsonValue): void {
+    autoserialize.deserialize(value as JsonObject, this);
   }
 }
 
