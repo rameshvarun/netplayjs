@@ -218,7 +218,9 @@ export class GameMenu {
           <p>Invite players to a game via a link or QR code.</p>
           Join URL (send this to a friend):
 
-          <a target="_blank" href="${this.state.joinURL}"> ${this.state.joinURL} </a>
+          <a target="_blank" href="${this.state.joinURL}">
+            ${this.state.joinURL}
+          </a>
           <div>${this.state.qrCanvas}</div>
         </div>
       </div>`;
@@ -240,7 +242,12 @@ export class GameMenu {
       html`
         ${this.menuContent()}
         <div style="position: absolute; right: 10px; bottom: 10px;">
-          <a target="_blank" style="text-decoration: none; color: black;" href="https://github.com/rameshvarun/netplayjs">NetplayJS v${require("../../package.json").version}</a>
+          <a
+            target="_blank"
+            style="text-decoration: none; color: black;"
+            href="https://github.com/rameshvarun/netplayjs"
+            >NetplayJS v${require("../../package.json").version}</a
+          >
         </div>
       `,
       this.root

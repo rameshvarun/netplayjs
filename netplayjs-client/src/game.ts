@@ -7,6 +7,11 @@ export type GameClass = {
   timestep: number;
 
   /**
+   * NOT SUPPORTED YET.
+   */
+  numPlayers?: number | { min: number; max: number };
+
+  /**
    * Canvases need to have a fixed pixel size. This allows us to normalize
    * mouse position and touches across the network.
    */
