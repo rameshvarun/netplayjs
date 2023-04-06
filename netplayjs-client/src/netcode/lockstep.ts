@@ -13,7 +13,6 @@ import { NetplayInput, NetplayPlayer, NetplayState } from "./types";
 
 import { DEV } from "../debugging";
 import { assert } from "chai";
-import { DefaultInput } from "../defaultinput";
 import { get, shift } from "../utils";
 import { JsonValue } from "type-fest";
 
