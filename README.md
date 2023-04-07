@@ -173,7 +173,7 @@ NetplayJS games are synchronized by sending inputs across a network. `DefaultInp
 
 ### Does NetplayJS require game code to be deterministic?
 
-By default NetplayJS **does not require determinism**. It corrects for drift by having one player (the host) send authoritative state updates to the others. NetplayJS will skip these updates if you explicitly mark your game as being deterministic.
+NetplayJS **does not require game code to be deterministic**, but is more efficient if it is. By default, NetplayJS corrects for drift by having one player (the host) send authoritative state updates to the others. NetplayJS will skip these updates if you explicitly mark your game as being deterministic.
 
 Whether or not JavaScript operations are cross-platform deterministic is a difficult question. Here's what I know:
 - Integer arithmatic can be assumed to be deterministic.
