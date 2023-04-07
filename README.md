@@ -104,7 +104,7 @@ NetplayJS is a framework designed to make the process of creating multiplayer br
 - (WIP) `netplayjs-netcode` - Implementations of rollback netcode and lockstep netcode.
 - (WIP) `netplayjs-connection` - The client side code that communicates with the matchmaking server to establish connections.
 - `netplayjs` - A prototyping framework that lets you rapidly create multiplayer games.
-- `netplayjs-demos` - A collection of demos built in the prototyping framework to show off how to use it.
+- `netplayjs-demos` - A collection of demos built in `netplayjs` to show off how to use it.
 
 ## Installation
 
