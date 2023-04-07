@@ -49,11 +49,18 @@ export abstract class NetplayInput {
   }
 
   /**
-   * We need to be able to serialize and deserialize the input
-   * so we can send it across the network.
+   * By default, use the auto serializer.
    */
-  abstract serialize(): JsonValue;
-  abstract deserialize(value: JsonValue);
+  serialize(): JsonValue {
+    return autoserialize.serialize(this);
+  }
+
+  /**
+   * By default, use the auto deserializer.
+   */
+  deserialize(value: JsonValue): void {
+    autoserialize.deserialize(value as JsonObject, this);
+  }
 }
 
 /**
