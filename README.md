@@ -173,12 +173,12 @@ NetplayJS games are synchronized by sending inputs across a network. `DefaultInp
 
 ### Does NetplayJS require game code to be deterministic?
 
-By default NetplayJS does not assume determinsim. Instead it corrects for drift by having one player (the host) send authoritative state updates to the others. NetplayJS will skip these updates if you explicitly mark your game as being deterministic.
+By default NetplayJS **does not require determinism**. It corrects for drift by having one player (the host) send authoritative state updates to the others. NetplayJS will skip these updates if you explicitly mark your game as being deterministic.
 
-Whether or not JavaScript operations are cross-platform deterministic is a difficult question. Here's what I've seen so far:
-- You can safely assume integer arithmatic is deterministic.
-- WASM physics engines like Ammo.js can be assumed to be deterministic.
-  - According to the WASM spec, floating point operations must cross-platform deterministic, except for the bit pattern of NaN values.
+Whether or not JavaScript operations are cross-platform deterministic is a difficult question. Here's what I know:
+- Integer arithmatic can be assumed to be deterministic.
+- In WASM code, floating point operations are cross-platform deterministic, with the exception of the bit pattern of NaN values.
+  - This means that WASM physics engines like Ammo.js can be assumed to be deterministic.
 - Anything else is potentially up in the air.
 
 ### Can NetplayJS be used with Unity, Godot, PlayCanvas, etc?
