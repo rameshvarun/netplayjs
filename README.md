@@ -16,7 +16,7 @@ Make peer-to-peer WebRTC-based multiplayer games in JavaScript, no server hostin
  
  Here's how NetplayJS works:
 
-- You create your game within a single static HTML file.
+- You create your game within static HTML files.
 - You can use a variety of HTML5 game frameworks, including [Three.js](https://threejs.org/).
 - You can host this file anywhere ([GitHub Pages](https://pages.github.com/), [Itch.io](https://itch.io/), [Glitch](https://glitch.com/), and many more).
 
