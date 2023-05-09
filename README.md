@@ -90,7 +90,7 @@ new netplayjs.RollbackWrapper(SimpleGame).start();
 </script>
 ```
 
-And voila - a real-time networked game with rollback and client-side prediction.
+And voila - we've made a real-time networked game with rollback netcode and client-side prediction.
 
 <p align="center">
   <img src="./media/simple.gif">
