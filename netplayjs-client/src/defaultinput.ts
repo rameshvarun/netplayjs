@@ -68,8 +68,9 @@ export class DefaultInputReader {
   constructor(
     root: HTMLElement = document.body,
     canvas: HTMLCanvasElement,
-    pointerLock: boolean,
-    touchControls: { [name: string]: TouchControl }
+    pointerLock: boolean = false,
+    preventContextMenu: boolean = false,
+    touchControls: { [name: string]: TouchControl } = {}
   ) {
     this.canvas = canvas;
     this.touchControls = touchControls;
@@ -120,6 +121,10 @@ export class DefaultInputReader {
       if (pointerLock) {
         canvas.requestPointerLock();
       }
+    });
+
+    canvas.addEventListener("contextmenu", (e) => {
+      if (preventContextMenu) e.preventDefault();
     });
   }
 

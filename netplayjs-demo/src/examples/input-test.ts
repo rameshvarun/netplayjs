@@ -11,6 +11,7 @@ import {
     static timestep = 1000 / 60;
     static canvasSize = { width: 600, height: 300 };
     static deterministic = true;
+    static preventContextMenu = true;
   
     inputs: Map<NetplayPlayer, DefaultInput> = new Map();
   

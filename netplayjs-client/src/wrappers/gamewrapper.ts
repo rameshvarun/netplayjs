@@ -115,6 +115,7 @@ export abstract class GameWrapper {
       document.body,
       this.canvas,
       this.gameClass.pointerLock || false,
+      this.gameClass.preventContextMenu || false,
       this.gameClass.touchControls || {}
     );
   }

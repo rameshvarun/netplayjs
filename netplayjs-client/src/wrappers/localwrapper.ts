@@ -59,6 +59,7 @@ export class LocalWrapper {
         canvas,
         canvas,
         this.gameClass.pointerLock || false,
+        this.gameClass.preventContextMenu || false,
         {}
       );
 

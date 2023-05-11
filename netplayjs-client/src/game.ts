@@ -28,6 +28,12 @@ export type GameClass = {
   pointerLock?: boolean;
 
   /**
+   * Whether or not we should prevent the context menu from appearing when
+   * the user right clicks on the canvas.
+   */
+  preventContextMenu?: boolean;
+
+  /**
    * A list of all the touch controls needed for this game. These will
    * only be shown on mobile.
    */
