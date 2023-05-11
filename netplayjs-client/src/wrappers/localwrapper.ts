@@ -79,6 +79,9 @@ export class LocalWrapper {
     let lastTimestamp = performance.now();
     let animate = (timestamp) => {
       if (timestamp >= lastTimestamp + this.gameClass.timestep) {
+        // Reset the timestamp.
+        lastTimestamp = timestamp;
+
         // Query each of our input readers.
         let instanceInputs = this.instances.map((inst) =>
           inst.inputReader.getInput()
