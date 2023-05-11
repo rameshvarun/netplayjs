@@ -35,6 +35,11 @@ const EXAMPLES = [
     entry: "./src/examples/local.ts",
     title: "NetplayJS Local Testing Example",
   },
+  {
+    chunkName: "input-test",
+    entry: "./src/examples/input-test.ts",
+    title: "NetplayJS Input Test Example",
+  },
 ];
 
 const ENTRIES = {};
