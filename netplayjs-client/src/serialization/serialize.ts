@@ -23,6 +23,35 @@ export function registerCustomType<T>(
   });
 }
 
+registerCustomType(Map, "Map", (map: Map<any, any>) => {
+  let result: Array<[any, any]> = [];
+  for (let [key, value] of map.entries()) {
+    result.push([serialize(key), serialize(value)]);
+  }
+  return result;
+}, (data: any) => {
+  const result = new Map();
+  for (let [key, value] of data) {
+    result.set(deserialize(key), deserialize(value));
+  }
+  return result;
+});
+
+registerCustomType(Set, "Set", (set: Set<any>) => {
+  let result: Array<any> = [];
+  for (let value of set.values()) {
+    result.push(serialize(value));
+  }
+  return result;
+}, (data: any) => {
+  const result = new Set();
+  for (let value of data) {
+    result.add(deserialize(value));
+  }
+  console.log(result);
+  return result;
+});
+
 export function serialize(data: any): any {
   if (
     typeof data === "number" ||
