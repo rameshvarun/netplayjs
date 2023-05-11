@@ -25,6 +25,19 @@ export class Vec2 {
   subtract(other: Vec2): Vec2 {
     return new Vec2(this.x - other.x, this.y - other.y);
   }
+
+  length(): number {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+
+  normalize(): Vec2 {
+    const length = this.length();
+    if (length === 0) {
+      return new Vec2(0, 0);
+    } else {
+      return new Vec2(this.x / length, this.y / length);
+    }
+  }
 }
 
 // Register Vec2 class with serializer.
