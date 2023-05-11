@@ -5,11 +5,12 @@ import {
     RollbackWrapper,
     Vec2,
     LockstepWrapper,
+    LocalWrapper,
   } from "netplayjs/src/index";
   
   export class InputTestGame extends Game {
-    static timestep = 1000 / 60;
-    static canvasSize = { width: 600, height: 300 };
+    static timestep = 1000 / 5;
+    static canvasSize = { width: 600, height: 1000 };
     static deterministic = true;
     static preventContextMenu = true;
   
@@ -44,5 +45,5 @@ import {
     }
   }
   
-  new LockstepWrapper(InputTestGame).start();
+  new LocalWrapper(InputTestGame).start();
   

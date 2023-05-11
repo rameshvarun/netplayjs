@@ -3,6 +3,17 @@ import * as utils from "./utils";
 import { TouchControl } from "./touchcontrols";
 import { Vec2 } from "./vec2";
 
+type GamepadButton = {
+  /** Was this Gamepad button pressed on this frame? */
+  pressed: boolean;
+
+  /** Was this Gamepad button released on this frame? */
+  released: boolean;
+
+  /** Is this Gamepad button currently held down? */
+  held: boolean;
+}
+
 export class DefaultInput extends NetplayInput {
   keysPressed: { [key: string]: boolean } = {};
   keysHeld: { [key: string]: boolean } = {};
@@ -11,6 +22,11 @@ export class DefaultInput extends NetplayInput {
   mousePosition?: { x: number; y: number };
 
   touches: Array<{ x: number; y: number }> = [];
+
+  gamepads: Array<{
+    axes: Array<number>;
+    buttons: Array<GamepadButton>;
+  }> = [];
 
   touchControls?: { [name: string]: any };
 
@@ -43,6 +59,16 @@ export class DefaultInputReader {
   touches: Array<{ x: number; y: number }> = [];
 
   touchControls: { [name: string]: TouchControl };
+
+  /**
+   * We need to track the previous state of GamePads
+   * so that we can determine the frame that the button
+   * was pressed or released.
+   */
+  previousGamepadState: Map<number, {
+    /** Whether or not the button was held on the previous frame. */
+    buttons: Array<boolean>;
+  }> = new Map();
 
   getCanvasScale(): { x: number; y: number } {
     const rect = this.canvas.getBoundingClientRect();
@@ -188,6 +214,41 @@ export class DefaultInputReader {
     for (let [name, control] of Object.entries(this.touchControls)) {
       input.touchControls = input.touchControls || {};
       input.touchControls[name] = utils.clone(control.getValue());
+    }
+
+    // Processing GamePad inputs.
+    if (navigator.getGamepads) {
+      navigator.getGamepads().forEach((gamepad, gi) => {
+        // Ignore null gamepads.
+        if (!gamepad) return null;
+
+        // Get the previous state of this GamePad so that we can determine
+        // pressed and released states.
+        const previousState = this.previousGamepadState.get(gi) || {
+          buttons: gamepad.buttons.map(() => false),
+        };
+
+        const buttons: Array<GamepadButton> = gamepad.buttons.map((button, bi) => {
+          const held = button.pressed;
+          const pressed = !previousState.buttons[bi] && held;
+          const released = previousState.buttons[bi] && !held;
+          return {
+            held,
+            pressed,
+            released,
+          };
+        });
+
+        input.gamepads.push({
+          axes: utils.clone(gamepad.axes),
+          buttons: buttons,
+        });
+
+        // Update the previous state of this GamePad.
+        this.previousGamepadState.set(gi, {
+          buttons: gamepad.buttons.map((button) => button.pressed),
+        });
+      });
     }
 
     // Clear the pressed and released keys.
