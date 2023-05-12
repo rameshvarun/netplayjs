@@ -180,7 +180,7 @@ export class LockstepNetcode<
     // Queue the local input for a game tick.
     get(this.inputs, localPlayer).push({
       frame: this.frame,
-      input: this.pollInput(),
+      input: localInput,
     });
 
     // Broadcast the input.
