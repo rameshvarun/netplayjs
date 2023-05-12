@@ -45,19 +45,26 @@ export class LocalWrapper {
     for (let i = 0; i < numPlayers; ++i) {
       // Create canvas for game.
       const canvas = document.createElement("canvas");
-      canvas.width = gameClass.canvasSize.width;
-      canvas.height = gameClass.canvasSize.height;
+
+      const pixelRatio = (gameClass.highDPI && window.devicePixelRatio) ?
+        window.devicePixelRatio : 1;
+
+      canvas.width = gameClass.canvasSize.width * pixelRatio;
+      canvas.height = gameClass.canvasSize.height * pixelRatio;
       canvas.tabIndex = 0;
 
       canvas.style.backgroundColor = "black";
       canvas.style.boxShadow = "0px 0px 10px black";
       canvas.style.margin = "5px";
+      canvas.style.width = `${gameClass.canvasSize.width}px`;
+      canvas.style.height = `${gameClass.canvasSize.height}px`;
       document.body.appendChild(canvas);
 
       // Create input reader.
       const inputReader = new DefaultInputReader(
         canvas,
         canvas,
+        this.gameClass.canvasSize,
         this.gameClass.pointerLock || false,
         this.gameClass.preventContextMenu || false,
         {}

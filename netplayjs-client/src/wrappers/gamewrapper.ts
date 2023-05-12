@@ -52,8 +52,12 @@ export abstract class GameWrapper {
 
     // Create canvas for game.
     this.canvas = document.createElement("canvas");
-    this.canvas.width = gameClass.canvasSize.width;
-    this.canvas.height = gameClass.canvasSize.height;
+
+    const pixelRatio = (gameClass.highDPI && window.devicePixelRatio) ?
+      window.devicePixelRatio : 1;
+
+    this.canvas.width = gameClass.canvasSize.width * pixelRatio;
+    this.canvas.height = gameClass.canvasSize.height * pixelRatio;
 
     this.canvas.style.backgroundColor = "black";
     this.canvas.style.position = "absolute";
@@ -114,6 +118,7 @@ export abstract class GameWrapper {
     this.inputReader = new DefaultInputReader(
       document.body,
       this.canvas,
+      this.gameClass.canvasSize,
       this.gameClass.pointerLock || false,
       this.gameClass.preventContextMenu || false,
       this.gameClass.touchControls || {}

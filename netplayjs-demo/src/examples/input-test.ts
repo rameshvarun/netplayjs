@@ -10,10 +10,11 @@ import {
   
   export class InputTestGame extends Game {
     static timestep = 1000 / 5;
-    static canvasSize = { width: 600, height: 1000 };
+    static canvasSize = { width: 600, height: 600 };
     static deterministic = true;
     static preventContextMenu = true;
-  
+    static highDPI = true;
+    
     inputs: Map<NetplayPlayer, DefaultInput> = new Map();
   
     tick(playerInputs: Map<NetplayPlayer, DefaultInput>): void {
@@ -25,6 +26,10 @@ import {
     draw(canvas: HTMLCanvasElement) {
       // Fill in a black background.
       const ctx = canvas.getContext("2d")!;
+
+      ctx.resetTransform();
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
   

@@ -49,6 +49,7 @@ export class DefaultInput extends NetplayInput {
 
 export class DefaultInputReader {
   canvas: HTMLCanvasElement;
+  canvasSize: { width: number; height: number };
 
   keysPressed: { [key: string]: boolean } = {};
   keysHeld: { [key: string]: boolean } = {};
@@ -73,8 +74,8 @@ export class DefaultInputReader {
   getCanvasScale(): { x: number; y: number } {
     const rect = this.canvas.getBoundingClientRect();
     return {
-      x: this.canvas.width / rect.width,
-      y: this.canvas.height / rect.height,
+      x: this.canvasSize.width / rect.width,
+      y: this.canvasSize.height / rect.height,
     };
   }
 
@@ -94,11 +95,13 @@ export class DefaultInputReader {
   constructor(
     root: HTMLElement = document.body,
     canvas: HTMLCanvasElement,
+    canvasSize: { width: number; height: number },
     pointerLock: boolean = false,
     preventContextMenu: boolean = false,
     touchControls: { [name: string]: TouchControl } = {}
   ) {
     this.canvas = canvas;
+    this.canvasSize = canvasSize;
     this.touchControls = touchControls;
 
     root.addEventListener(

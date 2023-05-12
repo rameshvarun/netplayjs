@@ -22,6 +22,13 @@ export type GameClass = {
   canvasSize: { width: number; height: number };
 
   /**
+   * Should we scale up the canvas with the device pixel ratio?
+   * If enabled, it is up to the game code to draw correctly
+   * using window.devicePixelRatio.
+   */
+  highDPI?: boolean;
+
+  /**
    * Whether or not we should lock the pointer when the user clicks on the
    * canvas. Use this for games like FPSs.
    */

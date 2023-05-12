@@ -37,6 +37,7 @@ function rectOverlap(
 export class Pong extends Game {
   static timestep = 1000 / 60;
   static canvasSize = { width: PONG_WIDTH, height: PONG_HEIGHT };
+  static highDPI = true;
 
   leftPaddle: number = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
   rightPaddle: number = PONG_HEIGHT / 2 - PADDLE_HEIGHT / 2;
@@ -160,6 +161,9 @@ export class Pong extends Game {
 
   draw(canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext("2d")!;
+
+    ctx.resetTransform();
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);

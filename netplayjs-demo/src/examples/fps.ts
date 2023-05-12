@@ -44,6 +44,7 @@ const PLAYER_COLLIDER = new Capsule();
 export class PhysicsGame extends Game {
   static timestep = 1000 / 60;
   static canvasSize = { width: 600, height: 300 };
+  static highDPI = true;
 
   static octree = new Octree();
   static level: THREE.Object3D = new THREE.Object3D();
