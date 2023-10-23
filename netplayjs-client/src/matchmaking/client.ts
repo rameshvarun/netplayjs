@@ -16,9 +16,9 @@ export const DEFAULT_SERVER_URL = "https://netplayjs.varunramesh.net";
 function getWebSocketURL(serverURL: string): string {
   const url = new URL(serverURL);
   if (url.protocol === "http:") {
-    return `ws://${url.hostname}/`;
+    return `ws://${url.hostname}:${url.port}/`;
   } else if (url.protocol === "https:") {
-    return `wss://${url.hostname}/`;
+      return `wss://${url.hostname}:${url.port}/`;
   } else {
     throw new Error(`Unknown protocol: ${url.protocol}`);
   }
