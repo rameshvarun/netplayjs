@@ -28,7 +28,7 @@ Let's make a very simple game. Create an HTML file and add the following script 
 <script src="https://unpkg.com/netplayjs@0.4.1/dist/netplay.js"></script>
 ```
 
-Now add this javascript code to the same HTML.
+Now add this javascript code to the same HTML somewhere within the `<body>`.
 ```html
 <script>
 class SimpleGame extends netplayjs.Game {
