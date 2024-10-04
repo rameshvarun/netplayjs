@@ -28,7 +28,7 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "docker:build": "docker build -t netplayjs-server .",
+    "docker:build": "docker build --platform=linux/amd64,linux/arm64 -t netplayjs-server .",
     "docker:start": "docker run -p 3000:3000 netplayjs-server",
     "docker:push": "node ./scripts/docker-push.js",
     "format": "prettier --write src/*.ts src/**/*.ts test/*.ts *.js",

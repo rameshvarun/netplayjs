@@ -14,7 +14,7 @@ NetplayJS games can easily be pointed a new server without changing any code. Si
 
 ## Run from Docker Hub
 ```bash
-docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.7
+docker run --publish 80:3000 varunramesh/netplayjs-server:0.0.9
 ```
 
 ## Run from NPM
