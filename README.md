@@ -25,7 +25,7 @@ NetplayJS handles most of the complicated aspects of multiplayer game developmen
 Let's make a very simple game. Create an HTML file and add the following script tag.
 
 ```html
-<script src="https://unpkg.com/netplayjs@0.4.1/dist/netplay.js"></script>
+<script src="https://unpkg.com/netplayjs@0.4.1/dist/netplay.js" integrity="sha384-6Yb8LWAT488jwK+nIjvD4S5/poq1Xn69NYjH1RXKHoaUOaFJrKQ1rfGQgKm8oQjX" crossorigin="anonymous"></script>
 ```
 
 Now add this javascript code to the same HTML somewhere within the `<body>`.
