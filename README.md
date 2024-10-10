@@ -110,7 +110,7 @@ NetplayJS is a framework designed to make the process of creating multiplayer br
 
 For simple usage, you can include NetplayJS directly from a script tag in an HTML file.
 ```html
-<script src="https://unpkg.com/netplayjs@0.4.1/dist/netplay.js"></script>
+<script src="https://unpkg.com/netplayjs@0.4.1/dist/netplay.js" integrity="sha384-6Yb8LWAT488jwK+nIjvD4S5/poq1Xn69NYjH1RXKHoaUOaFJrKQ1rfGQgKm8oQjX" crossorigin="anonymous"></script>
 ```
 
 For larger projects, you should install NetplayJS from npm and bundle it with your application using Webpack or a similar module bundler.
